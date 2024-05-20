@@ -29,7 +29,6 @@ struct AddWeightEntryView: View {
         combinedDateComponents.hour = timeComponents.hour
         combinedDateComponents.minute = timeComponents.minute
         combinedDateComponents.second = timeComponents.second
-        let combinedDate = calendar.date(from: combinedDateComponents)
         guard let combinedDate = calendar.date(from: combinedDateComponents) else {
             print("Failed to combine date and time components")
             return

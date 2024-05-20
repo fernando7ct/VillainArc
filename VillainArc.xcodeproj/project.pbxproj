@@ -21,6 +21,7 @@
 		FD2E77B42BF6D12C00245E06 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E77B32BF6D12C00245E06 /* FirebaseAuth */; };
 		FD2E77B62BF6D12C00245E06 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = FD2E77B52BF6D12C00245E06 /* FirebaseFirestore */; };
 		FD2E77B82BF6D37200245E06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B72BF6D37200245E06 /* User.swift */; };
+		FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		FD2E77AF2BF6D0C400245E06 /* VillainArc.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VillainArc.entitlements; sourceTree = "<group>"; };
 		FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FD2E77B72BF6D37200245E06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightGraphView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 		FD2E77932BF57CF800245E06 /* VillainArc */ = {
 			isa = PBXGroup;
 			children = (
+				FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */,
 				FD2E77AF2BF6D0C400245E06 /* VillainArc.entitlements */,
 				FD2E77942BF57CF800245E06 /* VillainArcApp.swift */,
 				FD2E77962BF57CF800245E06 /* ContentView.swift */,
@@ -188,6 +191,7 @@
 				FD2E77A82BF581F200245E06 /* AddWeightEntryView.swift in Sources */,
 				FD2E77AC2BF6AA5500245E06 /* DataManager.swift in Sources */,
 				FD2E77A62BF57ED700245E06 /* WeightTab.swift in Sources */,
+				FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */,
 				FD2E77B82BF6D37200245E06 /* User.swift in Sources */,
 				FD2E77A42BF57D6600245E06 /* WeightEntry.swift in Sources */,
 				FD2E77AE2BF6D03C00245E06 /* LogInView.swift in Sources */,
