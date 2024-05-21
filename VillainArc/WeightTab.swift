@@ -9,9 +9,10 @@ struct WeightTab: View {
                 Section {
                     WeightGraphView()
                         .frame(height: 350)
-                        .padding(.horizontal, -20)
+                        .padding(.horizontal, -15)
                 }
                 .listRowBackground(Color.clear)
+                
                 Section {
                     NavigationLink(destination: AllWeightEntriesView()) {
                         HStack {
