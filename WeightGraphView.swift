@@ -7,6 +7,7 @@ struct WeightGraphView: View {
     @State private var selectedWeightRange: weightGraphRange = .week
     
     enum weightGraphRange {
+        case day
         case week
         case month
         case sixMonths
@@ -26,6 +27,10 @@ struct WeightGraphView: View {
         let today = calendar.startOfDay(for: Date())
         let (startDate, endDate): (Date, Date) = {
             switch selectedWeightRange {
+            case .day:
+                let start = calendar.startOfDay(for: today)
+                let end = calendar.date(byAdding: .day, value: 1, to: start)!
+                return (start, end)
             case .week:
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
@@ -48,6 +53,10 @@ struct WeightGraphView: View {
         let today = calendar.startOfDay(for: Date())
         let (startDate, endDate): (Date, Date) = {
             switch selectedWeightRange {
+            case .day:
+                let start = calendar.startOfDay(for: today)
+                let end = calendar.date(byAdding: .day, value: 1, to: start)!
+                return (start, end)
             case .week:
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
@@ -57,9 +66,9 @@ struct WeightGraphView: View {
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
                 return (start, end)
             case .sixMonths:
-                let startOfPrevious5thMonth = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
-                let endOfCurrentMonth = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
-                return (startOfPrevious5thMonth, endOfCurrentMonth)
+                let start = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+                let end = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+                return (start, end)
             }
         }()
         
@@ -78,6 +87,13 @@ struct WeightGraphView: View {
                 let averageWeight = totalWeight / Double(entries.count)
                 averages.append((date: startOfWeek, weight: averageWeight))
             }
+        } else if selectedWeightRange == .day {
+            let groupedByMinute = Dictionary(grouping: entries, by: { calendar.dateInterval(of: .minute, for: $0.date)!.start })
+            for (startOfMinute, entries) in groupedByMinute {
+                let totalWeight = entries.reduce(0) { $0 + $1.weight }
+                let averageWeight = totalWeight / Double(entries.count)
+                averages.append((date: startOfMinute, weight: averageWeight))
+            }
         } else {
             let groupedByDay = Dictionary(grouping: entries, by: { calendar.startOfDay(for: $0.date) })
             for (date, entries) in groupedByDay {
@@ -94,6 +110,7 @@ struct WeightGraphView: View {
     var body: some View {
         VStack {
             Picker("Time Range", selection: $selectedWeightRange) {
+                Text("Day").tag(weightGraphRange.day)
                 Text("Week").tag(weightGraphRange.week)
                 Text("Month").tag(weightGraphRange.month)
                 Text("6 Months").tag(weightGraphRange.sixMonths)
@@ -114,7 +131,18 @@ struct WeightGraphView: View {
             .chartYScale(domain: yAxisRange())
             .chartXScale(domain: xAxisRange())
             .chartXAxis {
-                if selectedWeightRange == .week {
+                if selectedWeightRange == .day {
+                    AxisMarks(values: [
+                        Calendar.current.startOfDay(for: Date()),
+                        Calendar.current.date(bySettingHour: 6, minute: 0, second: 0, of: Date())!,
+                        Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!,
+                        Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date())!
+                    ]) { value in
+                        AxisGridLine()
+                        AxisTick()
+                        AxisValueLabel(format: .dateTime.hour().minute())
+                    }
+                } else if selectedWeightRange == .week {
                     AxisMarks(values: .automatic(desiredCount: 7)) { value in
                         AxisGridLine()
                         AxisTick()
