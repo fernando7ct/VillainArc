@@ -107,6 +107,44 @@ struct WeightGraphView: View {
         return averages.sorted { $0.date < $1.date }
     }
     
+    private func weightData() -> (String, String, String){
+        let calendar = Calendar.current
+        let entries = filteredEntries()
+        let today = calendar.startOfDay(for: Date())
+        
+        var average: String
+        var averageWeight: String
+        var timeRange: String
+        
+        if entries.isEmpty {
+            average = ""
+            averageWeight = "No Data"
+        } else if entries.count == 1 {
+            average = ""
+            averageWeight = formattedWeight(entries.first!.weight)
+        } else {
+            average = "Average"
+            let average = entries.map { $0.weight }.reduce(0, +) / Double(entries.count)
+            averageWeight = formattedWeight(average)
+        }
+        
+        switch selectedWeightRange {
+        case .day:
+            timeRange = "Today"
+        case .week:
+            let start = calendar.date(byAdding: .day, value: -6, to: today)!
+            timeRange = "\(start.formatted(.dateTime.month().day())) - \(today.formatted(.dateTime.month().day()))"
+        case .month:
+            let start = calendar.date(byAdding: .day, value: -28, to: today)!
+            timeRange = "\(start.formatted(.dateTime.month().day())) - \(today.formatted(.dateTime.month().day()))"
+        case .sixMonths:
+            let start = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+            timeRange = "\(start.formatted(.dateTime.month().year())) - \(today.formatted(.dateTime.month().year()))"
+        }
+        
+        return (average, averageWeight, timeRange)
+    }
+    
     var body: some View {
         VStack {
             Picker("Time Range", selection: $selectedWeightRange) {
@@ -117,7 +155,29 @@ struct WeightGraphView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding(.bottom)
-            
+            HStack {
+                VStack(alignment: .leading) {
+                    let (averageText, weight, range) = weightData()
+                    Text(averageText)
+                        .foregroundStyle(.secondary)
+                        .font(.headline)
+                    HStack(alignment: .bottom, spacing: 3) {
+                        Text(weight)
+                            .foregroundStyle(.primary)
+                            .font(.largeTitle)
+                        if weight != "No Data" {
+                            Text("lbs")
+                                .foregroundStyle(.secondary)
+                                .offset(y: -4.0)
+                        }
+                    }
+                    Text(range)
+                        .foregroundStyle(.secondary)
+                        .font(.headline)
+                }
+                Spacer()
+            }
+            .fontWeight(.medium)
             Chart(graphableEntries(), id: \.date) { weightEntry in
                 LineMark(
                     x: .value("Date", weightEntry.date),

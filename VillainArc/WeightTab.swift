@@ -8,7 +8,7 @@ struct WeightTab: View {
             List {
                 Section {
                     WeightGraphView()
-                        .frame(height: 350)
+                        .frame(height: 400)
                         .padding(.horizontal, -15)
                 }
                 .listRowBackground(Color.clear)
