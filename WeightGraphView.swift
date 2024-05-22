@@ -5,6 +5,7 @@ import Charts
 struct WeightGraphView: View {
     @Query(sort: \WeightEntry.date, order: .reverse) private var weightEntries: [WeightEntry]
     @State private var selectedWeightRange: weightGraphRange = .week
+    @State private var selectedEntry: (date: Date, weight: Double)? = nil
     
     enum weightGraphRange {
         case day
@@ -107,7 +108,7 @@ struct WeightGraphView: View {
         return averages.sorted { $0.date < $1.date }
     }
     
-    private func weightData() -> (String, String, String){
+    private func weightData() -> (String, String, String) {
         let calendar = Calendar.current
         let entries = filteredEntries()
         let today = calendar.startOfDay(for: Date())
@@ -187,6 +188,28 @@ struct WeightGraphView: View {
                     x: .value("Date", weightEntry.date),
                     y: .value("Weight", weightEntry.weight)
                 )
+                if let selectedEntry {
+                    RuleMark(
+                        x: .value("Date", selectedEntry.date)
+                    )
+                    .lineStyle(.init(lineWidth: 2, miterLimit: 2, dash: [2], dashPhase: 5))
+                    .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Weight")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("\(formattedWeight(selectedEntry.weight)) lbs")
+                                .font(.title3)
+                                .bold()
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color(uiColor: UIColor.secondarySystemBackground).shadow(.drop(radius: 2)))
+                        }
+                    }
+                }
             }
             .chartYScale(domain: yAxisRange())
             .chartXScale(domain: xAxisRange())
@@ -218,6 +241,41 @@ struct WeightGraphView: View {
                     }
                 }
             }
+            .chartOverlay(content: { proxy in
+                GeometryReader { innerProxy in
+                    Rectangle()
+                        .fill(.clear).contentShape(Rectangle())
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    let location = value.location
+                                    if let date: Date = proxy.value(atX: location.x) {
+                                        let calendar = Calendar.current
+                                        let timeComponent: Calendar.Component
+                                        let entries = graphableEntries()
+                                        
+                                        switch selectedWeightRange {
+                                        case .day:
+                                            timeComponent = .hour
+                                        case .week, .month:
+                                            timeComponent = .day
+                                        case .sixMonths:
+                                            timeComponent = .weekOfYear
+                                        }
+                                        
+                                        let time = calendar.component(timeComponent, from: date)
+                                        if let currentEntry = entries.first(where: { item in
+                                            calendar.component(timeComponent, from: item.date) == time
+                                        }) {
+                                            selectedEntry = currentEntry
+                                        }
+                                    }
+                                }.onEnded { value in
+                                    selectedEntry = nil
+                                }
+                        )
+                }
+            })
         }
     }
 }
