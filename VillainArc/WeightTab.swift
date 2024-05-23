@@ -5,22 +5,25 @@ struct WeightTab: View {
     
     var body: some View {
         NavigationView {
-            List {
-                Section {
-                    WeightGraphView()
-                        .frame(height: 400)
-                        .padding(.horizontal, -15)
-                }
-                .listRowBackground(Color.clear)
+            ScrollView {
+                WeightGraphView()
+                    .frame(height: 400)
+                    .padding()
                 
-                Section {
-                    NavigationLink(destination: AllWeightEntriesView()) {
-                        HStack {
-                            Text("All Weight Entries")
-                                .foregroundStyle(Color.primary)
-                        }
-                        
+                NavigationLink(destination: AllWeightEntriesView()) {
+                    HStack {
+                        Text("All Weight Entries")
+                        Spacer()
+                        Image(systemName: "chevron.right")
                     }
+                    .foregroundStyle(Color.primary)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .fill(Color(uiColor: UIColor.secondarySystemBackground).shadow(.drop(radius: 2)))
+                    }
+                    .padding()
                 }
             }
             .navigationTitle("Weight")

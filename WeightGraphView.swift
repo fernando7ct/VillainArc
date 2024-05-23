@@ -184,6 +184,7 @@ struct WeightGraphView: View {
                     x: .value("Date", weightEntry.date),
                     y: .value("Weight", weightEntry.weight)
                 )
+                .interpolationMethod(.monotone)
                 PointMark(
                     x: .value("Date", weightEntry.date),
                     y: .value("Weight", weightEntry.weight)
@@ -192,7 +193,6 @@ struct WeightGraphView: View {
                     RuleMark(
                         x: .value("Date", selectedEntry.date)
                     )
-                    .lineStyle(.init(lineWidth: 2, miterLimit: 2, dash: [2], dashPhase: 5))
                     .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                         VStack(alignment: .leading, spacing: 5) {
                             Text("Weight")
