@@ -5,6 +5,7 @@ struct AddWeightEntryView: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isWeightFieldFocused: Bool
     @State private var weight = ""
+    @State private var notes = ""
     @State private var date = Date()
     @State private var time = Date()
     @State private var showingDatePicker = false
@@ -33,61 +34,72 @@ struct AddWeightEntryView: View {
             print("Failed to combine date and time components")
             return
         }
-        DataManager.shared.saveWeightEntry(weight: Double(weight)!, date: combinedDate, context: context)
+        DataManager.shared.saveWeightEntry(weight: Double(weight)!, notes: notes, date: combinedDate, context: context)
         dismiss()
+    }
+    private func gestureTap() {
+        if showingTimePicker {
+            showingTimePicker.toggle()
+        }
+        if showingDatePicker {
+            showingDatePicker.toggle()
+        }
     }
     
     var body: some View {
         NavigationView {
             VStack {
-                Form {
-                    HStack {
-                        Text(dateFormatter.string(from: date))
-                            .foregroundColor(showingDatePicker ? .blue : .primary)
-                            .onTapGesture {
-                                showingDatePicker.toggle()
-                                if showingTimePicker {
-                                    showingTimePicker.toggle()
-                                }
-                            }
-                        Spacer()
-                        Text("Date")
-                            .foregroundColor(.gray)
-                            .fontWeight(.semibold)
-                    }
-                    HStack {
-                        Text(timeFormatter.string(from: time))
-                            .foregroundColor(showingTimePicker ? .blue : .primary)
-                            .onTapGesture {
-                                showingTimePicker.toggle()
-                                if showingDatePicker {
+                List {
+                    Section {
+                        HStack {
+                            Text(dateFormatter.string(from: date))
+                                .foregroundColor(showingDatePicker ? .blue : .primary)
+                                .onTapGesture {
                                     showingDatePicker.toggle()
+                                    if showingTimePicker {
+                                        showingTimePicker.toggle()
+                                    }
                                 }
-                            }
-                        Spacer()
-                        Text("Time")
-                            .foregroundColor(.gray)
-                            .fontWeight(.semibold)
-                    }
-                    .listRowSeparator(.hidden)
-                    HStack {
-                        TextField("Enter Your Weight", text: $weight)
-                            .keyboardType(.decimalPad)
-                            .focused($isWeightFieldFocused)
-                            .onTapGesture {
-                                if showingTimePicker {
+                            Spacer()
+                            Text("Date")
+                                .foregroundColor(.gray)
+                                .fontWeight(.semibold)
+                        }
+                        HStack {
+                            Text(timeFormatter.string(from: time))
+                                .foregroundColor(showingTimePicker ? .blue : .primary)
+                                .onTapGesture {
                                     showingTimePicker.toggle()
+                                    if showingDatePicker {
+                                        showingDatePicker.toggle()
+                                    }
                                 }
-                                if showingDatePicker {
-                                    showingDatePicker.toggle()
+                            Spacer()
+                            Text("Time")
+                                .foregroundColor(.gray)
+                                .fontWeight(.semibold)
+                        }
+                        .listRowSeparator(.hidden)
+                        HStack {
+                            TextField("Enter Your Weight", text: $weight)
+                                .keyboardType(.decimalPad)
+                                .focused($isWeightFieldFocused)
+                                .onTapGesture {
+                                    gestureTap()
                                 }
-                            }
-                        Spacer()
-                        Text("Weight")
-                            .foregroundColor(.gray)
-                            .fontWeight(.semibold)
+                            Spacer()
+                            Text("Weight")
+                                .foregroundColor(.gray)
+                                .fontWeight(.semibold)
+                        }
+                        .listRowSeparator(.hidden)
                     }
-                    .listRowSeparator(.hidden)
+                    Section("Notes") {
+                        TextEditor(text: $notes)
+                            .onTapGesture {
+                                gestureTap()
+                            }
+                    }
                 }
                 if showingDatePicker {
                     Spacer()

@@ -9,16 +9,17 @@ class DataManager {
     
     private init() {}
     
-    func saveWeightEntry(weight: Double, date: Date, context: ModelContext) {
+    func saveWeightEntry(weight: Double, notes: String, date: Date, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
         }
-        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weight, date: date)
+        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weight, notes: notes, date: date)
         context.insert(newWeightEntry)
         let weightEntryData: [String: Any] = [
             "id": newWeightEntry.id,
             "weight": weight,
+            "notes" : notes,
             "date": date
         ]
         db.collection("users").document(userID).collection("WeightEntries").document(newWeightEntry.id).setData(weightEntryData) { error in
@@ -94,8 +95,8 @@ class DataManager {
         db.collection("users").document(userID).collection("WeightEntries").getDocuments { snapshot, error in
             if let snapshot = snapshot {
                 for document in snapshot.documents {
-                    if let id = document.data()["id"] as? String, let weight = document.data()["weight"] as? Double, let date = (document.data()["date"] as? Timestamp)?.dateValue() {
-                        let newWeightEntry = WeightEntry(id: id, weight: weight, date: date)
+                    if let id = document.data()["id"] as? String, let weight = document.data()["weight"] as? Double, let notes = document.data()["notes"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue() {
+                        let newWeightEntry = WeightEntry(id: id, weight: weight, notes: notes, date: date)
                         context.insert(newWeightEntry)
                     }
                 }
