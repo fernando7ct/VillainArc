@@ -55,22 +55,22 @@ struct AllWeightEntriesView: View {
         .navigationBarBackButtonHidden(isEditing && !weightEntries.isEmpty)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                if isEditing && !weightEntries.isEmpty{
+                if isEditing && !weightEntries.isEmpty {
                     Button(action: {
                         showDeleteAllAlert = true
-                    }) {
+                    }, label: {
                         Text("Delete All")
                             .foregroundColor(.red)
-                    }
+                    })
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 if !weightEntries.isEmpty {
                     Button(action: {
                         isEditing.toggle()
-                    }) {
+                    }, label: {
                         Text(isEditing ? "Done" : "Edit")
-                    }
+                    })
                 }
             }
         }

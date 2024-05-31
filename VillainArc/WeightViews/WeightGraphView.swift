@@ -8,7 +8,6 @@ struct WeightGraphView: View {
     @State private var selectedEntry: (date: Date, weight: Double)? = nil
     
     enum weightGraphRange {
-        case day
         case week
         case month
         case sixMonths
@@ -28,10 +27,6 @@ struct WeightGraphView: View {
         let today = calendar.startOfDay(for: Date())
         let (startDate, endDate): (Date, Date) = {
             switch selectedWeightRange {
-            case .day:
-                let start = calendar.startOfDay(for: today)
-                let end = calendar.date(byAdding: .day, value: 1, to: start)!
-                return (start, end)
             case .week:
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
@@ -54,10 +49,6 @@ struct WeightGraphView: View {
         let today = calendar.startOfDay(for: Date())
         let (startDate, endDate): (Date, Date) = {
             switch selectedWeightRange {
-            case .day:
-                let start = calendar.startOfDay(for: today)
-                let end = calendar.date(byAdding: .day, value: 1, to: start)!
-                return (start, end)
             case .week:
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
@@ -87,13 +78,6 @@ struct WeightGraphView: View {
                 let totalWeight = entries.reduce(0) { $0 + $1.weight }
                 let averageWeight = totalWeight / Double(entries.count)
                 averages.append((date: startOfWeek, weight: averageWeight))
-            }
-        } else if selectedWeightRange == .day {
-            let groupedByMinute = Dictionary(grouping: entries, by: { calendar.dateInterval(of: .minute, for: $0.date)!.start })
-            for (startOfMinute, entries) in groupedByMinute {
-                let totalWeight = entries.reduce(0) { $0 + $1.weight }
-                let averageWeight = totalWeight / Double(entries.count)
-                averages.append((date: startOfMinute, weight: averageWeight))
             }
         } else {
             let groupedByDay = Dictionary(grouping: entries, by: { calendar.startOfDay(for: $0.date) })
@@ -130,8 +114,6 @@ struct WeightGraphView: View {
         }
         
         switch selectedWeightRange {
-        case .day:
-            timeRange = "Today"
         case .week:
             let start = calendar.date(byAdding: .day, value: -6, to: today)!
             timeRange = "\(start.formatted(.dateTime.month().day())) - \(today.formatted(.dateTime.month().day()))"
@@ -149,13 +131,12 @@ struct WeightGraphView: View {
     var body: some View {
         VStack {
             Picker("Time Range", selection: $selectedWeightRange) {
-                Text("Day").tag(weightGraphRange.day)
                 Text("Week").tag(weightGraphRange.week)
                 Text("Month").tag(weightGraphRange.month)
                 Text("6 Months").tag(weightGraphRange.sixMonths)
             }
             .pickerStyle(SegmentedPickerStyle())
-            .padding(.bottom)
+    
             HStack {
                 VStack(alignment: .leading) {
                     let (averageText, weight, range) = weightData()
@@ -176,6 +157,7 @@ struct WeightGraphView: View {
                         .foregroundStyle(.secondary)
                         .font(.headline)
                 }
+                
                 Spacer()
             }
             .fontWeight(.medium)
@@ -185,10 +167,14 @@ struct WeightGraphView: View {
                     y: .value("Weight", weightEntry.weight)
                 )
                 .interpolationMethod(.monotone)
-                PointMark(
+                .lineStyle(StrokeStyle(lineWidth: 1.5))
+                AreaMark(
                     x: .value("Date", weightEntry.date),
-                    y: .value("Weight", weightEntry.weight)
+                    yStart: .value("Weight", yAxisRange().lowerBound),
+                    yEnd: .value("Weight", weightEntry.weight)
                 )
+                .foregroundStyle(Color.blue.gradient.opacity(0.5))
+                .interpolationMethod(.monotone)
                 if let selectedEntry {
                     RuleMark(
                         x: .value("Date", selectedEntry.date)
@@ -214,18 +200,7 @@ struct WeightGraphView: View {
             .chartYScale(domain: yAxisRange())
             .chartXScale(domain: xAxisRange())
             .chartXAxis {
-                if selectedWeightRange == .day {
-                    AxisMarks(values: [
-                        Calendar.current.startOfDay(for: Date()),
-                        Calendar.current.date(bySettingHour: 6, minute: 0, second: 0, of: Date())!,
-                        Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!,
-                        Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date())!
-                    ]) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.hour().minute())
-                    }
-                } else if selectedWeightRange == .week {
+                if selectedWeightRange == .week {
                     AxisMarks(values: .automatic(desiredCount: 7)) { value in
                         AxisGridLine()
                         AxisTick()
@@ -255,8 +230,6 @@ struct WeightGraphView: View {
                                         let entries = graphableEntries()
                                         
                                         switch selectedWeightRange {
-                                        case .day:
-                                            timeComponent = .hour
                                         case .week, .month:
                                             timeComponent = .day
                                         case .sixMonths:

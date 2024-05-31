@@ -6,6 +6,10 @@ struct ContentView: View {
     var body: some View {
         if isSignedIn {
             TabView {
+                HomeTab()
+                    .tabItem {
+                        Label("Home", systemImage: "house")
+                    }
                 WeightTab()
                     .tabItem {
                         Label("Weight", systemImage: "scalemass.fill")

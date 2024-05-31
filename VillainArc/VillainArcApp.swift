@@ -1,10 +1,3 @@
-//
-//  VillainArcApp.swift
-//  VillainArc
-//
-//  Created by Fernando Caudillo Tafoya on 5/15/24.
-//
-
 import SwiftUI
 import SwiftData
 import Firebase
@@ -19,6 +12,6 @@ struct VillainArcApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [WeightEntry.self, User.self])
+        .modelContainer(for: [WeightEntry.self, User.self, Workout.self, WorkoutExercise.self, ExerciseSet.self])
     }
 }

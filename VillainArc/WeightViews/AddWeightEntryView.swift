@@ -10,6 +10,7 @@ struct AddWeightEntryView: View {
     @State private var time = Date()
     @State private var showingDatePicker = false
     @State private var showingTimePicker = false
+    @FocusState private var notesFocused: Bool
 
     private var dateFormatter: DateFormatter {
         let f = DateFormatter()
@@ -94,11 +95,23 @@ struct AddWeightEntryView: View {
                         }
                         .listRowSeparator(.hidden)
                     }
-                    Section("Notes") {
-                        TextEditor(text: $notes)
-                            .onTapGesture {
-                                gestureTap()
+                    Section {
+                        ZStack(alignment: .leading) {
+                            TextEditor(text: $notes)
+                                .onTapGesture {
+                                    gestureTap()
+                                }
+                                .focused($notesFocused)
+                            if !notesFocused && notes.isEmpty {
+                                Text("Notes...")
+                                    .foregroundStyle(.secondary)
+                                    .font(.subheadline)
+                                    .onTapGesture {
+                                        notesFocused = true
+                                        gestureTap()
+                                    }
                             }
+                        }
                     }
                 }
                 if showingDatePicker {
@@ -126,13 +139,13 @@ struct AddWeightEntryView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+                    Button(action: {
                         addWeightEntry()
-                    } label: {
+                    }, label: {
                         Text("Done")
                             .fontWeight(.semibold)
                             .foregroundStyle(.green)
-                    }
+                    })
                     .disabled(Double(weight) == 0 || weight.isEmpty || weight == ".")
                     .opacity(Double(weight) == 0 || weight.isEmpty || weight == "." ? 0.5 : 1)
                 }

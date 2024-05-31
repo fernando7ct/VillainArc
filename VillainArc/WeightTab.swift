@@ -16,13 +16,7 @@ struct WeightTab: View {
                         Spacer()
                         Image(systemName: "chevron.right")
                     }
-                    .foregroundStyle(Color.primary)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color(uiColor: UIColor.secondarySystemBackground).shadow(.drop(radius: 2)))
-                    }
+                    .customStyle()
                     .padding()
                 }
             }
