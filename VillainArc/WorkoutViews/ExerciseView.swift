@@ -91,6 +91,7 @@ struct ExerciseView: View {
                                         .foregroundStyle(exercise.sets[setIndex].completed ? .green : .white, Color(uiColor: UIColor.secondarySystemBackground))
                                         .font(.system(size: 40))
                                 })
+                                .buttonStyle(BorderlessButtonStyle())
                             }
                             .font(.title2)
                         }

@@ -1,15 +1,29 @@
 import SwiftUI
 
 struct WorkoutView: View {
+    @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @FocusState private var notesFocused: Bool
     @State private var exercises: [TempExercise] = []
-    @State private var title = "Blank Workout"
+    @State private var title = "New Workout"
     @State private var startTime = Date()
+    @State private var endTime = Date()
     @State private var notes = ""
     @State private var showExerciseSelection = false
     @State private var isEditing = false
+    @State private var isTemplate = false
+    @State private var showSaveSheet = false
+    var existingWorkout: Workout?
     
+    init(exisistingWorkout: Workout? = nil) {
+        self.existingWorkout = exisistingWorkout
+        if let workout = exisistingWorkout {
+            self._title = State(initialValue: workout.title)
+            self._notes = State(initialValue: workout.notes)
+            self._isTemplate = State(initialValue: workout.template)
+            self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+        }
+    }
     private func deleteExercise(at offsets: IndexSet) {
         withAnimation {
             exercises.remove(atOffsets: offsets)
@@ -20,13 +34,15 @@ struct WorkoutView: View {
             exercises.move(fromOffsets: source, toOffset: destination)
         }
     }
-    
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
             exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: []))
         }
     }
-    
+    private func saveWorkout(title: String) {
+        DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
+            dismiss()
+    }
     var body: some View {
         NavigationView {
             ZStack {
@@ -55,7 +71,7 @@ struct WorkoutView: View {
                                         Label("Edit Exercises", systemImage: "list.bullet")
                                     })
                                     Button(action: {
-                                        
+                                        showSaveSheet = true
                                     }, label: {
                                         Label("Save Workout", systemImage: "checkmark")
                                     })
@@ -83,7 +99,12 @@ struct WorkoutView: View {
                         }
                     }
                     .padding(.horizontal)
-                    
+                    .sheet(isPresented: $showSaveSheet) {
+                        SaveWorkoutSheet(title: title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: $isTemplate, onSave: { editableTitle in
+                            saveWorkout(title: editableTitle)
+                        })
+                        .interactiveDismissDisabled()
+                    }
                     List {
                         if !isEditing {
                             Section {
@@ -109,6 +130,7 @@ struct WorkoutView: View {
                                         Text(exercises[index].name)
                                             .font(.title2)
                                             .fontWeight(.semibold)
+                                            .foregroundStyle(Color.primary)
                                         Text(exercises[index].category)
                                             .font(.subheadline)
                                             .foregroundStyle(Color.secondary)
@@ -116,8 +138,6 @@ struct WorkoutView: View {
                                             .font(.subheadline)
                                             .foregroundStyle(Color.secondary)
                                     }
-                                    .foregroundStyle(Color.primary)
-                                    .buttonStyle(BorderlessButtonStyle())
                                 }
                             }
                             .onDelete(perform: deleteExercise)
@@ -169,7 +189,6 @@ struct WorkoutView: View {
         }
     }
 }
-
 struct TempExercise: Identifiable {
     var id = UUID()
     var name: String
@@ -183,8 +202,14 @@ struct TempExercise: Identifiable {
         self.notes = notes
         self.sets = sets
     }
+    
+    init(from exercise: WorkoutExercise) {
+        self.name = exercise.name
+        self.category = exercise.category
+        self.notes = exercise.notes
+        self.sets = exercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
+    }
 }
-
 struct TempSet: Identifiable {
     var id = UUID()
     var reps: Int
@@ -196,8 +221,13 @@ struct TempSet: Identifiable {
         self.weight = weight
         self.completed = completed
     }
+    
+    init(from set: ExerciseSet) {
+        self.reps = set.reps
+        self.weight = set.weight
+        self.completed = false
+    }
 }
-
 #Preview {
     WorkoutView()
 }

@@ -31,6 +31,9 @@
 		FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB0B5D62BFC25190099D91D /* AllWeightEntriesView.swift */; };
 		FDB39EA52C093041008929DF /* ExerciseSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */; };
 		FDB39EA72C0933B0008929DF /* exercises.json in Resources */ = {isa = PBXBuildFile; fileRef = FDB39EA62C0933B0008929DF /* exercises.json */; };
+		FDB39EAA2C0A4496008929DF /* WorkoutDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB39EA92C0A4496008929DF /* WorkoutDetailView.swift */; };
+		FDB39EAC2C0A7D04008929DF /* SaveWorkoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB39EAB2C0A7D04008929DF /* SaveWorkoutSheet.swift */; };
+		FDB39EAE2C0A95D8008929DF /* TemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB39EAD2C0A95D8008929DF /* TemplateView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +61,9 @@
 		FDB0B5D62BFC25190099D91D /* AllWeightEntriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWeightEntriesView.swift; sourceTree = "<group>"; };
 		FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSelectionView.swift; sourceTree = "<group>"; };
 		FDB39EA62C0933B0008929DF /* exercises.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = exercises.json; sourceTree = "<group>"; };
+		FDB39EA92C0A4496008929DF /* WorkoutDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDetailView.swift; sourceTree = "<group>"; };
+		FDB39EAB2C0A7D04008929DF /* SaveWorkoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveWorkoutSheet.swift; sourceTree = "<group>"; };
+		FDB39EAD2C0A95D8008929DF /* TemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,10 +113,7 @@
 				FD2E77962BF57CF800245E06 /* ContentView.swift */,
 				FD2E77AD2BF6D03C00245E06 /* LogInView.swift */,
 				FD2201C02BFF033E00487151 /* HomeTab.swift */,
-				FD2201C92BFF1AB600487151 /* WorkoutView.swift */,
-				FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */,
-				FDB39EA62C0933B0008929DF /* exercises.json */,
-				FD2201CB2BFF304C00487151 /* ExerciseView.swift */,
+				FDB39EA82C0A4378008929DF /* WorkoutViews */,
 				FD2E77A52BF57ED700245E06 /* WeightTab.swift */,
 				FD2201C22BFF03F600487151 /* WeightViews */,
 				FD2E77A92BF587E800245E06 /* Other.swift */,
@@ -133,6 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */,
+				FDB39EA62C0933B0008929DF /* exercises.json */,
 				FD2E77A32BF57D6600245E06 /* WeightEntry.swift */,
 				FD2E77B72BF6D37200245E06 /* User.swift */,
 				FD2E77AB2BF6AA5500245E06 /* DataManager.swift */,
@@ -141,6 +145,19 @@
 				FD2201C72BFF084700487151 /* ExerciseSet.swift */,
 			);
 			path = Data;
+			sourceTree = "<group>";
+		};
+		FDB39EA82C0A4378008929DF /* WorkoutViews */ = {
+			isa = PBXGroup;
+			children = (
+				FDB39EA92C0A4496008929DF /* WorkoutDetailView.swift */,
+				FD2201C92BFF1AB600487151 /* WorkoutView.swift */,
+				FDB39EAB2C0A7D04008929DF /* SaveWorkoutSheet.swift */,
+				FDB39EAD2C0A95D8008929DF /* TemplateView.swift */,
+				FD2201CB2BFF304C00487151 /* ExerciseView.swift */,
+				FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */,
+			);
+			path = WorkoutViews;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -222,6 +239,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDB39EAC2C0A7D04008929DF /* SaveWorkoutSheet.swift in Sources */,
+				FDB39EAA2C0A4496008929DF /* WorkoutDetailView.swift in Sources */,
 				FD2201C12BFF033E00487151 /* HomeTab.swift in Sources */,
 				FD2E77AA2BF587E800245E06 /* Other.swift in Sources */,
 				FD2201CA2BFF1AB600487151 /* WorkoutView.swift in Sources */,
@@ -237,6 +256,7 @@
 				FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */,
 				FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */,
 				FD2E77B82BF6D37200245E06 /* User.swift in Sources */,
+				FDB39EAE2C0A95D8008929DF /* TemplateView.swift in Sources */,
 				FD2E77A42BF57D6600245E06 /* WeightEntry.swift in Sources */,
 				FD2E77AE2BF6D03C00245E06 /* LogInView.swift in Sources */,
 				FD2E77952BF57CF800245E06 /* VillainArcApp.swift in Sources */,
