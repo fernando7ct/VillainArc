@@ -1,8 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct WorkoutDetailView: View {
     @State var workout: Workout
     @State private var workoutStarted: Bool = false
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
     
     private func totalWorkoutTime(startTime: Date, endTime: Date) -> String {
         let timeInterval = endTime.timeIntervalSince(startTime)
@@ -10,6 +13,12 @@ struct WorkoutDetailView: View {
         let minutes = (Int(timeInterval) % 3600) / 60
         let seconds = Int(timeInterval) % 60
         return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+    private func deleteWorkout() {
+        withAnimation {
+            DataManager.shared.deleteWorkout(workout: workout, context: context)
+            dismiss()
+        }
     }
     
     var body: some View {
@@ -35,7 +44,12 @@ struct WorkoutDetailView: View {
                         Button(action: {
                             workoutStarted.toggle()
                         }, label: {
-                            Label(workout.template ? "Use Template" : "Use as Template", systemImage: "doc.text")
+                            Label("Use \(workout.template ? "" : "as ")Template", systemImage: "doc.text")
+                        })
+                        Button(action: {
+                            deleteWorkout()
+                        }, label: {
+                            Label("Delete \(workout.template ? "Template" : "Workout")", systemImage: "trash")
                         })
                     } label: {
                         Image(systemName: "chevron.down.circle")

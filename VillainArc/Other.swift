@@ -15,17 +15,17 @@ func formattedWeight(_ weight: Double) -> String {
 struct CustomStyleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .foregroundColor(Color.primary)
-            .padding()
             .frame(maxWidth: .infinity)
-            .background {
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(Color(uiColor: UIColor.secondarySystemBackground).shadow(.drop(radius: 2)))
-            }
-            
+            .padding()
+            .background(BlurView())
+            .cornerRadius(12)
+            .padding(.horizontal)
+            .padding(.vertical, 3)
     }
 }
-
+func concatenatedExerciseNames(for workout: Workout) -> String {
+    return workout.exercises.sorted(by: { $0.order < $1.order }).map { $0.name }.joined(separator: ", ")
+}
 extension View {
     func customStyle() -> some View {
         self.modifier(CustomStyleModifier())

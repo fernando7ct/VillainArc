@@ -3,6 +3,7 @@ import SwiftUI
 struct SaveWorkoutSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @FocusState private var keyboardActive: Bool
     @Binding var exercises: [TempExercise]
     @Binding var startTime: Date
     @Binding var endTime: Date
@@ -36,6 +37,7 @@ struct SaveWorkoutSheet: View {
                 Form {
                     Section(content: {
                         TextField("Workout Title", text: $editableTitle)
+                            .focused($keyboardActive)
                     }, header: {
                         Text("Title")
                     })
@@ -51,6 +53,7 @@ struct SaveWorkoutSheet: View {
                     }
                     Section(content: {
                         TextEditor(text: $notes)
+                            .focused($keyboardActive)
                     }, header: {
                         Text("Notes")
                     })
@@ -76,35 +79,53 @@ struct SaveWorkoutSheet: View {
                     .listRowBackground(BlurView())
                 }
                 .scrollContentBackground(.hidden)
-                .navigationTitle(originalIsTemplate ? "Save Template" : "Save Workout")
-                .navigationBarTitleDisplayMode(.inline)
-                .onAppear {
-                    endTime = Date()
+                VStack(alignment: .trailing) {
+                    Spacer()
+                    HStack(alignment: .bottom) {
+                        Spacer()
+                        if keyboardActive {
+                            Button(action: {
+                                hideKeyboard()
+                                keyboardActive = false
+                            }, label: {
+                                Image(systemName: "keyboard.chevron.compact.down")
+                                    .foregroundStyle(Color.primary)
+                                    .font(.title)
+                            })
+                            .buttonStyle(BorderedButtonStyle())
+                        }
+                    }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button(action: {
-                            startTime = originalStartTime
-                            endTime = originalEndTime
-                            notes = originalNotes
-                            isTemplate = originalIsTemplate
-                            dismiss()
-                        }, label: {
-                            Text("Cancel")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.red)
-                        })
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: {
-                            onSave(editableTitle)
-                            dismiss()
-                        }, label: {
-                            Text("Save")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.green)
-                        })
-                    }
+                .padding()
+            }
+            .navigationTitle(originalIsTemplate ? "Save Template" : "Save Workout")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                endTime = Date()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: {
+                        startTime = originalStartTime
+                        endTime = originalEndTime
+                        notes = originalNotes
+                        isTemplate = originalIsTemplate
+                        dismiss()
+                    }, label: {
+                        Text("Cancel")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.red)
+                    })
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        onSave(editableTitle)
+                        dismiss()
+                    }, label: {
+                        Text("Save")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.green)
+                    })
                 }
             }
         }
