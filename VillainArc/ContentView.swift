@@ -15,10 +15,20 @@ struct ContentView: View {
                         Label("Weight", systemImage: "scalemass.fill")
                     }
             }
+            .tint(Color.primary)
         } else {
             LogInView()
         }
     }
+}
+struct BlurView: UIViewRepresentable, View {
+    
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }
 
 #Preview {

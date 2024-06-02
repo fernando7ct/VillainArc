@@ -49,82 +49,88 @@ struct AddWeightEntryView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                List {
-                    Section {
-                        HStack {
-                            Text(dateFormatter.string(from: date))
-                                .foregroundColor(showingDatePicker ? .blue : .primary)
-                                .onTapGesture {
-                                    showingDatePicker.toggle()
-                                    if showingTimePicker {
-                                        showingTimePicker.toggle()
-                                    }
-                                }
-                            Spacer()
-                            Text("Date")
-                                .foregroundColor(.gray)
-                                .fontWeight(.semibold)
-                        }
-                        HStack {
-                            Text(timeFormatter.string(from: time))
-                                .foregroundColor(showingTimePicker ? .blue : .primary)
-                                .onTapGesture {
-                                    showingTimePicker.toggle()
-                                    if showingDatePicker {
-                                        showingDatePicker.toggle()
-                                    }
-                                }
-                            Spacer()
-                            Text("Time")
-                                .foregroundColor(.gray)
-                                .fontWeight(.semibold)
-                        }
-                        .listRowSeparator(.hidden)
-                        HStack {
-                            TextField("Enter Your Weight", text: $weight)
-                                .keyboardType(.decimalPad)
-                                .focused($isWeightFieldFocused)
-                                .onTapGesture {
-                                    gestureTap()
-                                }
-                            Spacer()
-                            Text("Weight")
-                                .foregroundColor(.gray)
-                                .fontWeight(.semibold)
-                        }
-                        .listRowSeparator(.hidden)
-                    }
-                    Section {
-                        ZStack(alignment: .leading) {
-                            TextEditor(text: $notes)
-                                .onTapGesture {
-                                    gestureTap()
-                                }
-                                .focused($notesFocused)
-                            if !notesFocused && notes.isEmpty {
-                                Text("Notes...")
-                                    .foregroundStyle(.secondary)
-                                    .font(.subheadline)
+            ZStack {
+                BackgroundView()
+                VStack {
+                    Form {
+                        Section {
+                            HStack {
+                                Text(dateFormatter.string(from: date))
+                                    .foregroundColor(showingDatePicker ? .blue : .primary)
                                     .onTapGesture {
-                                        notesFocused = true
+                                        showingDatePicker.toggle()
+                                        if showingTimePicker {
+                                            showingTimePicker.toggle()
+                                        }
+                                    }
+                                Spacer()
+                                Text("Date")
+                                    .foregroundColor(.gray)
+                                    .fontWeight(.semibold)
+                            }
+                            HStack {
+                                Text(timeFormatter.string(from: time))
+                                    .foregroundColor(showingTimePicker ? .blue : .primary)
+                                    .onTapGesture {
+                                        showingTimePicker.toggle()
+                                        if showingDatePicker {
+                                            showingDatePicker.toggle()
+                                        }
+                                    }
+                                Spacer()
+                                Text("Time")
+                                    .foregroundColor(.gray)
+                                    .fontWeight(.semibold)
+                            }
+                            HStack {
+                                TextField("Enter Your Weight", text: $weight)
+                                    .keyboardType(.decimalPad)
+                                    .focused($isWeightFieldFocused)
+                                    .onTapGesture {
                                         gestureTap()
                                     }
+                                Spacer()
+                                Text("Weight")
+                                    .foregroundColor(.gray)
+                                    .fontWeight(.semibold)
                             }
                         }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(BlurView())
+                        Section {
+                            ZStack(alignment: .leading) {
+                                TextEditor(text: $notes)
+                                    .onTapGesture {
+                                        gestureTap()
+                                    }
+                                    .textEditorStyle(.plain)
+                                    .focused($notesFocused)
+                                if !notesFocused && notes.isEmpty {
+                                    Text("Notes...")
+                                        .foregroundStyle(.secondary)
+                                        .font(.subheadline)
+                                        .onTapGesture {
+                                            notesFocused = true
+                                            gestureTap()
+                                        }
+                                }
+                            }
+                        }
+                        .listRowBackground(BlurView())
                     }
-                }
-                if showingDatePicker {
-                    Spacer()
-                    DatePicker("", selection: $date, in: ...Date(), displayedComponents: .date)
-                        .datePickerStyle(.wheel)
-                        .labelsHidden()
-                }
-                if showingTimePicker {
-                    Spacer()
-                    DatePicker("", selection: $time, displayedComponents: .hourAndMinute)
-                        .datePickerStyle(.wheel)
-                        .labelsHidden()
+                    .scrollContentBackground(.hidden)
+                    if showingDatePicker {
+                        Spacer()
+                        DatePicker("", selection: $date, in: ...Date(), displayedComponents: .date)
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                    }
+                    if showingTimePicker {
+                        Spacer()
+                        DatePicker("", selection: $time, displayedComponents: .hourAndMinute)
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                    }
                 }
             }
             .navigationTitle("Add Weight Entry")

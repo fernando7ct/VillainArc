@@ -31,77 +31,80 @@ struct SaveWorkoutSheet: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(content: {
-                    TextField("Workout Title", text: $editableTitle)
-                }, header: {
-                    Text("Title")
-                })
-                if !originalIsTemplate {
+            ZStack {
+                BackgroundView()
+                Form {
                     Section(content: {
-                        Toggle("Save as Template?", isOn: $isTemplate)
+                        TextField("Workout Title", text: $editableTitle)
                     }, header: {
-                        Text("Template")
+                        Text("Title")
                     })
-                    Section(content: {
-                        DatePicker("Start Time", selection: $startTime, in: Date.distantPast...endTime, displayedComponents: [.date, .hourAndMinute])
-                        DatePicker("End Time", selection: $endTime, in: startTime...Date() , displayedComponents: [.date, .hourAndMinute])
-                    }, header: {
-                        Text("Time")
-                    })
-                }
-                Section(content: {
-                    TextEditor(text: $notes)
-                }, header: {
-                    Text("Notes")
-                })
-                Section(content: {
-                    ForEach(exercises) { exercise in
-                        VStack(alignment: .leading) {
-                            Text(exercise.name)
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                            Text(exercise.category)
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
-                            Text("\(exercise.sets.count) \(exercise.sets.count == 1 ? "set" : "sets")")
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
-                        }
-                        .foregroundStyle(Color.primary)
+                    .listRowBackground(BlurView())
+                    if !originalIsTemplate {
+                        Section(content: {
+                            DatePicker("Start Time", selection: $startTime, in: Date.distantPast...endTime, displayedComponents: [.date, .hourAndMinute])
+                            DatePicker("End Time", selection: $endTime, in: startTime...Date() , displayedComponents: [.date, .hourAndMinute])
+                        }, header: {
+                            Text("Time")
+                        })
+                        .listRowBackground(BlurView())
                     }
-                }, header: {
-                    Text("Exercises")
-                })
-            }
-            .navigationTitle(originalIsTemplate ? "Save Template" : "Save Workout")
-            .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                endTime = Date()
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {
-                        startTime = originalStartTime
-                        endTime = originalEndTime
-                        notes = originalNotes
-                        isTemplate = originalIsTemplate
-                        dismiss()
-                    }, label: {
-                        Text("Cancel")
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.red)
+                    Section(content: {
+                        TextEditor(text: $notes)
+                    }, header: {
+                        Text("Notes")
                     })
+                    .listRowBackground(BlurView())
+                    Section(content: {
+                        ForEach(exercises) { exercise in
+                            VStack(alignment: .leading) {
+                                Text(exercise.name)
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                Text(exercise.category)
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.secondary)
+                                Text("\(exercise.sets.count) \(exercise.sets.count == 1 ? "set" : "sets")")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.secondary)
+                            }
+                            .foregroundStyle(Color.primary)
+                        }
+                    }, header: {
+                        Text("Exercises")
+                    })
+                    .listRowBackground(BlurView())
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        onSave(editableTitle)
-                        dismiss()
-                    }, label: {
-                        Text("Save")
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.green)
-                    })
+                .scrollContentBackground(.hidden)
+                .navigationTitle(originalIsTemplate ? "Save Template" : "Save Workout")
+                .navigationBarTitleDisplayMode(.inline)
+                .onAppear {
+                    endTime = Date()
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(action: {
+                            startTime = originalStartTime
+                            endTime = originalEndTime
+                            notes = originalNotes
+                            isTemplate = originalIsTemplate
+                            dismiss()
+                        }, label: {
+                            Text("Cancel")
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.red)
+                        })
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: {
+                            onSave(editableTitle)
+                            dismiss()
+                        }, label: {
+                            Text("Save")
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.green)
+                        })
+                    }
                 }
             }
         }

@@ -60,56 +60,59 @@ struct ExerciseSelectionView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                List(filteredExercises) { exercise in
-                    Button(action: {
-                        if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
-                            selectedExercises.remove(at: index)
-                        } else {
-                            selectedExercises.append(exercise)
-                        }
-                    }) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(exercise.name)
-                                    .foregroundStyle(Color.primary)
-                                    .font(.title3)
-                                Text(exercise.category)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.secondary)
+            ZStack {
+                BackgroundView()
+                VStack {
+                    List(filteredExercises) { exercise in
+                        Button(action: {
+                            if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
+                                selectedExercises.remove(at: index)
+                            } else {
+                                selectedExercises.append(exercise)
                             }
-                            Spacer()
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(exercise.name)
+                                        .foregroundStyle(Color.primary)
+                                        .font(.title3)
+                                    Text(exercise.category)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.secondary)
+                                }
+                                Spacer()
+                            }
+                        }
+                        .buttonStyle(BorderlessButtonStyle())
+                        .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
+                    }
+                    .listStyle(.plain)
+                    .navigationTitle("Exercises")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                dismiss()
+                            }, label: {
+                                Text("Cancel")
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.red)
+                            })
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                onAdd(selectedExercises)
+                                dismiss()
+                            }, label: {
+                                Text("Add (\(selectedExercises.count))")
+                                    .fontWeight(.semibold)
+                            })
+                            .disabled(selectedExercises.count == 0)
                         }
                     }
-                    .buttonStyle(BorderlessButtonStyle())
-                    .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
                 }
-                .listStyle(.plain)
-                .navigationTitle("Exercises")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            dismiss()
-                        }, label: {
-                            Text("Cancel")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.red)
-                        })
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            onAdd(selectedExercises)
-                            dismiss()
-                        }, label: {
-                            Text("Add (\(selectedExercises.count))")
-                                .fontWeight(.semibold)
-                        })
-                        .disabled(selectedExercises.count == 0)
-                    }
-                }
+                .searchable(text: $searchText)
             }
-            .searchable(text: $searchText)
         }
     }
 }

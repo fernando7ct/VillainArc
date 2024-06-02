@@ -11,32 +11,36 @@ struct LogInView: View {
     @State private var userName: String?
     
     var body: some View {
-        if !downloadingData {
-            VStack {
-                Spacer()
-                Text("Villain Arc")
-                    .font(.largeTitle)
-                    .bold()
-                Spacer()
-                SignInWithAppleButton(.signIn, onRequest: { request in
-                    let nonce = randomNonceString()
-                    self.nonce = nonce
-                    request.requestedScopes = [.email, .fullName]
-                    request.nonce = sha256(nonce)
-                }, onCompletion: { result in
-                    switch result {
-                    case .success(let authorization):
-                        loginWithFirebase(authorization)
-                    case .failure(let error):
-                        print(error.localizedDescription)
-                    }
-                })
-                .clipShape(Capsule())
-                .frame(maxHeight: 50)
-                .padding()
+        ZStack {
+            BackgroundView()
+            
+            if !downloadingData {
+                VStack {
+                    Spacer()
+                    Text("Villain Arc")
+                        .font(.largeTitle)
+                        .bold()
+                    Spacer()
+                    SignInWithAppleButton(.signIn, onRequest: { request in
+                        let nonce = randomNonceString()
+                        self.nonce = nonce
+                        request.requestedScopes = [.email, .fullName]
+                        request.nonce = sha256(nonce)
+                    }, onCompletion: { result in
+                        switch result {
+                        case .success(let authorization):
+                            loginWithFirebase(authorization)
+                        case .failure(let error):
+                            print(error.localizedDescription)
+                        }
+                    })
+                    .clipShape(Capsule())
+                    .frame(maxHeight: 50)
+                    .padding()
+                }
+            } else {
+                ProgressView("Loading...")
             }
-        } else {
-            ProgressView("Loading...")
         }
     }
     func loginWithFirebase(_ authorization: ASAuthorization) {

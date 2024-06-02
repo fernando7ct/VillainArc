@@ -166,6 +166,7 @@ struct WeightGraphView: View {
                     x: .value("Date", weightEntry.date),
                     y: .value("Weight", weightEntry.weight)
                 )
+                .foregroundStyle(Color.blue)
                 .interpolationMethod(.monotone)
                 .lineStyle(StrokeStyle(lineWidth: 1.5))
                 AreaMark(
@@ -197,6 +198,7 @@ struct WeightGraphView: View {
                     }
                 }
             }
+            
             .chartYScale(domain: yAxisRange())
             .chartXScale(domain: xAxisRange())
             .chartXAxis {

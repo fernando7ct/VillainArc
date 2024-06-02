@@ -5,19 +5,25 @@ struct WeightTab: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                WeightGraphView()
-                    .frame(height: 400)
-                    .padding()
-                
-                NavigationLink(destination: AllWeightEntriesView()) {
-                    HStack {
-                        Text("All Weight Entries")
-                        Spacer()
-                        Image(systemName: "chevron.right")
+            ZStack {
+                BackgroundView()
+                ScrollView {
+                    WeightGraphView()
+                        .frame(height: 400)
+                        .padding()
+                    
+                    NavigationLink(destination: AllWeightEntriesView()) {
+                        HStack {
+                            Text("All Weight Entries")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                        }
+                        .foregroundStyle(Color.primary)
+                        .padding()
+                        .background(BlurView())
+                        .cornerRadius(12)
+                        .padding(.horizontal)
                     }
-                    .customStyle()
-                    .padding()
                 }
             }
             .navigationTitle("Weight")
@@ -27,12 +33,14 @@ struct WeightTab: View {
                         addWeightSheetActive = true
                     }, label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(Color.primary)
                     })
                     .sheet(isPresented: $addWeightSheetActive) {
                         AddWeightEntryView()
                     }
                 }
             }
+
         }
     }
 }

@@ -19,7 +19,6 @@ struct TemplateView: View {
             exercises.remove(atOffsets: offsets)
         }
     }
-    
     private func moveExercise(from source: IndexSet, to destination: Int) {
         withAnimation {
             exercises.move(fromOffsets: source, toOffset: destination)
@@ -37,6 +36,7 @@ struct TemplateView: View {
 
     var body: some View {
         ZStack {
+            BackgroundView()
             VStack(spacing: 0) {
                 HStack {
                     VStack(alignment: .leading, spacing: 0) {
@@ -99,6 +99,7 @@ struct TemplateView: View {
                             ZStack(alignment: .leading) {
                                 TextEditor(text: $notes)
                                     .focused($notesFocused)
+                                    .textEditorStyle(.plain)
                                 if !notesFocused && notes.isEmpty {
                                     Text("Notes...")
                                         .foregroundStyle(.secondary)
@@ -110,6 +111,7 @@ struct TemplateView: View {
                             }
                         }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                     Section {
                         ForEach(exercises.indices, id: \.self) { index in
@@ -126,33 +128,36 @@ struct TemplateView: View {
                                         .foregroundStyle(Color.secondary)
                                 }
                                 Spacer()
-                                HStack {
-                                    Button(action: {
-                                        if exercises[index].sets.count > 0 {
-                                            exercises[index].sets.removeLast()
-                                        }
-                                    }, label: {
-                                        Image(systemName: "minus")
-                                            .foregroundStyle(.red)
-                                    })
-                                    .disabled(exercises[index].sets.count == 0)
-                                    .buttonStyle(BorderlessButtonStyle())
+                                if !isEditing {
+                                    HStack {
+                                        Button(action: {
+                                            if exercises[index].sets.count > 0 {
+                                                exercises[index].sets.removeLast()
+                                            }
+                                        }, label: {
+                                            Image(systemName: "minus")
+                                                .foregroundStyle(.red)
+                                        })
+                                        .disabled(exercises[index].sets.count == 0)
+                                        .buttonStyle(BorderlessButtonStyle())
+                                        .padding(.trailing)
+                                        Button(action: {
+                                            exercises[index].sets.append(TempSet(reps: 0, weight: 0, completed: false))
+                                        }, label: {
+                                            Image(systemName: "plus")
+                                                .foregroundStyle(.green)
+                                        })
+                                        .buttonStyle(BorderlessButtonStyle())
+                                    }
                                     .padding(.trailing)
-                                    Button(action: {
-                                        exercises[index].sets.append(TempSet(reps: 0, weight: 0, completed: false))
-                                    }, label: {
-                                        Image(systemName: "plus")
-                                            .foregroundStyle(.green)
-                                    })
-                                    .buttonStyle(BorderlessButtonStyle())
                                 }
-                                .padding(.trailing)
                             }
                         }
                         .onDelete(perform: deleteExercise)
                         .onMove(perform: moveExercise)
                     }
-                    .listRowSeparator(.hidden)                    
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                     if !isEditing {
                         Section {
                             Button(action: {
@@ -162,15 +167,17 @@ struct TemplateView: View {
                                     Label("Add New Exercise", systemImage: "plus")
                                     Spacer()
                                 }
-                                .padding(.vertical, 5)
                                 .foregroundStyle(Color.primary)
                             })
-                            .buttonStyle(BorderedButtonStyle())
+                            .padding()
+                            .background(BlurView())
+                            .cornerRadius(12)
                             .sheet(isPresented: $showExerciseSelection) {
                                 ExerciseSelectionView(onAdd: addSelectedExercises)
                             }
                         }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                 }
                 .listStyle(.plain)

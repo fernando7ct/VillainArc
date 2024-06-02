@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct WorkoutView: View {
     @Environment(\.modelContext) private var context
@@ -15,13 +16,33 @@ struct WorkoutView: View {
     @State private var showSaveSheet = false
     var existingWorkout: Workout?
     
-    init(exisistingWorkout: Workout? = nil) {
-        self.existingWorkout = exisistingWorkout
-        if let workout = exisistingWorkout {
+    init(existingWorkout: Workout? = nil) {
+        self.existingWorkout = existingWorkout
+        if let workout = existingWorkout {
             self._title = State(initialValue: workout.title)
             self._notes = State(initialValue: workout.notes)
             self._isTemplate = State(initialValue: workout.template)
-            self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+            
+            if workout.template {
+                self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).compactMap { exercise in
+                    return TempExercise(name: exercise.name, category: exercise.category, notes: exercise.notes, sets: [])
+                })
+            } else {
+                self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+            }
+        }
+    }
+    private func fetchLatestExercise(for exerciseName: String) -> WorkoutExercise? {
+        let fetchDescriptor = FetchDescriptor<WorkoutExercise>(
+            predicate: #Predicate { $0.name == exerciseName },
+            sortBy: [SortDescriptor(\WorkoutExercise.date, order: .reverse)]
+        )
+        do {
+            let results = try context.fetch(fetchDescriptor)
+            return results.first
+        } catch {
+            print("Failed to fetch latest exercise: \(error.localizedDescription)")
+            return nil
         }
     }
     private func deleteExercise(at offsets: IndexSet) {
@@ -41,11 +62,13 @@ struct WorkoutView: View {
     }
     private func saveWorkout(title: String) {
         DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
-            dismiss()
+        dismiss()
     }
+
     var body: some View {
         NavigationView {
             ZStack {
+                BackgroundView()
                 VStack(spacing: 0) {
                     HStack {
                         VStack(alignment: .leading, spacing: 0) {
@@ -100,9 +123,17 @@ struct WorkoutView: View {
                     }
                     .padding(.horizontal)
                     .sheet(isPresented: $showSaveSheet) {
-                        SaveWorkoutSheet(title: title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: $isTemplate, onSave: { editableTitle in
-                            saveWorkout(title: editableTitle)
-                        })
+                        SaveWorkoutSheet(
+                            title: title,
+                            exercises: $exercises,
+                            notes: $notes,
+                            startTime: $startTime,
+                            endTime: $endTime,
+                            isTemplate: $isTemplate,
+                            onSave: { editableTitle in
+                                saveWorkout(title: editableTitle)
+                            }
+                        )
                         .interactiveDismissDisabled()
                     }
                     List {
@@ -111,6 +142,8 @@ struct WorkoutView: View {
                                 ZStack(alignment: .leading) {
                                     TextEditor(text: $notes)
                                         .focused($notesFocused)
+                                        .textEditorStyle(.plain)
+                                        
                                     if !notesFocused && notes.isEmpty {
                                         Text("Notes...")
                                             .foregroundStyle(.secondary)
@@ -122,6 +155,7 @@ struct WorkoutView: View {
                                 }
                             }
                             .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                         }
                         Section {
                             ForEach(exercises.indices, id: \.self) { index in
@@ -144,6 +178,7 @@ struct WorkoutView: View {
                             .onMove(perform: moveExercise)
                         }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                         if !isEditing {
                             Section {
                                 Button(action: {
@@ -153,15 +188,17 @@ struct WorkoutView: View {
                                         Label("Add New Exercise", systemImage: "plus")
                                         Spacer()
                                     }
-                                    .padding(.vertical, 5)
                                     .foregroundStyle(Color.primary)
                                 })
-                                .buttonStyle(BorderedButtonStyle())
+                                .padding()
+                                .background(BlurView())
+                                .cornerRadius(12)
                                 .sheet(isPresented: $showExerciseSelection) {
                                     ExerciseSelectionView(onAdd: addSelectedExercises)
                                 }
                             }
                             .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
                         }
                     }
                     .listStyle(.plain)
@@ -186,48 +223,22 @@ struct WorkoutView: View {
                 }
                 .padding()
             }
+            .onAppear {
+                if isTemplate {
+                    let recentExercises = existingWorkout?.exercises.sorted(by: { $0.order < $1.order }).compactMap { exercise in
+                        guard let latestExercise = fetchLatestExercise(for: exercise.name) else {
+                            return TempExercise(name: exercise.name, category: exercise.category, notes: exercise.notes, sets: [])
+                        }
+                        return TempExercise(name: latestExercise.name, category: latestExercise.category, notes: latestExercise.notes, sets: latestExercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) })
+                    }
+                    self.exercises = recentExercises ?? []
+                    isTemplate = false
+                }
+            }
         }
     }
 }
-struct TempExercise: Identifiable {
-    var id = UUID()
-    var name: String
-    var category: String
-    var notes: String
-    var sets: [TempSet]
-    
-    init(name: String, category: String, notes: String, sets: [TempSet]) {
-        self.name = name
-        self.category = category
-        self.notes = notes
-        self.sets = sets
-    }
-    
-    init(from exercise: WorkoutExercise) {
-        self.name = exercise.name
-        self.category = exercise.category
-        self.notes = exercise.notes
-        self.sets = exercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
-    }
-}
-struct TempSet: Identifiable {
-    var id = UUID()
-    var reps: Int
-    var weight: Double
-    var completed: Bool
-    
-    init(reps: Int, weight: Double, completed: Bool) {
-        self.reps = reps
-        self.weight = weight
-        self.completed = completed
-    }
-    
-    init(from set: ExerciseSet) {
-        self.reps = set.reps
-        self.weight = set.weight
-        self.completed = false
-    }
-}
+
 #Preview {
     WorkoutView()
 }
