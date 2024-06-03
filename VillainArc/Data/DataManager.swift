@@ -14,7 +14,7 @@ class DataManager {
             print("No user is signed in.")
             return
         }
-        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weight, notes: notes, date: date)
+        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weight, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), date: date)
         context.insert(newWeightEntry)
         let weightEntryData: [String: Any] = [
             "id": newWeightEntry.id,
@@ -33,7 +33,7 @@ class DataManager {
             print("No user is signed in.")
             return
         }
-        let newWorkout = Workout(id: UUID().uuidString, title: title, startTime: startTime, endTime: endTime, notes: notes, template: isTemplate, exercises: [])
+        let newWorkout = Workout(id: UUID().uuidString, title: title, startTime: startTime, endTime: endTime, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), template: isTemplate, exercises: [])
         context.insert(newWorkout)
         var workoutData: [String: Any] = [
             "id": newWorkout.id,
@@ -45,7 +45,7 @@ class DataManager {
             "exercises": []
         ]
         for (exerciseIndex, exercise) in exercises.enumerated() {
-            let newExercise = WorkoutExercise(id: UUID().uuidString, name: exercise.name, category: exercise.category, notes: exercise.notes, date: Date(), order: exerciseIndex, workout: newWorkout, sets: [])
+            let newExercise = WorkoutExercise(id: UUID().uuidString, name: exercise.name, category: exercise.category, notes: exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines), date: Date(), order: exerciseIndex, workout: newWorkout, sets: [])
             context.insert(newExercise)
             var exerciseData: [String: Any] = [
                 "id": newExercise.id,

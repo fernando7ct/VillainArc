@@ -135,7 +135,7 @@ struct WeightGraphView: View {
                 Text("Month").tag(weightGraphRange.month)
                 Text("6 Months").tag(weightGraphRange.sixMonths)
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .pickerStyle(.segmented)
     
             HStack {
                 VStack(alignment: .leading) {

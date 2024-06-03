@@ -4,7 +4,9 @@ import SwiftData
 struct ExerciseHistoryView: View {
     @Binding var exerciseName: String
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     @State private var exercises: [WorkoutExercise] = []
+    var onSelectHistory: (([TempSet]) -> Void)?
     
     private func fetchExerciseHistory() {
         let fetchDescriptor = FetchDescriptor<WorkoutExercise>(
@@ -15,9 +17,16 @@ struct ExerciseHistoryView: View {
             exercises = try context.fetch(fetchDescriptor)
             exercises = exercises.filter { $0.workout.template != true }
         } catch {
-            
+            // Handle error if needed
         }
     }
+    
+    private func convertToTempSets(sets: [ExerciseSet]) -> [TempSet] {
+        sets.sorted(by: { $0.order < $1.order }).map { set in
+            TempSet(reps: set.reps, weight: set.weight, completed: false)
+        }
+    }
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -37,9 +46,24 @@ struct ExerciseHistoryView: View {
                                         Spacer()
                                         Text("Weight: \(formattedWeight(set.weight)) lbs")
                                     }
+                                    .listRowSeparator(.hidden)
                                 }
                             }, header: {
-                                Text("\(exercise.date.formatted(.dateTime.month().day().year()))")
+                                HStack {
+                                    Text("\(exercise.date.formatted(.dateTime.month().day().year()))")
+                                        .foregroundStyle(Color.primary)
+                                    Spacer()
+                                    Button(action: {
+                                        let tempSets = convertToTempSets(sets: exercise.sets)
+                                        onSelectHistory?(tempSets)
+                                        dismiss()
+                                    }, label: {
+                                        Text("Use Sets")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.blue)
+                                    })
+                                }
+                                .fontWeight(.semibold)
                             })
                             .listRowBackground(BlurView())
                         }

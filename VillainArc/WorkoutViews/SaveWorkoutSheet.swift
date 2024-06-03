@@ -38,8 +38,11 @@ struct SaveWorkoutSheet: View {
                     Section(content: {
                         TextField("Workout Title", text: $editableTitle)
                             .focused($keyboardActive)
+                            .autocorrectionDisabled()
                     }, header: {
                         Text("Title")
+                            .foregroundStyle(Color.primary)
+                            .fontWeight(.semibold)
                     })
                     .listRowBackground(BlurView())
                     if !originalIsTemplate {
@@ -48,14 +51,19 @@ struct SaveWorkoutSheet: View {
                             DatePicker("End Time", selection: $endTime, in: startTime...Date() , displayedComponents: [.date, .hourAndMinute])
                         }, header: {
                             Text("Time")
+                                .foregroundStyle(Color.primary)
+                                .fontWeight(.semibold)
                         })
                         .listRowBackground(BlurView())
                     }
                     Section(content: {
                         TextEditor(text: $notes)
                             .focused($keyboardActive)
+                            .autocorrectionDisabled()
                     }, header: {
                         Text("Notes")
+                            .foregroundStyle(Color.primary)
+                            .fontWeight(.semibold)
                     })
                     .listRowBackground(BlurView())
                     Section(content: {
@@ -64,17 +72,22 @@ struct SaveWorkoutSheet: View {
                                 Text(exercise.name)
                                     .font(.title3)
                                     .fontWeight(.semibold)
+                                    .foregroundStyle(Color.primary)
+                                if !exercise.notes.isEmpty {
+                                    Text("Notes: \(exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
+                                }
                                 Text(exercise.category)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.secondary)
                                 Text("\(exercise.sets.count) \(exercise.sets.count == 1 ? "set" : "sets")")
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.secondary)
                             }
-                            .foregroundStyle(Color.primary)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.secondary)
                         }
                     }, header: {
                         Text("Exercises")
+                            .foregroundStyle(Color.primary)
+                            .fontWeight(.semibold)
                     })
                     .listRowBackground(BlurView())
                 }

@@ -13,6 +13,8 @@ struct TemplateView: View {
     @State private var isEditing = false
     @State private var isTemplate = true
     @State private var showSaveSheet = false
+    @State private var addExerciseNotes = false
+    @State private var selectedExercise: TempExercise?
     
     private func deleteExercise(at offsets: IndexSet) {
         withAnimation {
@@ -100,6 +102,7 @@ struct TemplateView: View {
                                 TextEditor(text: $notes)
                                     .focused($notesFocused)
                                     .textEditorStyle(.plain)
+                                    .autocorrectionDisabled()
                                 if !notesFocused && notes.isEmpty {
                                     Text("Notes...")
                                         .foregroundStyle(.secondary)
@@ -120,13 +123,17 @@ struct TemplateView: View {
                                     Text(exercises[index].name)
                                         .font(.title2)
                                         .fontWeight(.semibold)
+                                        .foregroundStyle(Color.primary)
+                                    if !exercises[index].notes.isEmpty {
+                                        Text("Notes: \(exercises[index].notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                            .multilineTextAlignment(.leading)
+                                            .lineLimit(2)
+                                    }
                                     Text(exercises[index].category)
-                                        .font(.subheadline)
-                                        .foregroundStyle(Color.secondary)
                                     Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
-                                        .font(.subheadline)
-                                        .foregroundStyle(Color.secondary)
                                 }
+                                .font(.subheadline)
+                                .foregroundStyle(Color.secondary)
                                 Spacer()
                                 if !isEditing {
                                     HStack {
@@ -136,18 +143,37 @@ struct TemplateView: View {
                                             }
                                         }, label: {
                                             Image(systemName: "minus")
+                                                .font(.title3)
                                                 .foregroundStyle(.red)
+                                                .fontWeight(.semibold)
                                         })
                                         .disabled(exercises[index].sets.count == 0)
-                                        .buttonStyle(BorderlessButtonStyle())
-                                        .padding(.trailing)
+                                        .buttonStyle(BorderedButtonStyle())
+                                        .padding(.trailing, 5)
+                                        
                                         Button(action: {
                                             exercises[index].sets.append(TempSet(reps: 0, weight: 0, completed: false))
                                         }, label: {
                                             Image(systemName: "plus")
+                                                .font(.title3)
                                                 .foregroundStyle(.green)
+                                                .fontWeight(.semibold)
+                                        })
+                                        .buttonStyle(BorderedButtonStyle())
+                                        .padding(.trailing, 5)
+                                        
+                                        Button(action: {
+                                            selectedExercise = exercises[index]
+                                        }, label: {
+                                            Image(systemName: "doc.plaintext")
+                                                .font(.title3)
+                                                .fontWeight(.semibold)
                                         })
                                         .buttonStyle(BorderlessButtonStyle())
+                                        .sheet(item: $selectedExercise) { exercise in
+                                            AddExerciseNotesView(exercise: $exercises[exercises.firstIndex(where: { $0.id == exercise.id })!])
+                                                .interactiveDismissDisabled()
+                                        }
                                     }
                                     .padding(.trailing)
                                 }
@@ -164,7 +190,7 @@ struct TemplateView: View {
                                 showExerciseSelection = true
                             }, label: {
                                 HStack {
-                                    Label("Add New Exercise", systemImage: "plus")
+                                    Label("Add Exercise", systemImage: "plus")
                                     Spacer()
                                 }
                                 .foregroundStyle(Color.primary)
@@ -174,6 +200,7 @@ struct TemplateView: View {
                             .cornerRadius(12)
                             .sheet(isPresented: $showExerciseSelection) {
                                 ExerciseSelectionView(onAdd: addSelectedExercises)
+                                    .interactiveDismissDisabled()
                             }
                         }
                         .listRowSeparator(.hidden)

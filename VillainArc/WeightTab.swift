@@ -25,6 +25,7 @@ struct WeightTab: View {
                         .padding(.horizontal)
                     }
                 }
+                .scrollDisabled(true)
             }
             .navigationTitle("Weight")
             .toolbar {

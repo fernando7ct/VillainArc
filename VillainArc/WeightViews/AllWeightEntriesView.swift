@@ -34,6 +34,11 @@ struct AllWeightEntriesView: View {
                         Text("\(formattedWeight(weightEntry.weight)) lbs")
                             .fontWeight(.semibold)
                         Spacer()
+                        if !weightEntry.notes.isEmpty {
+                            Image(systemName: "doc.plaintext")
+                                .foregroundStyle(.secondary)
+                                .font(.footnote)
+                        }
                         VStack(alignment: .trailing) {
                             Text("\(weightEntry.date.formatted(.dateTime.day().month().year()))")
                             Text("\(weightEntry.date.formatted(.dateTime.hour().minute()))")

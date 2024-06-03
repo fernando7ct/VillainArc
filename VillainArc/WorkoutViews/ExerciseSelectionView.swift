@@ -63,6 +63,7 @@ struct ExerciseSelectionView: View {
             ZStack {
                 BackgroundView()
                 VStack {
+                    CustomSearchBar(searchText: $searchText)
                     List(filteredExercises) { exercise in
                         Button(action: {
                             if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
@@ -86,32 +87,90 @@ struct ExerciseSelectionView: View {
                         .buttonStyle(BorderlessButtonStyle())
                         .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
                     }
+                    //.searchable(text: $searchText)
                     .listStyle(.plain)
-                    .navigationTitle("Exercises")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                dismiss()
-                            }, label: {
-                                Text("Cancel")
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.red)
-                            })
-                        }
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                onAdd(selectedExercises)
-                                dismiss()
-                            }, label: {
-                                Text("Add (\(selectedExercises.count))")
-                                    .fontWeight(.semibold)
-                            })
-                            .disabled(selectedExercises.count == 0)
-                        }
+                }
+                .navigationTitle("Exercises")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            dismiss()
+                        }, label: {
+                            Text("Cancel")
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.red)
+                        })
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button(action: {
+                            onAdd(selectedExercises)
+                            dismiss()
+                        }, label: {
+                            Text("Add (\(selectedExercises.count))")
+                                .fontWeight(.semibold)
+                        })
+                        .disabled(selectedExercises.count == 0)
                     }
                 }
-                .searchable(text: $searchText)
+            }
+        }
+    }
+}
+import SwiftUI
+
+struct CustomSearchBar: View {
+    @Binding var searchText: String
+    @State private var isEditing = false
+    
+    var body: some View {
+        HStack {
+            TextField("Search...", text: $searchText)
+                .autocorrectionDisabled()
+                .padding(7)
+                .padding(.horizontal, 25)
+                .background(BlurView())
+                .cornerRadius(8)
+                .overlay(
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 8)
+                        
+                        if isEditing {
+                            Button(action: {
+                                withAnimation {
+                                    self.searchText = ""
+                                }
+                            }) {
+                                Image(systemName: "multiply.circle.fill")
+                                    .foregroundColor(.gray)
+                                    .padding(.trailing, 8)
+                            }
+                        }
+                    }
+                )
+                .padding(.horizontal, 10)
+                .onTapGesture {
+                    withAnimation {
+                        self.isEditing = true
+                    }
+                }
+            
+            if isEditing {
+                Button(action: {
+                    withAnimation {
+                        self.isEditing = false
+                        self.searchText = ""
+                        hideKeyboard()
+                    }
+                }) {
+                    Text("Cancel")
+                        .foregroundStyle(Color.primary)
+                }
+                .padding(.trailing, 10)
+                .transition(.move(edge: .trailing))
             }
         }
     }

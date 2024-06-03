@@ -12,6 +12,10 @@ struct ExerciseView: View {
         }
     }
     
+    private func populateSets(from historySets: [TempSet]) {
+        exercise.sets = historySets
+    }
+    
     var body: some View {
         ZStack {
             BackgroundView()
@@ -28,7 +32,7 @@ struct ExerciseView: View {
                     }
                     Spacer()
                     Menu {
-                        Button( action: {
+                        Button(action: {
                             showHistorySheet.toggle()
                         }, label: {
                             Label("Exercise History", systemImage: "clock")
@@ -39,7 +43,7 @@ struct ExerciseView: View {
                             .foregroundStyle(Color.primary)
                     }
                     .sheet(isPresented: $showHistorySheet) {
-                        ExerciseHistoryView(exerciseName: $exercise.name)
+                        ExerciseHistoryView(exerciseName: $exercise.name, onSelectHistory: populateSets)
                             .presentationDragIndicator(.visible)
                     }
                 }
@@ -50,6 +54,7 @@ struct ExerciseView: View {
                             TextEditor(text: $exercise.notes)
                                 .focused($notesFocused)
                                 .textEditorStyle(.plain)
+                                .autocorrectionDisabled()
                             if !notesFocused && exercise.notes.isEmpty {
                                 Text("Notes...")
                                     .foregroundStyle(.secondary)
@@ -107,6 +112,7 @@ struct ExerciseView: View {
                                 .padding(.vertical, 7)
                                 .background(BlurView())
                                 .cornerRadius(12)
+                                .buttonStyle(BorderlessButtonStyle())
                             }
                             .font(.title2)
                         }

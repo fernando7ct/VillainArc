@@ -50,6 +50,9 @@ struct WorkoutView: View {
             exercises.remove(atOffsets: offsets)
         }
     }
+    private func completedSets(for exercise: TempExercise) -> Int {
+        return exercise.sets.filter { $0.completed }.count
+    }
     private func moveExercise(from source: IndexSet, to destination: Int) {
         withAnimation {
             exercises.move(fromOffsets: source, toOffset: destination)
@@ -143,7 +146,7 @@ struct WorkoutView: View {
                                     TextEditor(text: $notes)
                                         .focused($notesFocused)
                                         .textEditorStyle(.plain)
-                                        
+                                        .autocorrectionDisabled()
                                     if !notesFocused && notes.isEmpty {
                                         Text("Notes...")
                                             .foregroundStyle(.secondary)
@@ -160,17 +163,28 @@ struct WorkoutView: View {
                         Section {
                             ForEach(exercises.indices, id: \.self) { index in
                                 NavigationLink(destination: ExerciseView(exercise: $exercises[index])) {
-                                    VStack(alignment: .leading) {
-                                        Text(exercises[index].name)
-                                            .font(.title2)
-                                            .fontWeight(.semibold)
-                                            .foregroundStyle(Color.primary)
-                                        Text(exercises[index].category)
-                                            .font(.subheadline)
-                                            .foregroundStyle(Color.secondary)
-                                        Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
-                                            .font(.subheadline)
-                                            .foregroundStyle(Color.secondary)
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text(exercises[index].name)
+                                                .font(.title2)
+                                                .fontWeight(.semibold)
+                                                .foregroundStyle(Color.primary)
+                                            if !exercises[index].notes.isEmpty {
+                                                Text("Notes: \(exercises[index].notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                                    .lineLimit(2)
+                                                    .multilineTextAlignment(.leading)
+                                            }
+                                            Text(exercises[index].category)
+                                            Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
+                                        }
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.secondary)
+                                        Spacer()
+                                        if exercises[index].sets.count != 0 && completedSets(for: exercises[index]) == exercises[index].sets.count {
+                                            Text("Sets Completed")
+                                                .font(.subheadline)
+                                                .foregroundStyle(Color.secondary)
+                                        }
                                     }
                                 }
                             }
@@ -185,7 +199,7 @@ struct WorkoutView: View {
                                     showExerciseSelection = true
                                 }, label: {
                                     HStack {
-                                        Label("Add New Exercise", systemImage: "plus")
+                                        Label("Add Exercise", systemImage: "plus")
                                         Spacer()
                                     }
                                     .foregroundStyle(Color.primary)
@@ -195,6 +209,7 @@ struct WorkoutView: View {
                                 .cornerRadius(12)
                                 .sheet(isPresented: $showExerciseSelection) {
                                     ExerciseSelectionView(onAdd: addSelectedExercises)
+                                        .interactiveDismissDisabled()
                                 }
                             }
                             .listRowSeparator(.hidden)

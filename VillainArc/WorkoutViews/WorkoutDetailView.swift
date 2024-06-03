@@ -6,6 +6,7 @@ struct WorkoutDetailView: View {
     @State private var workoutStarted: Bool = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @State private var showDeleteAlert = false
     
     private func totalWorkoutTime(startTime: Date, endTime: Date) -> String {
         let timeInterval = endTime.timeIntervalSince(startTime)
@@ -47,7 +48,7 @@ struct WorkoutDetailView: View {
                             Label("Use \(workout.template ? "" : "as ")Template", systemImage: "doc.text")
                         })
                         Button(action: {
-                            deleteWorkout()
+                            showDeleteAlert = true
                         }, label: {
                             Label("Delete \(workout.template ? "Template" : "Workout")", systemImage: "trash")
                         })
@@ -68,11 +69,12 @@ struct WorkoutDetailView: View {
                                 Text(workout.notes)
                             }, header: {
                                 Text("Notes")
+                                    .foregroundStyle(Color.primary)
+                                    .fontWeight(.semibold)
                             })
                             .listRowBackground(BlurView())
                         }
                         ForEach(workout.exercises.sorted(by: { $0.order < $1.order}), id: \.self) { exercise in
-                            
                             Section(content: {
                                 ForEach(exercise.sets.sorted(by: { $0.order < $1.order}), id: \.self) { set in
                                     HStack {
@@ -83,11 +85,15 @@ struct WorkoutDetailView: View {
                                         Text("Weight: \(formattedWeight(set.weight)) lbs")
                                     }
                                 }
+                                .listRowSeparator(.hidden)
                             }, header: {
                                 VStack(alignment: .leading) {
                                     Text(exercise.name)
+                                        .foregroundStyle(Color.primary)
+                                        .fontWeight(.semibold)
                                     if !exercise.notes.isEmpty {
                                         Text("Notes: \(exercise.notes)")
+                                            .lineLimit(2)
                                     }
                                 }
                             })
@@ -101,6 +107,8 @@ struct WorkoutDetailView: View {
                             Section {
                                 Text("Notes: \(workout.notes)")
                             }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                         }
                         Section {
                             ForEach(workout.exercises.sorted(by: { $0.order < $1.order}), id: \.self) { exercise in
@@ -109,15 +117,20 @@ struct WorkoutDetailView: View {
                                         Text(exercise.name)
                                             .font(.title2)
                                             .fontWeight(.semibold)
+                                            .foregroundStyle(Color.primary)
+                                        if !exercise.notes.isEmpty {
+                                            Text("Notes: \(exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                                .lineLimit(2)
+                                                .multilineTextAlignment(.leading)
+                                        }
                                         Text(exercise.category)
-                                            .font(.subheadline)
-                                            .foregroundStyle(Color.secondary)
                                         Text("\(exercise.sets.count) \(exercise.sets.count == 1 ? "set" : "sets")")
-                                            .font(.subheadline)
-                                            .foregroundStyle(Color.secondary)
                                     }
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.secondary)
                                     Spacer()
                                 }
+                                .listRowSeparator(.hidden)
                             }
                         }
                         .listRowBackground(Color.clear)
@@ -126,6 +139,16 @@ struct WorkoutDetailView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .alert(isPresented: $showDeleteAlert) {
+                Alert(
+                    title: Text("Delete \(workout.template ? "Template" : "Workout")"),
+                    message: Text("Are you sure you want to delete this \(workout.template ? "template" : "workout")?"),
+                    primaryButton: .destructive(Text("Delete")) {
+                        deleteWorkout()
+                    },
+                    secondaryButton: .cancel()
+                )
+            }
         }
     }
 }
