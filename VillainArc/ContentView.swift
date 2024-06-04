@@ -21,15 +21,6 @@ struct ContentView: View {
         }
     }
 }
-struct BlurView: UIViewRepresentable, View {
-    
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
-}
 
 #Preview {
     ContentView()

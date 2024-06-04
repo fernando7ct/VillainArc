@@ -8,7 +8,7 @@ struct WorkoutSectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Workouts")
+                Text("Past Workouts")
                     .fontWeight(.semibold)
                     .font(.title2)
                 Spacer()
@@ -26,7 +26,7 @@ struct WorkoutSectionView: View {
             
             if workouts.filter({ !$0.template }).isEmpty {
                 HStack {
-                    Text("You have no workouts")
+                    Text("You have no past workouts")
                     Spacer()
                 }
                 .customStyle()

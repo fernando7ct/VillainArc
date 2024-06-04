@@ -1,4 +1,5 @@
 import SwiftUI
+import ActivityKit
 
 struct ExerciseView: View {
     @Binding var exercise: TempExercise
@@ -7,15 +8,43 @@ struct ExerciseView: View {
     @FocusState private var notesFocused: Bool
     @State private var showHistorySheet = false
     @State private var setRestTimeSheet = false
-    
+
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
             exercise.sets.remove(atOffsets: offsets)
         }
+        updateLiveActivity()
     }
     
     private func populateSets(from historySets: [TempSet]) {
         exercise.sets = historySets
+        updateLiveActivity()
+    }
+    
+    private func updateLiveActivity() {
+        let currentSetDetails = getCurrentSetDetails()
+        let state = WorkoutAttributes.ContentState(
+            currentExerciseName: currentSetDetails?.exerciseName ?? "No active exercise",
+            currentSetDetails: currentSetDetails?.currentSetDetails ?? "",
+            notes: currentSetDetails?.notes ?? "",
+            timeRemaining: timer.timeRemaining,
+            allExercisesDone: currentSetDetails == nil
+        )
+        Task {
+            if let activity = timer.activity {
+                await activity.update(ActivityContent(state: state, staleDate: Date().addingTimeInterval(60 * 60)))
+            }
+        }
+    }
+
+    private func getCurrentSetDetails() -> (exerciseName: String, currentSetDetails: String, notes: String)? {
+        if let setIndex = exercise.sets.firstIndex(where: { !$0.completed }) {
+            let exerciseName = exercise.name
+            let currentSetDetails = "Set: \(setIndex + 1)            Reps: \(exercise.sets[setIndex].reps)             Weight: \(exercise.sets[setIndex].weight) lbs"
+            let notes = exercise.notes
+            return (exerciseName, currentSetDetails, notes)
+        }
+        return nil
     }
     
     var body: some View {
@@ -30,7 +59,6 @@ struct ExerciseView: View {
                         Text(exercise.category)
                             .font(.subheadline)
                             .foregroundStyle(Color.secondary)
-                        
                     }
                     Spacer()
                     TimerDisplayView(viewModel: timer)
@@ -43,6 +71,9 @@ struct ExerciseView: View {
                                 .focused($notesFocused)
                                 .textEditorStyle(.plain)
                                 .autocorrectionDisabled()
+                                .onChange(of: exercise.notes) {
+                                    updateLiveActivity()
+                                }
                             if !notesFocused && exercise.notes.isEmpty {
                                 Text("Notes...")
                                     .foregroundStyle(.secondary)
@@ -90,9 +121,19 @@ struct ExerciseView: View {
                                     .focused($keyboardActive)
                                 Button(action: {
                                     if !exercise.sets[setIndex].completed {
-                                        timer.startTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
+                                        let currentSetDetails = getCurrentSetDetails()
+                                        timer.startTimer(
+                                            workoutTitle: "Workout Title",  // You can pass the actual workout title here
+                                            exerciseName: exercise.name,
+                                            currentSetDetails: currentSetDetails?.currentSetDetails ?? "",
+                                            notes: exercise.notes,
+                                            allExercisesDone: false,
+                                            minutes: exercise.sets[setIndex].restMinutes,
+                                            seconds: exercise.sets[setIndex].restSeconds
+                                        )
                                     }
                                     exercise.sets[setIndex].completed.toggle()
+                                    updateLiveActivity()
                                 }, label: {
                                     Image(systemName: "checkmark")
                                         .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
@@ -121,6 +162,7 @@ struct ExerciseView: View {
                                     let lastSet = exercise.sets.last!
                                     exercise.sets.append(TempSet(reps: lastSet.reps, weight: lastSet.weight, restMinutes: lastSet.restMinutes, restSeconds: lastSet.restSeconds, completed: false))
                                 }
+                                updateLiveActivity()
                             }
                         }, label: {
                             HStack {
