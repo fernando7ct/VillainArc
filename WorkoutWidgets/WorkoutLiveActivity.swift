@@ -37,7 +37,7 @@ struct WorkoutLiveActivityView: View {
                 VStack(alignment: .leading) {
                     Text(context.attributes.workoutTitle)
                         .font(.headline)
-                    Text("Total time: \(context.attributes.totalTime.formattedTime())")
+                    Text("Total time: \(context.state.totalTime.formattedTime())")
                         .font(.subheadline)
                         .foregroundStyle(Color.secondary)
                 }

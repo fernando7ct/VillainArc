@@ -8,6 +8,7 @@ struct ExerciseView: View {
     @FocusState private var notesFocused: Bool
     @State private var showHistorySheet = false
     @State private var setRestTimeSheet = false
+    @Binding var allExercises: [TempExercise]
 
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
@@ -27,8 +28,9 @@ struct ExerciseView: View {
             currentExerciseName: currentSetDetails?.exerciseName ?? "No active exercise",
             currentSetDetails: currentSetDetails?.currentSetDetails ?? "",
             notes: currentSetDetails?.notes ?? "",
-            timeRemaining: timer.timeRemaining,
-            allExercisesDone: currentSetDetails == nil
+            timeRemaining: timer.restTimeRemaining,
+            allExercisesDone: currentSetDetails == nil,
+            totalTime: timer.totalTime
         )
         Task {
             if let activity = timer.activity {
@@ -38,14 +40,16 @@ struct ExerciseView: View {
     }
 
     private func getCurrentSetDetails() -> (exerciseName: String, currentSetDetails: String, notes: String)? {
-        if let setIndex = exercise.sets.firstIndex(where: { !$0.completed }) {
-            let exerciseName = exercise.name
-            let currentSetDetails = "Set: \(setIndex + 1)            Reps: \(exercise.sets[setIndex].reps)             Weight: \(exercise.sets[setIndex].weight) lbs"
-            let notes = exercise.notes
-            return (exerciseName, currentSetDetails, notes)
+            for exercise in allExercises {
+                if let setIndex = exercise.sets.firstIndex(where: { !$0.completed }) {
+                    let exerciseName = exercise.name
+                    let currentSetDetails = "Set: \(setIndex + 1)               Reps: \(exercise.sets[setIndex].reps)               Weight: \(exercise.sets[setIndex].weight) lbs"
+                    let notes = exercise.notes
+                    return (exerciseName, currentSetDetails, notes)
+                }
+            }
+            return nil
         }
-        return nil
-    }
     
     var body: some View {
         ZStack {
@@ -122,7 +126,7 @@ struct ExerciseView: View {
                                 Button(action: {
                                     if !exercise.sets[setIndex].completed {
                                         let currentSetDetails = getCurrentSetDetails()
-                                        timer.startTimer(
+                                        timer.startRestTimer(
                                             workoutTitle: "Workout Title",  // You can pass the actual workout title here
                                             exerciseName: exercise.name,
                                             currentSetDetails: currentSetDetails?.currentSetDetails ?? "",

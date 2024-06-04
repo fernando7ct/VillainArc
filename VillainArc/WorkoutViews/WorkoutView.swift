@@ -65,7 +65,7 @@ struct WorkoutView: View {
     }
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
-            exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: []))
+            exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
         updateLiveActivity()
     }
@@ -84,9 +84,10 @@ struct WorkoutView: View {
             currentSetDetails: currentSetDetails?.currentSetDetails ?? "",
             notes: currentSetDetails?.notes ?? "",
             timeRemaining: 0,
-            allExercisesDone: currentSetDetails == nil
+            allExercisesDone: currentSetDetails == nil,
+            totalTime: timer.totalTime
         )
-        let activityAttributes = WorkoutAttributes(workoutTitle: title, totalTime: 0)
+        let activityAttributes = WorkoutAttributes(workoutTitle: title)
         Task {
             do {
                 timer.activity = try Activity<WorkoutAttributes>.request(
@@ -94,13 +95,13 @@ struct WorkoutView: View {
                     content: ActivityContent(state: initialContentState, staleDate: Date().addingTimeInterval(60 * 60)),
                     pushType: nil
                 )
+                timer.startWorkoutTimer()
                 print("Live Activity started: \(timer.activity?.id ?? "unknown")")
             } catch {
                 print("Failed to start Live Activity: \(error.localizedDescription)")
             }
         }
     }
-
 
     private func updateLiveActivity() {
         guard let activity = timer.activity else { return }
@@ -109,8 +110,9 @@ struct WorkoutView: View {
             currentExerciseName: currentSetDetails?.exerciseName ?? "No active exercise",
             currentSetDetails: currentSetDetails?.currentSetDetails ?? "",
             notes: currentSetDetails?.notes ?? "",
-            timeRemaining: timer.timeRemaining,
-            allExercisesDone: currentSetDetails == nil
+            timeRemaining: timer.restTimeRemaining,
+            allExercisesDone: currentSetDetails == nil,
+            totalTime: timer.totalTime
         )
         Task {
             await activity.update(ActivityContent(state: state, staleDate: Date().addingTimeInterval(60 * 60)))
@@ -121,7 +123,7 @@ struct WorkoutView: View {
         for exercise in exercises {
             if let setIndex = exercise.sets.firstIndex(where: { !$0.completed }) {
                 let exerciseName = exercise.name
-                let currentSetDetails = "Set: \(setIndex + 1)            Reps: \(exercise.sets[setIndex].reps)            Weight: \(exercise.sets[setIndex].weight) lbs"
+                let currentSetDetails = "Set: \(setIndex + 1)               Reps: \(exercise.sets[setIndex].reps)               Weight: \(exercise.sets[setIndex].weight) lbs"
                 let notes = exercise.notes
                 return (exerciseName, currentSetDetails, notes)
             }
@@ -144,7 +146,7 @@ struct WorkoutView: View {
                                 .foregroundStyle(Color.secondary)
                             HStack(spacing: 0) {
                                 Text("Total Time: ")
-                                Text(startTime, style: .timer)
+                                Text(timer.formattedTime(timer.totalTime))
                             }
                             .font(.subheadline)
                             .foregroundStyle(Color.secondary)
@@ -230,7 +232,7 @@ struct WorkoutView: View {
                         }
                         Section {
                             ForEach(exercises.indices, id: \.self) { index in
-                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer)) {
+                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, allExercises: $exercises)) {
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(exercises[index].name)

@@ -4,26 +4,45 @@ import UserNotifications
 import ActivityKit
 
 class TimerDisplayViewModel: ObservableObject {
-    @Published var timeRemaining: TimeInterval = 0
-    private var endDate: Date? = nil
-    private var timerSubscription: AnyCancellable?
+    @Published var restTimeRemaining: TimeInterval = 0
+    @Published var totalTime: TimeInterval = 0
+    
+    private var restEndDate: Date? = nil
+    private var totalStartDate: Date? = nil
+    
+    private var restTimerSubscription: AnyCancellable?
+    private var totalTimerSubscription: AnyCancellable?
+    
     private var hasRequestedAuthorization = false
     var activity: Activity<WorkoutAttributes>?
     
-    func startTimer(workoutTitle: String, exerciseName: String, currentSetDetails: String, notes: String, allExercisesDone: Bool, minutes: Int, seconds: Int) {
+    func startWorkoutTimer() {
+        totalStartDate = Date()
+        updateTotalTime()
+        
+        totalTimerSubscription?.cancel()
+        totalTimerSubscription = Timer.publish(every: 1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.updateTotalTime()
+                self?.updateLiveActivity()
+            }
+    }
+    
+    func startRestTimer(workoutTitle: String, exerciseName: String, currentSetDetails: String, notes: String, allExercisesDone: Bool, minutes: Int, seconds: Int) {
         let totalSeconds = TimeInterval(minutes * 60 + seconds)
-        endDate = Date().addingTimeInterval(totalSeconds)
+        restEndDate = Date().addingTimeInterval(totalSeconds)
         
-        updateTimeRemaining()
+        updateRestTimeRemaining()
         
-        timerSubscription?.cancel()
+        restTimerSubscription?.cancel()
         
         NotificationManager.shared.removeAllNotifications()
         
-        timerSubscription = Timer.publish(every: 1, on: .main, in: .common)
+        restTimerSubscription = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
-                self?.updateTimeRemaining()
+                self?.updateRestTimeRemaining()
                 self?.updateLiveActivity()
             }
         
@@ -47,9 +66,10 @@ class TimerDisplayViewModel: ObservableObject {
             currentSetDetails: currentSetDetails,
             notes: notes,
             timeRemaining: totalSeconds,
-            allExercisesDone: allExercisesDone
+            allExercisesDone: allExercisesDone,
+            totalTime: totalTime
         )
-        let activityAttributes = WorkoutAttributes(workoutTitle: workoutTitle, totalTime: totalSeconds)
+        let activityAttributes = WorkoutAttributes(workoutTitle: workoutTitle)
         let staleDate = Date().addingTimeInterval(60 * 60) // Example: 1 hour in the future
         
         if let activity = activity {
@@ -74,23 +94,32 @@ class TimerDisplayViewModel: ObservableObject {
     }
     
     func endActivity() async {
+        NotificationManager.shared.removeAllNotifications()
         if let activity = activity {
             await activity.end(ActivityContent(state: activity.content.state, staleDate: Date()), dismissalPolicy: .immediate)
             self.activity = nil
         }
     }
     
-    func updateTimeRemaining() {
-        guard let endDate = endDate else {
-            timeRemaining = 0
+    private func updateTotalTime() {
+        guard let totalStartDate = totalStartDate else {
+            totalTime = 0
+            return
+        }
+        totalTime = Date().timeIntervalSince(totalStartDate)
+    }
+    
+    func updateRestTimeRemaining() {
+        guard let restEndDate = restEndDate else {
+            restTimeRemaining = 0
             return
         }
         let currentTime = Date()
-        timeRemaining = endDate.timeIntervalSince(currentTime)
-        if timeRemaining <= 0 {
-            timeRemaining = 0
-            timerSubscription?.cancel()
-            print("Timer finished")
+        restTimeRemaining = restEndDate.timeIntervalSince(currentTime)
+        if restTimeRemaining <= 0 {
+            restTimeRemaining = 0
+            restTimerSubscription?.cancel()
+            print("Rest timer finished")
         }
     }
     
@@ -101,18 +130,20 @@ class TimerDisplayViewModel: ObservableObject {
             currentExerciseName: activity.content.state.currentExerciseName,
             currentSetDetails: activity.content.state.currentSetDetails,
             notes: activity.content.state.notes,
-            timeRemaining: timeRemaining,
-            allExercisesDone: activity.content.state.allExercisesDone
+            timeRemaining: restTimeRemaining,
+            allExercisesDone: activity.content.state.allExercisesDone,
+            totalTime: totalTime // Add this
         )
         
         Task {
             await activity.update(ActivityContent(state: state, staleDate: Date().addingTimeInterval(60 * 60)))
         }
     }
+
     
-    func formattedTime() -> String {
-        let minutes = Int(timeRemaining) / 60
-        let seconds = Int(timeRemaining) % 60
+    func formattedTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
 }
@@ -122,8 +153,8 @@ struct TimerDisplayView: View {
     
     var body: some View {
         VStack {
-            if viewModel.timeRemaining > 0 {
-                Text(viewModel.formattedTime())
+            if viewModel.restTimeRemaining > 0 {
+                Text(viewModel.formattedTime(viewModel.restTimeRemaining))
                     .font(.title)
                     .padding(.horizontal, 5)
                     .background {
@@ -133,7 +164,7 @@ struct TimerDisplayView: View {
             }
         }
         .onAppear {
-            viewModel.updateTimeRemaining()
+            viewModel.updateRestTimeRemaining()
         }
     }
 }

@@ -8,7 +8,7 @@ struct WorkoutAttributes: ActivityAttributes {
         var notes: String
         var timeRemaining: TimeInterval
         var allExercisesDone: Bool
+        var totalTime: TimeInterval
     }
     var workoutTitle: String
-    var totalTime: TimeInterval
 }
