@@ -57,14 +57,73 @@ class DataManager {
                 "sets": []
             ]
             for (setIndex, set) in exercise.sets.enumerated() {
-                let newSet = ExerciseSet(id: UUID().uuidString, reps: set.reps, weight: set.weight, order: setIndex, exercise: newExercise)
+                let newSet = ExerciseSet(id: UUID().uuidString, reps: set.reps, weight: set.weight, order: setIndex, restMinutes: set.restMinutes, restSeconds: set.restSeconds, exercise: newExercise)
                 context.insert(newSet)
                 newExercise.sets.append(newSet)
                 let setData: [String: Any] = [
                     "id": newSet.id,
                     "reps": newSet.reps,
                     "weight": newSet.weight,
-                    "order": newSet.order
+                    "order": newSet.order,
+                    "restMinutes": newSet.restMinutes,
+                    "restSeconds": newSet.restSeconds
+                ]
+                exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
+            }
+            newWorkout.exercises.append(newExercise)
+            workoutData["exercises"] = (workoutData["exercises"] as? [[String: Any]] ?? []) + [exerciseData]
+        }
+        do {
+            try context.save()
+            print("Workout saved successfully.")
+        } catch {
+            print("Failed to save workout: \(error.localizedDescription)")
+        }
+        db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData) { error in
+            if let error = error {
+                print("Error saving workout to Firebase: \(error.localizedDescription)")
+            }
+        }
+    }
+    func saveWorkoutAsTemplate(workout: Workout, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        let newWorkout = Workout(id: UUID().uuidString, title: workout.title, startTime: Date(), endTime: Date(), notes: workout.notes, template: true, exercises: [])
+        context.insert(newWorkout)
+        var workoutData: [String: Any] = [
+            "id": newWorkout.id,
+            "title": newWorkout.title,
+            "startTime": newWorkout.startTime,
+            "endTime": newWorkout.endTime,
+            "notes": newWorkout.notes,
+            "template": newWorkout.template,
+            "exercises": []
+        ]
+        for exercise in workout.exercises.sorted(by: { $0.order < $1.order }) {
+            let newExercise = WorkoutExercise(id: UUID().uuidString, name: exercise.name, category: exercise.category, notes: exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines), date: Date(), order: exercise.order, workout: newWorkout, sets: [])
+            context.insert(newExercise)
+            var exerciseData: [String: Any] = [
+                "id": newExercise.id,
+                "name": newExercise.name,
+                "category": newExercise.category,
+                "notes": newExercise.notes,
+                "date": newExercise.date,
+                "order": newExercise.order,
+                "sets": []
+            ]
+            for set in exercise.sets.sorted(by: { $0.order < $1.order }) {
+                let newSet = ExerciseSet(id: UUID().uuidString, reps: set.reps, weight: set.weight, order: set.order, restMinutes: set.restMinutes, restSeconds: set.restSeconds, exercise: newExercise)
+                context.insert(newSet)
+                newExercise.sets.append(newSet)
+                let setData: [String: Any] = [
+                    "id": newSet.id,
+                    "reps": newSet.reps,
+                    "weight": newSet.weight,
+                    "order": newSet.order,
+                    "restMinutes": newSet.restMinutes,
+                    "restSeconds": newSet.restSeconds
                 ]
                 exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
             }
@@ -197,8 +256,10 @@ class DataManager {
                                     if let setId = setData["id"] as? String, 
                                         let reps = setData["reps"] as? Int,
                                         let weight = setData["weight"] as? Double,
-                                        let order = setData["order"] as? Int {
-                                        let newSet = ExerciseSet(id: setId, reps: reps, weight: weight, order: order, exercise: newExercise)
+                                        let order = setData["order"] as? Int,
+                                        let restMinutes = setData["restMinutes"] as? Int,
+                                        let restSeconds = setData["restSeconds"] as? Int {
+                                        let newSet = ExerciseSet(id: setId, reps: reps, weight: weight, order: order, restMinutes: restMinutes, restSeconds: restSeconds, exercise: newExercise)
                                         context.insert(newSet)
                                         newExercise.sets.append(newSet)
                                     }

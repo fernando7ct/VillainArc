@@ -152,7 +152,7 @@ struct TemplateView: View {
                                         .padding(.trailing, 5)
                                         
                                         Button(action: {
-                                            exercises[index].sets.append(TempSet(reps: 0, weight: 0, completed: false))
+                                            exercises[index].sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
                                         }, label: {
                                             Image(systemName: "plus")
                                                 .font(.title3)

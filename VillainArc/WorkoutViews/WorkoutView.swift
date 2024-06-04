@@ -14,6 +14,7 @@ struct WorkoutView: View {
     @State private var isEditing = false
     @State private var isTemplate = false
     @State private var showSaveSheet = false
+    @StateObject private var timer = TimerDisplayViewModel()
     var existingWorkout: Workout?
     
     init(existingWorkout: Workout? = nil) {
@@ -86,6 +87,7 @@ struct WorkoutView: View {
                                 .foregroundStyle(Color.secondary)
                         }
                         Spacer()
+                        TimerDisplayView(viewModel: timer)
                         if !isEditing {
                             Menu {
                                 if !exercises.isEmpty {
@@ -162,7 +164,7 @@ struct WorkoutView: View {
                         }
                         Section {
                             ForEach(exercises.indices, id: \.self) { index in
-                                NavigationLink(destination: ExerciseView(exercise: $exercises[index])) {
+                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer)) {
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(exercises[index].name)

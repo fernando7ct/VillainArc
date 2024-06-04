@@ -21,6 +21,9 @@ struct WorkoutDetailView: View {
             dismiss()
         }
     }
+    private func saveWorkoutAsTemplate() {
+        DataManager.shared.saveWorkoutAsTemplate(workout: workout, context: context)
+    }
     
     var body: some View {
         ZStack {
@@ -42,6 +45,14 @@ struct WorkoutDetailView: View {
                     }
                     Spacer()
                     Menu {
+                        if !workout.template {
+                            Button(action: {
+                                saveWorkoutAsTemplate()
+                                dismiss()
+                            }, label: {
+                                Label("Make into Template", systemImage: "doc.text")
+                            })
+                        }
                         Button(action: {
                             workoutStarted.toggle()
                         }, label: {

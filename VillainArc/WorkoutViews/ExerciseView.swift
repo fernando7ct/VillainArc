@@ -2,9 +2,11 @@ import SwiftUI
 
 struct ExerciseView: View {
     @Binding var exercise: TempExercise
+    @ObservedObject var timer: TimerDisplayViewModel
     @FocusState private var keyboardActive: Bool
     @FocusState private var notesFocused: Bool
     @State private var showHistorySheet = false
+    @State private var setRestTimeSheet = false
     
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
@@ -31,21 +33,7 @@ struct ExerciseView: View {
                         
                     }
                     Spacer()
-                    Menu {
-                        Button(action: {
-                            showHistorySheet.toggle()
-                        }, label: {
-                            Label("Exercise History", systemImage: "clock")
-                        })
-                    } label: {
-                        Image(systemName: "chevron.down.circle")
-                            .font(.title)
-                            .foregroundStyle(Color.primary)
-                    }
-                    .sheet(isPresented: $showHistorySheet) {
-                        ExerciseHistoryView(exerciseName: $exercise.name, onSelectHistory: populateSets)
-                            .presentationDragIndicator(.visible)
-                    }
+                    TimerDisplayView(viewModel: timer)
                 }
                 .padding(.horizontal)
                 List {
@@ -101,6 +89,9 @@ struct ExerciseView: View {
                                     .cornerRadius(12)
                                     .focused($keyboardActive)
                                 Button(action: {
+                                    if !exercise.sets[setIndex].completed {
+                                        timer.startTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
+                                    }
                                     exercise.sets[setIndex].completed.toggle()
                                 }, label: {
                                     Image(systemName: "checkmark")
@@ -123,7 +114,14 @@ struct ExerciseView: View {
                     
                     Section {
                         Button(action: {
-                            exercise.sets.append(TempSet(reps: 0, weight: 0, completed: false))
+                            withAnimation {
+                                if exercise.sets.isEmpty {
+                                    exercise.sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
+                                } else {
+                                    let lastSet = exercise.sets.last!
+                                    exercise.sets.append(TempSet(reps: lastSet.reps, weight: lastSet.weight, restMinutes: lastSet.restMinutes, restSeconds: lastSet.restSeconds, completed: false))
+                                }
+                            }
                         }, label: {
                             HStack {
                                 Label("Add Set", systemImage: "plus")
@@ -159,6 +157,34 @@ struct ExerciseView: View {
                 }
             }
             .padding()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing, content: {
+                Menu {
+                    if !exercise.sets.isEmpty {
+                        Button(action: {
+                            setRestTimeSheet.toggle()
+                        }, label: {
+                            Label("Set Rest Times", systemImage: "timer")
+                        })
+                    }
+                    Button(action: {
+                        showHistorySheet.toggle()
+                    }, label: {
+                        Label("Exercise History", systemImage: "clock")
+                    })
+                } label: {
+                    Image(systemName: "chevron.down.circle")
+                }
+                .sheet(isPresented: $showHistorySheet) {
+                    ExerciseHistoryView(exerciseName: $exercise.name, onSelectHistory: populateSets)
+                        .presentationDragIndicator(.visible)
+                }
+                .sheet(isPresented: $setRestTimeSheet) {
+                    SetRestTimeView(exercise: $exercise)
+                        .presentationDragIndicator(.visible)
+                }
+            })
         }
     }
 }

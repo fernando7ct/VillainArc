@@ -35,6 +35,9 @@
 		FD7C6EFA2C0BFC9B001453F2 /* AllWorkoutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6EF92C0BFC9B001453F2 /* AllWorkoutsView.swift */; };
 		FD7C6EFC2C0BFCAD001453F2 /* AllTemplatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6EFB2C0BFCAD001453F2 /* AllTemplatesView.swift */; };
 		FD7C6EFE2C0C2D6B001453F2 /* AddExerciseNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6EFD2C0C2D6B001453F2 /* AddExerciseNotesView.swift */; };
+		FD7C6F042C0E8381001453F2 /* TimerDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6F032C0E8381001453F2 /* TimerDisplayView.swift */; };
+		FD7C6F062C0E874D001453F2 /* SetRestTimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6F052C0E874C001453F2 /* SetRestTimeView.swift */; };
+		FD7C6F092C0E9336001453F2 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6F082C0E9335001453F2 /* NotificationManager.swift */; };
 		FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB0B5D62BFC25190099D91D /* AllWeightEntriesView.swift */; };
 		FDB39EA52C093041008929DF /* ExerciseSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */; };
 		FDB39EA72C0933B0008929DF /* exercises.json in Resources */ = {isa = PBXBuildFile; fileRef = FDB39EA62C0933B0008929DF /* exercises.json */; };
@@ -72,6 +75,10 @@
 		FD7C6EF92C0BFC9B001453F2 /* AllWorkoutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWorkoutsView.swift; sourceTree = "<group>"; };
 		FD7C6EFB2C0BFCAD001453F2 /* AllTemplatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTemplatesView.swift; sourceTree = "<group>"; };
 		FD7C6EFD2C0C2D6B001453F2 /* AddExerciseNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddExerciseNotesView.swift; sourceTree = "<group>"; };
+		FD7C6F032C0E8381001453F2 /* TimerDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerDisplayView.swift; sourceTree = "<group>"; };
+		FD7C6F052C0E874C001453F2 /* SetRestTimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetRestTimeView.swift; sourceTree = "<group>"; };
+		FD7C6F072C0E914C001453F2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FD7C6F082C0E9335001453F2 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		FDB0B5D62BFC25190099D91D /* AllWeightEntriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWeightEntriesView.swift; sourceTree = "<group>"; };
 		FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSelectionView.swift; sourceTree = "<group>"; };
 		FDB39EA62C0933B0008929DF /* exercises.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = exercises.json; sourceTree = "<group>"; };
@@ -122,6 +129,7 @@
 		FD2E77932BF57CF800245E06 /* VillainArc */ = {
 			isa = PBXGroup;
 			children = (
+				FD7C6F072C0E914C001453F2 /* Info.plist */,
 				FD2E77AF2BF6D0C400245E06 /* VillainArc.entitlements */,
 				FD2E77942BF57CF800245E06 /* VillainArcApp.swift */,
 				FD2E77962BF57CF800245E06 /* ContentView.swift */,
@@ -158,6 +166,7 @@
 				FD2201C32BFF060E00487151 /* Workout.swift */,
 				FD2201C52BFF066A00487151 /* WorkoutExercise.swift */,
 				FD2201C72BFF084700487151 /* ExerciseSet.swift */,
+				FD7C6F082C0E9335001453F2 /* NotificationManager.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -175,8 +184,10 @@
 				FDB39EAD2C0A95D8008929DF /* TemplateView.swift */,
 				FD7C6EFD2C0C2D6B001453F2 /* AddExerciseNotesView.swift */,
 				FD2201CB2BFF304C00487151 /* ExerciseView.swift */,
+				FD7C6F052C0E874C001453F2 /* SetRestTimeView.swift */,
 				FD7C6EF12C0AD531001453F2 /* ExerciseHistoryView.swift */,
 				FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */,
+				FD7C6F032C0E8381001453F2 /* TimerDisplayView.swift */,
 			);
 			path = WorkoutViews;
 			sourceTree = "<group>";
@@ -261,6 +272,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDB39EAC2C0A7D04008929DF /* SaveWorkoutSheet.swift in Sources */,
+				FD7C6F042C0E8381001453F2 /* TimerDisplayView.swift in Sources */,
 				FDB39EAA2C0A4496008929DF /* WorkoutDetailView.swift in Sources */,
 				FD2201C12BFF033E00487151 /* HomeTab.swift in Sources */,
 				FD2E77AA2BF587E800245E06 /* Other.swift in Sources */,
@@ -275,11 +287,13 @@
 				FD2E77A82BF581F200245E06 /* AddWeightEntryView.swift in Sources */,
 				FD2201C82BFF084700487151 /* ExerciseSet.swift in Sources */,
 				FD2201C62BFF066A00487151 /* WorkoutExercise.swift in Sources */,
+				FD7C6F062C0E874D001453F2 /* SetRestTimeView.swift in Sources */,
 				FD2E77AC2BF6AA5500245E06 /* DataManager.swift in Sources */,
 				FD7C6EF62C0BFA82001453F2 /* WorkoutSectionView.swift in Sources */,
 				FD2E77A62BF57ED700245E06 /* WeightTab.swift in Sources */,
 				FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */,
 				FD7C6EFA2C0BFC9B001453F2 /* AllWorkoutsView.swift in Sources */,
+				FD7C6F092C0E9336001453F2 /* NotificationManager.swift in Sources */,
 				FD7C6EF22C0AD531001453F2 /* ExerciseHistoryView.swift in Sources */,
 				FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */,
 				FD7C6EFE2C0C2D6B001453F2 /* AddExerciseNotesView.swift in Sources */,
@@ -425,6 +439,7 @@
 				DEVELOPMENT_TEAM = 6SVFNFHMZZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VillainArc/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Villain Arc";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -460,6 +475,7 @@
 				DEVELOPMENT_TEAM = 6SVFNFHMZZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VillainArc/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Villain Arc";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

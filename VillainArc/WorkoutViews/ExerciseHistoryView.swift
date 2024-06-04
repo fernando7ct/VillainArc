@@ -23,7 +23,7 @@ struct ExerciseHistoryView: View {
     
     private func convertToTempSets(sets: [ExerciseSet]) -> [TempSet] {
         sets.sorted(by: { $0.order < $1.order }).map { set in
-            TempSet(reps: set.reps, weight: set.weight, completed: false)
+            TempSet(reps: set.reps, weight: set.weight, restMinutes: set.restMinutes, restSeconds: set.restSeconds, completed: false)
         }
     }
 

@@ -105,6 +105,7 @@ struct AddWeightEntryView: View {
                                     }
                                     .textEditorStyle(.plain)
                                     .focused($notesFocused)
+                                    .autocorrectionDisabled()
                                 if !notesFocused && notes.isEmpty {
                                     Text("Notes...")
                                         .foregroundStyle(.secondary)
