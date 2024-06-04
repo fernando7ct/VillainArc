@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import ActivityKit
 
 struct WorkoutView: View {
     @Environment(\.modelContext) private var context
@@ -16,7 +15,6 @@ struct WorkoutView: View {
     @State private var isTemplate = false
     @State private var showSaveSheet = false
     @StateObject private var timer = TimerDisplayViewModel()
-    @State private var liveActivityStarted = false
     var existingWorkout: Workout?
     
     init(existingWorkout: Workout? = nil) {
@@ -52,7 +50,6 @@ struct WorkoutView: View {
         withAnimation {
             exercises.remove(atOffsets: offsets)
         }
-        updateLiveActivity()
     }
     private func completedSets(for exercise: TempExercise) -> Int {
         return exercise.sets.filter { $0.completed }.count
@@ -61,74 +58,16 @@ struct WorkoutView: View {
         withAnimation {
             exercises.move(fromOffsets: source, toOffset: destination)
         }
-        updateLiveActivity()
     }
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
             exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
-        updateLiveActivity()
     }
     private func saveWorkout(title: String) {
         DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
+        timer.endActivity()
         dismiss()
-        Task {
-            await timer.endActivity()
-        }
-    }
-
-    private func startLiveActivity() {
-        let currentSetDetails = getCurrentSetDetails()
-        let initialContentState = WorkoutAttributes.ContentState(
-            currentExerciseName: currentSetDetails?.exerciseName ?? "No active exercise",
-            currentSetDetails: currentSetDetails?.currentSetDetails ?? "",
-            notes: currentSetDetails?.notes ?? "",
-            timeRemaining: 0,
-            allExercisesDone: currentSetDetails == nil,
-            totalTime: timer.totalTime
-        )
-        let activityAttributes = WorkoutAttributes(workoutTitle: title)
-        Task {
-            do {
-                timer.activity = try Activity<WorkoutAttributes>.request(
-                    attributes: activityAttributes,
-                    content: ActivityContent(state: initialContentState, staleDate: Date().addingTimeInterval(60 * 60)),
-                    pushType: nil
-                )
-                timer.startWorkoutTimer()
-                print("Live Activity started: \(timer.activity?.id ?? "unknown")")
-            } catch {
-                print("Failed to start Live Activity: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    private func updateLiveActivity() {
-        guard let activity = timer.activity else { return }
-        let currentSetDetails = getCurrentSetDetails()
-        let state = WorkoutAttributes.ContentState(
-            currentExerciseName: currentSetDetails?.exerciseName ?? "No active exercise",
-            currentSetDetails: currentSetDetails?.currentSetDetails ?? "",
-            notes: currentSetDetails?.notes ?? "",
-            timeRemaining: timer.restTimeRemaining,
-            allExercisesDone: currentSetDetails == nil,
-            totalTime: timer.totalTime
-        )
-        Task {
-            await activity.update(ActivityContent(state: state, staleDate: Date().addingTimeInterval(60 * 60)))
-        }
-    }
-
-    private func getCurrentSetDetails() -> (exerciseName: String, currentSetDetails: String, notes: String)? {
-        for exercise in exercises {
-            if let setIndex = exercise.sets.firstIndex(where: { !$0.completed }) {
-                let exerciseName = exercise.name
-                let currentSetDetails = "Set: \(setIndex + 1)               Reps: \(exercise.sets[setIndex].reps)               Weight: \(exercise.sets[setIndex].weight) lbs"
-                let notes = exercise.notes
-                return (exerciseName, currentSetDetails, notes)
-            }
-        }
-        return nil
     }
 
     var body: some View {
@@ -146,7 +85,7 @@ struct WorkoutView: View {
                                 .foregroundStyle(Color.secondary)
                             HStack(spacing: 0) {
                                 Text("Total Time: ")
-                                Text(timer.formattedTime(timer.totalTime))
+                                Text(startTime, style: .timer)
                             }
                             .font(.subheadline)
                             .foregroundStyle(Color.secondary)
@@ -170,10 +109,8 @@ struct WorkoutView: View {
                                     })
                                 }
                                 Button(action: {
+                                    timer.endActivity()
                                     dismiss()
-                                    Task {
-                                        await timer.endActivity()
-                                    }
                                 }, label: {
                                     Label("Cancel Workout", systemImage: "xmark")
                                 })
@@ -232,7 +169,7 @@ struct WorkoutView: View {
                         }
                         Section {
                             ForEach(exercises.indices, id: \.self) { index in
-                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, allExercises: $exercises)) {
+                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer)) {
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(exercises[index].name)
@@ -318,10 +255,6 @@ struct WorkoutView: View {
                     }
                     self.exercises = recentExercises ?? []
                     isTemplate = false
-                }
-                if !liveActivityStarted {
-                    startLiveActivity()
-                    liveActivityStarted.toggle()
                 }
             }
         }
