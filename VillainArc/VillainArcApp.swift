@@ -5,7 +5,7 @@ import CloudKit
 
 @main
 struct VillainArcApp: App {
-    @AppStorage("isICloudEnabled") var isICloudEnabled: Bool = false
+    @AppStorage("iCloudEnabled") var iCloudEnabled: Bool = false
     
     init() {
         FirebaseApp.configure()
@@ -24,11 +24,9 @@ struct VillainArcApp: App {
             DispatchQueue.main.async {
                 switch status {
                 case .available:
-                    isICloudEnabled = true
-                    print("iCloud Enabled")
+                    iCloudEnabled = true
                 default:
-                    isICloudEnabled = false
-                    print("iCloud Disabled")
+                    iCloudEnabled = false
                 }
             }
         }

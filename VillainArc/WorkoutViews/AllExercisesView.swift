@@ -20,6 +20,9 @@ struct AllExercisesView: View {
         return exerciseDict.values
             .sorted {
                 if $0.count == $1.count {
+                    if $0.sets.count == $1.sets.count {
+                        return $0.name > $1.name
+                    }
                     return $0.sets.count > $1.sets.count
                 }
                 return $0.count > $1.count

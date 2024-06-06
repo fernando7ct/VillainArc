@@ -20,6 +20,9 @@ struct ExercisesSectionView: View {
         return exerciseDict.values
             .sorted {
                 if $0.count == $1.count {
+                    if $0.sets.count == $1.sets.count {
+                        return $0.name > $1.name
+                    }
                     return $0.sets.count > $1.sets.count
                 }
                 return $0.count > $1.count
@@ -35,7 +38,7 @@ struct ExercisesSectionView: View {
                     .fontWeight(.semibold)
                     .font(.title2)
                 Spacer()
-                if workouts.flatMap({ $0.exercises }).count > 5 {
+                if workouts.flatMap({ $0.exercises! }).count > 5 {
                     NavigationLink(destination: AllExercisesView()) {
                         Text("All Exercises")
                     }
