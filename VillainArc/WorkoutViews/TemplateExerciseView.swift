@@ -1,22 +1,15 @@
 import SwiftUI
 
-struct ExerciseView: View {
+struct TemplateExerciseView: View {
     @Binding var exercise: TempExercise
-    @ObservedObject var timer: TimerDisplayViewModel
     @FocusState private var keyboardActive: Bool
     @FocusState private var notesFocused: Bool
-    @State private var showHistorySheet = false
-    @State private var setRestTimeSheet = false
-
+    
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
             exercise.sets.remove(atOffsets: offsets)
         }
     }
-    private func populateSets(from historySets: [TempSet]) {
-        exercise.sets = historySets
-    }
-    
     var body: some View {
         ZStack {
             BackgroundView()
@@ -31,7 +24,6 @@ struct ExerciseView: View {
                             .foregroundStyle(Color.secondary)
                     }
                     Spacer()
-                    TimerDisplayView(viewModel: timer)
                 }
                 .padding(.horizontal)
                 List {
@@ -58,12 +50,14 @@ struct ExerciseView: View {
                             HStack {
                                 Text("Set")
                                     .offset(x: 5)
-                                Text("Reps")
-                                    .offset(x: 30)
-                                Text("Weight")
-                                    .offset(x: 130)
+                                Text("Minutes")
+                                    .offset(x: 40)
+                                Text("Seconds")
+                                    .offset(x: 140)
                             }
                             .fontWeight(.semibold)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                         }
                         ForEach(exercise.sets.indices, id: \.self) { setIndex in
                             HStack {
@@ -72,44 +66,30 @@ struct ExerciseView: View {
                                     .padding(.vertical, 7)
                                     .background(BlurView())
                                     .cornerRadius(12)
-                                TextField("", value: $exercise.sets[setIndex].reps, format: .number)
+                                    .focused($keyboardActive)
+                                TextField("", value: $exercise.sets[setIndex].restMinutes, format: .number)
                                     .keyboardType(.numberPad)
                                     .padding(.horizontal)
                                     .padding(.vertical, 7)
                                     .background(BlurView())
                                     .cornerRadius(12)
                                     .focused($keyboardActive)
-                                TextField("", value: $exercise.sets[setIndex].weight, format: .number)
-                                    .keyboardType(.decimalPad)
+                                TextField("", value: $exercise.sets[setIndex].restSeconds, format: .number)
+                                    .keyboardType(.numberPad)
                                     .padding(.horizontal)
                                     .padding(.vertical, 7)
                                     .background(BlurView())
                                     .cornerRadius(12)
                                     .focused($keyboardActive)
-                                Button(action: {
-                                    if !exercise.sets[setIndex].completed {
-                                        timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
-                                    }
-                                    exercise.sets[setIndex].completed.toggle()
-                                }, label: {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
-                                        .font(.title)
-                                        .fontWeight(.semibold)
-                                })
-                                .padding(.horizontal, 7)
-                                .padding(.vertical, 7)
-                                .background(BlurView())
-                                .cornerRadius(12)
-                                .buttonStyle(BorderlessButtonStyle())
                             }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                             .font(.title2)
                         }
                         .onDelete(perform: deleteSet)
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    
                     Section {
                         Button(action: {
                             withAnimation {
@@ -155,35 +135,6 @@ struct ExerciseView: View {
                 }
             }
             .padding()
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing, content: {
-                Menu {
-                    if !exercise.sets.isEmpty {
-                        Button(action: {
-                            setRestTimeSheet.toggle()
-                        }, label: {
-                            Label("Set Rest Times", systemImage: "timer")
-                        })
-                    }
-                    Button(action: {
-                        showHistorySheet.toggle()
-                    }, label: {
-                        Label("Exercise History", systemImage: "clock")
-                    })
-                } label: {
-                    Image(systemName: "chevron.down.circle")
-                        .font(.title2)
-                }
-                .sheet(isPresented: $showHistorySheet) {
-                    ExerciseHistoryView(exerciseName: $exercise.name, onSelectHistory: populateSets)
-                        .presentationDragIndicator(.visible)
-                }
-                .sheet(isPresented: $setRestTimeSheet) {
-                    SetRestTimeView(exercise: $exercise)
-                        .presentationDragIndicator(.visible)
-                }
-            })
         }
     }
 }

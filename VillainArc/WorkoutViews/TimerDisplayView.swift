@@ -33,8 +33,8 @@ class TimerDisplayViewModel: ObservableObject {
         
         if totalSeconds > 10 {
             NotificationManager.shared.scheduleNotification(
-                title: "Rest Time is Up",
-                body: "Let's get back to your workout!",
+                title: "Villain Arc",
+                body: "Rest Time is Up",
                 timeInterval: totalSeconds
             )
         } else {

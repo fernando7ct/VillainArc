@@ -26,6 +26,18 @@ struct CustomStyleModifier: ViewModifier {
 func concatenatedExerciseNames(for workout: Workout) -> String {
     return workout.exercises.sorted(by: { $0.order < $1.order }).map { $0.name }.joined(separator: ", ")
 }
+func topSet(for exerciseInfo: ExerciseInfo) -> String {
+    guard let topSet = exerciseInfo.sets.max(by: {
+        if $0.weight == $1.weight {
+            return $0.reps < $1.reps
+        } else {
+            return $0.weight < $1.weight
+        }
+    }) else {
+        return "No sets"
+    }
+    return "Top Set: \(topSet.reps)x\(formattedWeight(topSet.weight)) lbs"
+}
 extension View {
     func customStyle() -> some View {
         self.modifier(CustomStyleModifier())

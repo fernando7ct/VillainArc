@@ -65,3 +65,9 @@ struct TempExercise: Identifiable {
         self.sets = exercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
     }
 }
+struct ExerciseInfo {
+    var name: String
+    var category: String
+    var count: Int
+    var sets: [ExerciseSet]
+}

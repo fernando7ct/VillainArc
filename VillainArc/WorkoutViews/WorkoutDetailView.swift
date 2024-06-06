@@ -22,7 +22,9 @@ struct WorkoutDetailView: View {
         }
     }
     private func saveWorkoutAsTemplate() {
-        DataManager.shared.saveWorkoutAsTemplate(workout: workout, context: context)
+        withAnimation {
+            DataManager.shared.saveWorkoutAsTemplate(workout: workout, context: context)
+        }
     }
     
     var body: some View {
@@ -44,33 +46,6 @@ struct WorkoutDetailView: View {
                         }
                     }
                     Spacer()
-                    Menu {
-                        if !workout.template {
-                            Button(action: {
-                                saveWorkoutAsTemplate()
-                                dismiss()
-                            }, label: {
-                                Label("Make into Template", systemImage: "doc.text")
-                            })
-                        }
-                        Button(action: {
-                            workoutStarted.toggle()
-                        }, label: {
-                            Label("Use \(workout.template ? "" : "as ")Template", systemImage: "doc.text")
-                        })
-                        Button(action: {
-                            showDeleteAlert = true
-                        }, label: {
-                            Label("Delete \(workout.template ? "Template" : "Workout")", systemImage: "trash")
-                        })
-                    } label: {
-                        Image(systemName: "chevron.down.circle")
-                            .font(.title)
-                            .foregroundStyle(Color.primary)
-                    }
-                    .fullScreenCover(isPresented: $workoutStarted) {
-                        WorkoutView(existingWorkout: workout)
-                    }
                 }
                 .padding([.horizontal, .bottom])
                 if !workout.template {
@@ -159,6 +134,36 @@ struct WorkoutDetailView: View {
                     },
                     secondaryButton: .cancel()
                 )
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        if !workout.template {
+                            Button(action: {
+                                saveWorkoutAsTemplate()
+                                dismiss()
+                            }, label: {
+                                Label("Make into Template", systemImage: "doc.text")
+                            })
+                        }
+                        Button(action: {
+                            workoutStarted.toggle()
+                        }, label: {
+                            Label("Use \(workout.template ? "" : "as ")Template", systemImage: "doc.text")
+                        })
+                        Button(action: {
+                            showDeleteAlert = true
+                        }, label: {
+                            Label("Delete \(workout.template ? "Template" : "Workout")", systemImage: "trash")
+                        })
+                    } label: {
+                        Image(systemName: "chevron.down.circle")
+                            .font(.title2)
+                    }
+                    .fullScreenCover(isPresented: $workoutStarted) {
+                        WorkoutView(existingWorkout: workout)
+                    }
+                }
             }
         }
     }

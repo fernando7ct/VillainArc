@@ -37,200 +37,159 @@ struct TemplateView: View {
     }
 
     var body: some View {
-        ZStack {
-            BackgroundView()
-            VStack(spacing: 0) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(title)
-                            .font(.title)
-                            .fontWeight(.semibold)
-                        Text("\(startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.secondary)
-                    }
-                    Spacer()
-                    if !isEditing {
-                        Menu {
-                            if !exercises.isEmpty {
-                                Button(action: {
-                                    withAnimation {
-                                        isEditing.toggle()
-                                    }
-                                }, label: {
-                                    Label("Edit Exercises", systemImage: "list.bullet")
-                                })
-                                Button(action: {
-                                    showSaveSheet = true
-                                }, label: {
-                                    Label("Save Template", systemImage: "checkmark")
-                                })
-                            }
-                            Button(action: {
-                                dismiss()
-                            }, label: {
-                                Label("Cancel Template", systemImage: "xmark")
-                            })
-                        } label: {
-                            Image(systemName: "chevron.down.circle")
+        NavigationView {
+            ZStack {
+                BackgroundView()
+                VStack(spacing: 0) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(title)
                                 .font(.title)
-                                .foregroundStyle(Color.primary)
-                        }
-                    } else {
-                        Button(action: {
-                            withAnimation {
-                                isEditing.toggle()
-                            }
-                        }, label: {
-                            Text("Done")
                                 .fontWeight(.semibold)
-                                .font(.title2)
-                        })
-                    }
-                }
-                .padding(.horizontal)
-                .sheet(isPresented: $showSaveSheet) {
-                    SaveWorkoutSheet(title: title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: $isTemplate, onSave: { editableTitle in
-                        saveWorkout(title: editableTitle)
-                    })
-                    .interactiveDismissDisabled()
-                }
-                List {
-                    if !isEditing {
-                        Section {
-                            ZStack(alignment: .leading) {
-                                TextEditor(text: $notes)
-                                    .focused($notesFocused)
-                                    .textEditorStyle(.plain)
-                                    .autocorrectionDisabled()
-                                if !notesFocused && notes.isEmpty {
-                                    Text("Notes...")
-                                        .foregroundStyle(.secondary)
-                                        .font(.subheadline)
-                                        .onTapGesture {
-                                            notesFocused = true
-                                        }
-                                }
-                            }
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    }
-                    Section {
-                        ForEach(exercises.indices, id: \.self) { index in
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(exercises[index].name)
-                                        .font(.title2)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(Color.primary)
-                                    if !exercises[index].notes.isEmpty {
-                                        Text("Notes: \(exercises[index].notes.trimmingCharacters(in: .whitespacesAndNewlines))")
-                                            .multilineTextAlignment(.leading)
-                                            .lineLimit(2)
-                                    }
-                                    Text(exercises[index].category)
-                                    Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
-                                }
+                            Text("\(startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.secondary)
-                                Spacer()
-                                if !isEditing {
-                                    HStack(spacing: 10) {
-                                        Button(action: {
-                                            if exercises[index].sets.count > 0 {
-                                                exercises[index].sets.removeLast()
-                                            }
-                                        }, label: {
-                                            Image(systemName: "minus")
-                                                .foregroundStyle(.red)
-                                        })
-                                        .disabled(exercises[index].sets.count == 0)
-                                        .buttonStyle(BorderedButtonStyle())
-                                        Button(action: {
-                                            exercises[index].sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
-                                        }, label: {
-                                            Image(systemName: "plus")
-                                                .foregroundStyle(.green)
-                                        })
-                                        .buttonStyle(BorderedButtonStyle())
-                                        Button(action: {
-                                            selectedExerciseNotes = exercises[index]
-                                        }, label: {
-                                            Image(systemName: "doc.plaintext")
-                                        })
-                                        .buttonStyle(BorderlessButtonStyle())
-                                        .sheet(item: $selectedExerciseNotes) { exercise in
-                                            AddExerciseNotesView(exercise: $exercises[exercises.firstIndex(where: { $0.id == exercise.id })!])
-                                        }
-                                        Button(action: {
-                                            if !exercises[index].sets.isEmpty {
-                                                selectedExerciseTimer = exercises[index]
-                                            }
-                                        }, label: {
-                                            Image(systemName: "timer")
-                                        })
-                                        .disabled(exercises[index].sets.count == 0)
-                                        .buttonStyle(BorderlessButtonStyle())
-                                        .sheet(item: $selectedExerciseTimer) { exercise in
-                                            SetRestTimeView(exercise: $exercises[exercises.firstIndex(where: { $0.id == exercise.id })!])
-                                        }
-                                    }
-                                    .font(.title2)
-                                    .padding(.trailing)
-                                    .fontWeight(.semibold)
-                                }
-                            }
                         }
-                        .onDelete(perform: deleteExercise)
-                        .onMove(perform: moveExercise)
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    if !isEditing {
-                        Section {
-                            Button(action: {
-                                showExerciseSelection = true
-                            }, label: {
-                                HStack {
-                                    Label("Add Exercise", systemImage: "plus")
-                                    Spacer()
+                        Spacer()
+                        if !isEditing {
+                            Menu {
+                                if !exercises.isEmpty {
+                                    Button(action: {
+                                        withAnimation {
+                                            isEditing.toggle()
+                                        }
+                                    }, label: {
+                                        Label("Edit Exercises", systemImage: "list.bullet")
+                                    })
+                                    Button(action: {
+                                        showSaveSheet = true
+                                    }, label: {
+                                        Label("Save Template", systemImage: "checkmark")
+                                    })
                                 }
-                                .foregroundStyle(Color.primary)
-                            })
-                            .padding()
-                            .background(BlurView())
-                            .cornerRadius(12)
-                            .sheet(isPresented: $showExerciseSelection) {
-                                ExerciseSelectionView(onAdd: addSelectedExercises)
-                                    .interactiveDismissDisabled()
+                                Button(action: {
+                                    dismiss()
+                                }, label: {
+                                    Label("Cancel Template", systemImage: "xmark")
+                                })
+                            } label: {
+                                Image(systemName: "chevron.down.circle")
+                                    .font(.title)
+                                    .foregroundStyle(Color.primary)
                             }
+                        } else {
+                            Button(action: {
+                                withAnimation {
+                                    isEditing.toggle()
+                                }
+                            }, label: {
+                                Text("Done")
+                                    .fontWeight(.semibold)
+                                    .font(.title2)
+                            })
+                        }
+                    }
+                    .padding(.horizontal)
+                    .sheet(isPresented: $showSaveSheet) {
+                        SaveWorkoutSheet(title: title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: $isTemplate, onSave: { editableTitle in
+                            saveWorkout(title: editableTitle)
+                        })
+                        .interactiveDismissDisabled()
+                    }
+                    List {
+                        if !isEditing {
+                            Section {
+                                ZStack(alignment: .leading) {
+                                    TextEditor(text: $notes)
+                                        .focused($notesFocused)
+                                        .textEditorStyle(.plain)
+                                        .autocorrectionDisabled()
+                                    if !notesFocused && notes.isEmpty {
+                                        Text("Notes...")
+                                            .foregroundStyle(.secondary)
+                                            .font(.subheadline)
+                                            .onTapGesture {
+                                                notesFocused = true
+                                            }
+                                    }
+                                }
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                        }
+                        Section {
+                            ForEach(exercises.indices, id: \.self) { index in
+                                NavigationLink(destination: TemplateExerciseView(exercise: $exercises[index])) {
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text(exercises[index].name)
+                                                .font(.title2)
+                                                .fontWeight(.semibold)
+                                                .foregroundStyle(Color.primary)
+                                            if !exercises[index].notes.isEmpty {
+                                                Text("Notes: \(exercises[index].notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                                    .multilineTextAlignment(.leading)
+                                                    .lineLimit(2)
+                                            }
+                                            Text(exercises[index].category)
+                                            Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
+                                        }
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.secondary)
+                                        Spacer()
+                                    }
+                                }
+                            }
+                            .onDelete(perform: deleteExercise)
+                            .onMove(perform: moveExercise)
                         }
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
+                        if !isEditing {
+                            Section {
+                                Button(action: {
+                                    showExerciseSelection = true
+                                }, label: {
+                                    HStack {
+                                        Label("Add Exercise", systemImage: "plus")
+                                        Spacer()
+                                    }
+                                    .foregroundStyle(Color.primary)
+                                })
+                                .padding()
+                                .background(BlurView())
+                                .cornerRadius(12)
+                                .sheet(isPresented: $showExerciseSelection) {
+                                    ExerciseSelectionView(onAdd: addSelectedExercises)
+                                        .interactiveDismissDisabled()
+                                }
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                        }
                     }
+                    .listStyle(.plain)
+                    .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
                 }
-                .listStyle(.plain)
-                .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
-            }
-            VStack(alignment: .trailing) {
-                Spacer()
-                HStack(alignment: .bottom) {
+                VStack(alignment: .trailing) {
                     Spacer()
-                    if notesFocused {
-                        Button(action: {
-                            hideKeyboard()
-                            notesFocused = false
-                        }, label: {
-                            Image(systemName: "keyboard.chevron.compact.down")
-                                .foregroundStyle(Color.primary)
-                                .font(.title)
-                        })
-                        .buttonStyle(BorderedButtonStyle())
+                    HStack(alignment: .bottom) {
+                        Spacer()
+                        if notesFocused {
+                            Button(action: {
+                                hideKeyboard()
+                                notesFocused = false
+                            }, label: {
+                                Image(systemName: "keyboard.chevron.compact.down")
+                                    .foregroundStyle(Color.primary)
+                                    .font(.title)
+                            })
+                            .buttonStyle(BorderedButtonStyle())
+                        }
                     }
                 }
+                .padding()
             }
-            .padding()
         }
     }
 }

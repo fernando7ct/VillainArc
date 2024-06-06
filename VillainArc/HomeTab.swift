@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct HomeTab: View {
     
@@ -12,6 +11,9 @@ struct HomeTab: View {
                         TemplateSectionView()
                             .padding(.vertical)
                         WorkoutSectionView()
+                            .padding(.vertical)
+                        ExercisesSectionView()
+                            .padding(.vertical)
                     }
                 }
             }

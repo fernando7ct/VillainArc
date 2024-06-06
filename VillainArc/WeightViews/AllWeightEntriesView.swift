@@ -36,14 +36,14 @@ struct AllWeightEntriesView: View {
                         Spacer()
                         if !weightEntry.notes.isEmpty {
                             Image(systemName: "doc.plaintext")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.secondary)
                                 .font(.footnote)
                         }
                         VStack(alignment: .trailing) {
                             Text("\(weightEntry.date.formatted(.dateTime.day().month().year()))")
                             Text("\(weightEntry.date.formatted(.dateTime.hour().minute()))")
                         }
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.secondary)
                         .font(.footnote)
                     }
                     .listRowBackground(BlurView())
