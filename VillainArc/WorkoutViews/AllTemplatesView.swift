@@ -3,14 +3,16 @@ import SwiftData
 
 struct AllTemplatesView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Workout.startTime, order: .reverse) private var workouts: [Workout]
+    @Query(filter: #Predicate<Workout> { workout in
+        workout.template
+    }, sort: \Workout.startTime, order: .reverse) private var templates: [Workout]
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
     
     private func deleteTemplate(at offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                let templateToDelete = workouts.filter { $0.template }[index]
+                let templateToDelete = templates[index]
                 DataManager.shared.deleteWorkout(workout: templateToDelete, context: context)
             }
         }
@@ -18,7 +20,7 @@ struct AllTemplatesView: View {
     
     private func deleteAllTemplates() {
         withAnimation {
-            for template in workouts.filter({ $0.template }) {
+            for template in templates {
                 DataManager.shared.deleteWorkout(workout: template, context: context)
             }
             isEditing.toggle()
@@ -29,13 +31,13 @@ struct AllTemplatesView: View {
         ZStack {
             BackgroundView()
             List {
-                ForEach(workouts.filter { $0.template }, id: \.self) { workout in
-                    NavigationLink(destination: WorkoutDetailView(workout: workout)) {
+                ForEach(templates) { template in
+                    NavigationLink(destination: WorkoutDetailView(workout: template)) {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text(workout.title)
+                                Text(template.title)
                                     .fontWeight(.semibold)
-                                Text(concatenatedExerciseNames(for: workout))
+                                Text(concatenatedExerciseNames(for: template))
                                     .lineLimit(2)
                                     .font(.subheadline)
                                     .foregroundStyle(Color.secondary)
@@ -51,15 +53,15 @@ struct AllTemplatesView: View {
             .scrollContentBackground(.hidden)
             .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
             .overlay {
-                if workouts.filter({ $0.template }).isEmpty {
+                if templates.isEmpty {
                     ContentUnavailableView("You have no templates.", systemImage: "doc.text")
                 }
             }
             .navigationTitle("All Templates")
-            .navigationBarBackButtonHidden(isEditing && !workouts.filter({ $0.template }).isEmpty)
+            .navigationBarBackButtonHidden(isEditing && !templates.isEmpty)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if isEditing && !workouts.filter({ $0.template }).isEmpty {
+                    if isEditing && !templates.isEmpty {
                         Button(action: {
                             showDeleteAllAlert = true
                         }, label: {
@@ -69,7 +71,7 @@ struct AllTemplatesView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if !workouts.filter({ $0.template }).isEmpty {
+                    if !templates.isEmpty {
                         Button(action: {
                             withAnimation {
                                 isEditing.toggle()

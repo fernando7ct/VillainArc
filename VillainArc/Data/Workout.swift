@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class Workout {
+class Workout: Identifiable {
     var id: String
     var title: String
     var startTime: Date
@@ -16,7 +16,7 @@ class Workout {
         self.title = title
         self.startTime = startTime
         self.endTime = endTime
-        self.notes = notes
+        self.notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.template = template
         self.exercises = exercises
     }

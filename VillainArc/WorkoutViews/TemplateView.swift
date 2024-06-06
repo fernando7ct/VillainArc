@@ -13,8 +13,8 @@ struct TemplateView: View {
     @State private var isEditing = false
     @State private var isTemplate = true
     @State private var showSaveSheet = false
-    @State private var addExerciseNotes = false
-    @State private var selectedExercise: TempExercise?
+    @State private var selectedExerciseNotes: TempExercise?
+    @State private var selectedExerciseTimer: TempExercise?
     
     private func deleteExercise(at offsets: IndexSet) {
         withAnimation {
@@ -28,12 +28,12 @@ struct TemplateView: View {
     }
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
-            exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: []))
+            exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
     }
     private func saveWorkout(title: String) {
         DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
-            dismiss()
+        dismiss()
     }
 
     var body: some View {
@@ -136,46 +136,49 @@ struct TemplateView: View {
                                 .foregroundStyle(Color.secondary)
                                 Spacer()
                                 if !isEditing {
-                                    HStack {
+                                    HStack(spacing: 10) {
                                         Button(action: {
                                             if exercises[index].sets.count > 0 {
                                                 exercises[index].sets.removeLast()
                                             }
                                         }, label: {
                                             Image(systemName: "minus")
-                                                .font(.title3)
                                                 .foregroundStyle(.red)
-                                                .fontWeight(.semibold)
                                         })
                                         .disabled(exercises[index].sets.count == 0)
                                         .buttonStyle(BorderedButtonStyle())
-                                        .padding(.trailing, 5)
-                                        
                                         Button(action: {
                                             exercises[index].sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
                                         }, label: {
                                             Image(systemName: "plus")
-                                                .font(.title3)
                                                 .foregroundStyle(.green)
-                                                .fontWeight(.semibold)
                                         })
                                         .buttonStyle(BorderedButtonStyle())
-                                        .padding(.trailing, 5)
-                                        
                                         Button(action: {
-                                            selectedExercise = exercises[index]
+                                            selectedExerciseNotes = exercises[index]
                                         }, label: {
                                             Image(systemName: "doc.plaintext")
-                                                .font(.title3)
-                                                .fontWeight(.semibold)
                                         })
                                         .buttonStyle(BorderlessButtonStyle())
-                                        .sheet(item: $selectedExercise) { exercise in
+                                        .sheet(item: $selectedExerciseNotes) { exercise in
                                             AddExerciseNotesView(exercise: $exercises[exercises.firstIndex(where: { $0.id == exercise.id })!])
-                                                .interactiveDismissDisabled()
+                                        }
+                                        Button(action: {
+                                            if !exercises[index].sets.isEmpty {
+                                                selectedExerciseTimer = exercises[index]
+                                            }
+                                        }, label: {
+                                            Image(systemName: "timer")
+                                        })
+                                        .disabled(exercises[index].sets.count == 0)
+                                        .buttonStyle(BorderlessButtonStyle())
+                                        .sheet(item: $selectedExerciseTimer) { exercise in
+                                            SetRestTimeView(exercise: $exercises[exercises.firstIndex(where: { $0.id == exercise.id })!])
                                         }
                                     }
+                                    .font(.title2)
                                     .padding(.trailing)
+                                    .fontWeight(.semibold)
                                 }
                             }
                         }

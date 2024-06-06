@@ -2,7 +2,9 @@ import SwiftUI
 import SwiftData
 
 struct WorkoutSectionView: View {
-    @Query(sort: \Workout.startTime, order: .reverse) private var workouts: [Workout]
+    @Query(filter: #Predicate<Workout> { workout in
+        !workout.template
+    }, sort: \Workout.startTime, order: .reverse) private var workouts: [Workout]
     @State private var workoutStarted = false
     
     var body: some View {
@@ -24,14 +26,14 @@ struct WorkoutSectionView: View {
             .padding(.horizontal)
             .padding(.bottom, 5)
             
-            if workouts.filter({ !$0.template }).isEmpty {
+            if workouts.isEmpty {
                 HStack {
                     Text("You have no past workouts")
                     Spacer()
                 }
                 .customStyle()
             } else {
-                ForEach(workouts.filter { !$0.template }.prefix(3), id: \.self) { workout in
+                ForEach(workouts.prefix(3)) { workout in
                     NavigationLink(destination: WorkoutDetailView(workout: workout)) {
                         HStack {
                             VStack(alignment: .leading) {
@@ -52,7 +54,7 @@ struct WorkoutSectionView: View {
                     }
                 }
             }
-            if workouts.filter({ !$0.template }).count > 3 {
+            if workouts.count > 3 {
                 NavigationLink(destination: AllWorkoutsView()) {
                     HStack {
                         Text("View All Workouts")

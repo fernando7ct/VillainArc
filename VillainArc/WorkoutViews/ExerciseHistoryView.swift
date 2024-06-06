@@ -10,23 +10,20 @@ struct ExerciseHistoryView: View {
     
     private func fetchExerciseHistory() {
         let fetchDescriptor = FetchDescriptor<WorkoutExercise>(
-            predicate: #Predicate { $0.name == exerciseName },
+            predicate: #Predicate { $0.name == exerciseName && $0.workout.template != true },
             sortBy: [SortDescriptor(\WorkoutExercise.date, order: .reverse)]
         )
         do {
             exercises = try context.fetch(fetchDescriptor)
-            exercises = exercises.filter { $0.workout.template != true }
         } catch {
-            // Handle error if needed
+            
         }
     }
-    
     private func convertToTempSets(sets: [ExerciseSet]) -> [TempSet] {
         sets.sorted(by: { $0.order < $1.order }).map { set in
-            TempSet(reps: set.reps, weight: set.weight, restMinutes: set.restMinutes, restSeconds: set.restSeconds, completed: false)
+            TempSet(from: set)
         }
     }
-
     var body: some View {
         NavigationView {
             ZStack {
@@ -36,9 +33,9 @@ struct ExerciseHistoryView: View {
                         Text("No exercise history.")
                             .listRowBackground(BlurView())
                     } else {
-                        ForEach(exercises, id: \.self) { exercise in
+                        ForEach(exercises) { exercise in
                             Section(content: {
-                                ForEach(exercise.sets.sorted(by: { $0.order < $1.order }), id: \.self) { set in
+                                ForEach(exercise.sets.sorted(by: { $0.order < $1.order })) { set in
                                     HStack {
                                         Text("Set: \(set.order + 1)")
                                         Spacer()

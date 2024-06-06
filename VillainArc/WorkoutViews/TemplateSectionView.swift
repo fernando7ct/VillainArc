@@ -2,7 +2,9 @@ import SwiftUI
 import SwiftData
 
 struct TemplateSectionView: View {
-    @Query(sort: \Workout.startTime, order: .reverse) private var workouts: [Workout]
+    @Query(filter: #Predicate<Workout> { workout in
+        workout.template
+    }, sort: \Workout.startTime, order: .reverse) private var templates: [Workout]
     @State private var creatingTemplate = false
     
     var body: some View {
@@ -23,20 +25,20 @@ struct TemplateSectionView: View {
             }
             .padding(.horizontal)
             .padding(.bottom, 5)
-            if workouts.filter({ $0.template }).isEmpty {
+            if templates.isEmpty {
                 HStack {
                     Text("You have no templates")
                     Spacer()
                 }
                 .customStyle()
             } else {
-                ForEach(workouts.filter { $0.template }.prefix(5), id: \.self) { workout in
-                    NavigationLink(destination: WorkoutDetailView(workout: workout)) {
+                ForEach(templates.prefix(5)) { template in
+                    NavigationLink(destination: WorkoutDetailView(workout: template)) {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text(workout.title)
+                                Text(template.title)
                                     .fontWeight(.semibold)
-                                Text(concatenatedExerciseNames(for: workout))
+                                Text(concatenatedExerciseNames(for: template))
                                     .lineLimit(2)
                                     .font(.subheadline)
                                     .foregroundStyle(Color.secondary)
@@ -48,7 +50,7 @@ struct TemplateSectionView: View {
                     }
                 }
             }
-            if workouts.filter({ $0.template }).count > 5 {
+            if templates.count > 5 {
                 NavigationLink(destination: AllTemplatesView()) {
                     HStack {
                         Text("View All Templates")

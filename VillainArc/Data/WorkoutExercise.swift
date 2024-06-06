@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class WorkoutExercise {
+class WorkoutExercise: Identifiable {
     var id: String
     var name: String
     var category: String
@@ -16,9 +16,29 @@ class WorkoutExercise {
         self.id = id
         self.name = name
         self.category = category
-        self.notes = notes
+        self.notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.date = date
         self.order = order
+        self.workout = workout
+        self.sets = sets
+    }
+    init(id: String, tempExercise: TempExercise, date: Date, order: Int, workout: Workout, sets: [ExerciseSet]) {
+        self.id = id
+        self.name = tempExercise.name
+        self.category = tempExercise.category
+        self.notes = tempExercise.notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.date = date
+        self.order = order
+        self.workout = workout
+        self.sets = sets
+    }
+    init(id: String, exercise: WorkoutExercise, date: Date, workout: Workout, sets: [ExerciseSet]) {
+        self.id = id
+        self.name = exercise.name
+        self.category = exercise.category
+        self.notes = exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.date = date
+        self.order = exercise.order
         self.workout = workout
         self.sets = sets
     }

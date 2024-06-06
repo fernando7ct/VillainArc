@@ -3,22 +3,23 @@ import SwiftData
 
 struct AllWorkoutsView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Workout.startTime, order: .reverse) private var workouts: [Workout]
+    @Query(filter: #Predicate<Workout> { workout in
+        !workout.template
+    }, sort: \Workout.startTime, order: .reverse) private var workouts: [Workout]
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
     
     private func deleteWorkout(at offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                let workoutToDelete = workouts.filter { !$0.template }[index]
+                let workoutToDelete = workouts[index]
                 DataManager.shared.deleteWorkout(workout: workoutToDelete, context: context)
             }
         }
     }
-    
     private func deleteAllWorkouts() {
         withAnimation {
-            for workout in workouts.filter({ !$0.template }) {
+            for workout in workouts {
                 DataManager.shared.deleteWorkout(workout: workout, context: context)
             }
             isEditing.toggle()
@@ -29,7 +30,7 @@ struct AllWorkoutsView: View {
         ZStack {
             BackgroundView()
             List {
-                ForEach(workouts.filter { !$0.template }, id: \.self) { workout in
+                ForEach(workouts) { workout in
                     NavigationLink(destination: WorkoutDetailView(workout: workout)) {
                         HStack {
                             VStack(alignment: .leading) {
@@ -54,15 +55,15 @@ struct AllWorkoutsView: View {
             .scrollContentBackground(.hidden)
             .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
             .overlay {
-                if workouts.filter({ !$0.template }).isEmpty {
+                if workouts.isEmpty {
                     ContentUnavailableView("You have no workouts.", systemImage: "dumbbell")
                 }
             }
             .navigationTitle("All Workouts")
-            .navigationBarBackButtonHidden(isEditing && !workouts.filter({ !$0.template }).isEmpty)
+            .navigationBarBackButtonHidden(isEditing && !workouts.isEmpty)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if isEditing && !workouts.filter({ !$0.template }).isEmpty {
+                    if isEditing && !workouts.isEmpty {
                         Button(action: {
                             showDeleteAllAlert = true
                         }, label: {
@@ -72,7 +73,7 @@ struct AllWorkoutsView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if !workouts.filter({ !$0.template }).isEmpty {
+                    if !workouts.isEmpty {
                         Button(action: {
                             withAnimation {
                                 isEditing.toggle()

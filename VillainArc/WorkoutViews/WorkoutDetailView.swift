@@ -85,9 +85,9 @@ struct WorkoutDetailView: View {
                             })
                             .listRowBackground(BlurView())
                         }
-                        ForEach(workout.exercises.sorted(by: { $0.order < $1.order}), id: \.self) { exercise in
+                        ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                             Section(content: {
-                                ForEach(exercise.sets.sorted(by: { $0.order < $1.order}), id: \.self) { set in
+                                ForEach(exercise.sets.sorted(by: { $0.order < $1.order})) { set in
                                     HStack {
                                         Text("Set: \(set.order + 1)")
                                         Spacer()
@@ -122,7 +122,7 @@ struct WorkoutDetailView: View {
                             .listRowSeparator(.hidden)
                         }
                         Section {
-                            ForEach(workout.exercises.sorted(by: { $0.order < $1.order}), id: \.self) { exercise in
+                            ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text(exercise.name)
