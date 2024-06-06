@@ -12,9 +12,9 @@ struct SetRestTimeView: View {
                         Text("Set")
                             .offset(x: 5)
                         Text("Minutes")
-                            .offset(x: 40)
+                            .offset(x: 30)
                         Text("Seconds")
-                            .offset(x: 140)
+                            .offset(x: 135)
                     }
                     .fontWeight(.semibold)
                     .listRowBackground(Color.clear)

@@ -46,7 +46,7 @@ struct ExercisesSectionView: View {
             
             if topExercises.isEmpty {
                 HStack {
-                    Text("You haven't done any exercises yet")
+                    Text("You haven't done any exercises")
                     Spacer()
                 }
                 .customStyle()

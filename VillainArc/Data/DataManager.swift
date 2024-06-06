@@ -147,12 +147,6 @@ class DataManager {
             print("No user is signed in.")
             return
         }
-        for exercise in workout.exercises {
-            for set in exercise.sets {
-                context.delete(set)
-            }
-            context.delete(exercise)
-        }
         context.delete(workout)
         db.collection("users").document(userID).collection("Workouts").document(workout.id).delete { error in
             if let error = error {

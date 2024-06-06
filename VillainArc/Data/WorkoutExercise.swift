@@ -10,6 +10,7 @@ class WorkoutExercise: Identifiable {
     var date: Date
     var order: Int
     var workout: Workout
+    @Relationship(deleteRule: .cascade, inverse: \ExerciseSet.exercise)
     var sets: [ExerciseSet]
     
     init(id: String, name: String, category: String, notes: String, date: Date, order: Int, workout: Workout, sets: [ExerciseSet]) {
