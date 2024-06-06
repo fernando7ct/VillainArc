@@ -24,7 +24,7 @@ struct CustomStyleModifier: ViewModifier {
     }
 }
 func concatenatedExerciseNames(for workout: Workout) -> String {
-    return workout.exercises.sorted(by: { $0.order < $1.order }).map { $0.name }.joined(separator: ", ")
+    return workout.exercises!.sorted(by: { $0.order < $1.order }).map { $0.name }.joined(separator: ", ")
 }
 func topSet(for exerciseInfo: ExerciseInfo) -> String {
     guard let topSet = exerciseInfo.sets.max(by: {

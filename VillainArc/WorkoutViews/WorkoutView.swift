@@ -25,11 +25,11 @@ struct WorkoutView: View {
             self._isTemplate = State(initialValue: workout.template)
             
             if workout.template {
-                self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).compactMap { exercise in
+                self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
                     return TempExercise(name: exercise.name, category: exercise.category, notes: exercise.notes, sets: [])
                 })
             } else {
-                self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+                self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
             }
         }
     }
@@ -247,11 +247,11 @@ struct WorkoutView: View {
             }
             .onAppear {
                 if isTemplate {
-                    let recentExercises = existingWorkout?.exercises.sorted(by: { $0.order < $1.order }).compactMap { exercise in
+                    let recentExercises = existingWorkout?.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
                         guard let latestExercise = fetchLatestExercise(for: exercise.name) else {
                             return TempExercise(name: exercise.name, category: exercise.category, notes: exercise.notes, sets: [])
                         }
-                        return TempExercise(name: latestExercise.name, category: latestExercise.category, notes: latestExercise.notes, sets: latestExercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) })
+                        return TempExercise(name: latestExercise.name, category: latestExercise.category, notes: latestExercise.notes, sets: latestExercise.sets!.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) })
                     }
                     self.exercises = recentExercises ?? []
                     isTemplate = false

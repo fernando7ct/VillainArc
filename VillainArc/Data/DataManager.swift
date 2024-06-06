@@ -2,8 +2,10 @@ import Foundation
 import SwiftData
 import FirebaseFirestore
 import FirebaseAuth
+import SwiftUI
 
 class DataManager {
+    @AppStorage("isICloudEnabled") var isICloudEnabled: Bool = false
     static let shared = DataManager()
     private let db = Firestore.firestore()
     
@@ -59,7 +61,7 @@ class DataManager {
             for (setIndex, set) in exercise.sets.enumerated() {
                 let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)
                 context.insert(newSet)
-                newExercise.sets.append(newSet)
+                newExercise.sets!.append(newSet)
                 let setData: [String: Any] = [
                     "id": newSet.id,
                     "reps": newSet.reps,
@@ -70,7 +72,7 @@ class DataManager {
                 ]
                 exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
             }
-            newWorkout.exercises.append(newExercise)
+            newWorkout.exercises!.append(newExercise)
             workoutData["exercises"] = (workoutData["exercises"] as? [[String: Any]] ?? []) + [exerciseData]
         }
         do {
@@ -101,7 +103,7 @@ class DataManager {
             "template": newWorkout.template,
             "exercises": []
         ]
-        for exercise in workout.exercises.sorted(by: { $0.order < $1.order }) {
+        for exercise in workout.exercises!.sorted(by: { $0.order < $1.order }) {
             let newExercise = WorkoutExercise(id: UUID().uuidString, exercise: exercise, date: Date(), workout: newWorkout, sets: [])
             context.insert(newExercise)
             var exerciseData: [String: Any] = [
@@ -113,10 +115,10 @@ class DataManager {
                 "order": newExercise.order,
                 "sets": []
             ]
-            for set in exercise.sets.sorted(by: { $0.order < $1.order }) {
+            for set in exercise.sets!.sorted(by: { $0.order < $1.order }) {
                 let newSet = ExerciseSet(id: UUID().uuidString, set: set, exercise: newExercise)
                 context.insert(newSet)
-                newExercise.sets.append(newSet)
+                newExercise.sets!.append(newSet)
                 let setData: [String: Any] = [
                     "id": newSet.id,
                     "reps": newSet.reps,
@@ -127,7 +129,7 @@ class DataManager {
                 ]
                 exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
             }
-            newWorkout.exercises.append(newExercise)
+            newWorkout.exercises!.append(newExercise)
             workoutData["exercises"] = (workoutData["exercises"] as? [[String: Any]] ?? []) + [exerciseData]
         }
         do {
@@ -167,14 +169,19 @@ class DataManager {
         }
     }
     func syncData(context: ModelContext, userName: String?, completion: @escaping (Bool) -> Void) {
+        completion(true)
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             completion(false)
             return
         }
-        db.collection("users").document(userID).getDocument { document, error in
+        db.collection("users").document(userID).getDocument { [self] document, error in
             if let document = document, document.exists {
-                self.downloadUserData(userID: userID, context: context, completion: completion)
+                if !isICloudEnabled {
+                    self.downloadUserData(userID: userID, context: context, completion: completion)
+                } else {
+                    completion(true)
+                }
             } else {
                 self.createUser(userID: userID, userName: userName, context: context, completion: completion)
             }
@@ -237,28 +244,28 @@ class DataManager {
                         let newWorkout = Workout(id: id, title: title, startTime: startTime, endTime: endTime, notes: notes, template: template, exercises: [])
                         context.insert(newWorkout)
                         for exerciseData in exercisesData {
-                            if let exerciseId = exerciseData["id"] as? String, 
+                            if let exerciseId = exerciseData["id"] as? String,
                                 let name = exerciseData["name"] as? String,
-                                let category = exerciseData["category"] as? String,
-                                let exerciseNotes = exerciseData["notes"] as? String,
-                                let date = (exerciseData["date"] as? Timestamp)?.dateValue(),
-                                let order = exerciseData["order"] as? Int,
-                                let setsData = exerciseData["sets"] as? [[String: Any]] {
+                               let category = exerciseData["category"] as? String,
+                               let exerciseNotes = exerciseData["notes"] as? String,
+                               let date = (exerciseData["date"] as? Timestamp)?.dateValue(),
+                               let order = exerciseData["order"] as? Int,
+                               let setsData = exerciseData["sets"] as? [[String: Any]] {
                                 let newExercise = WorkoutExercise(id: exerciseId, name: name, category: category, notes: exerciseNotes, date: date, order: order, workout: newWorkout, sets: [])
                                 context.insert(newExercise)
                                 for setData in setsData {
-                                    if let setId = setData["id"] as? String, 
+                                    if let setId = setData["id"] as? String,
                                         let reps = setData["reps"] as? Int,
-                                        let weight = setData["weight"] as? Double,
-                                        let order = setData["order"] as? Int,
-                                        let restMinutes = setData["restMinutes"] as? Int,
-                                        let restSeconds = setData["restSeconds"] as? Int {
+                                       let weight = setData["weight"] as? Double,
+                                       let order = setData["order"] as? Int,
+                                       let restMinutes = setData["restMinutes"] as? Int,
+                                       let restSeconds = setData["restSeconds"] as? Int {
                                         let newSet = ExerciseSet(id: setId, reps: reps, weight: weight, order: order, restMinutes: restMinutes, restSeconds: restSeconds, exercise: newExercise)
                                         context.insert(newSet)
-                                        newExercise.sets.append(newSet)
+                                        newExercise.sets!.append(newSet)
                                     }
                                 }
-                                newWorkout.exercises.append(newExercise)
+                                newWorkout.exercises!.append(newExercise)
                             }
                         }
                     }

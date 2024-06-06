@@ -3,13 +3,13 @@ import SwiftData
 
 @Model
 class ExerciseSet: Identifiable {
-    var id: String
-    var reps: Int
-    var weight: Double
-    var order: Int
-    var restMinutes: Int
-    var restSeconds: Int
-    var exercise: WorkoutExercise
+    var id: String = UUID().uuidString
+    var reps: Int = 0
+    var weight: Double = 0
+    var order: Int = 0
+    var restMinutes: Int = 0
+    var restSeconds: Int = 0
+    var exercise: WorkoutExercise?
     
     init(id: String, reps: Int, weight: Double, order: Int, restMinutes: Int, restSeconds: Int, exercise: WorkoutExercise) {
         self.id = id

@@ -10,7 +10,7 @@ struct ExerciseHistoryView: View {
     
     private func fetchExerciseHistory() {
         let fetchDescriptor = FetchDescriptor<WorkoutExercise>(
-            predicate: #Predicate { $0.name == exerciseName && $0.workout.template != true },
+            predicate: #Predicate { $0.name == exerciseName && $0.workout?.template != true },
             sortBy: [SortDescriptor(\WorkoutExercise.date, order: .reverse)]
         )
         do {
@@ -35,7 +35,7 @@ struct ExerciseHistoryView: View {
                     } else {
                         ForEach(exercises) { exercise in
                             Section(content: {
-                                ForEach(exercise.sets.sorted(by: { $0.order < $1.order })) { set in
+                                ForEach(exercise.sets!.sorted(by: { $0.order < $1.order })) { set in
                                     HStack {
                                         Text("Set: \(set.order + 1)")
                                         Spacer()
@@ -51,7 +51,7 @@ struct ExerciseHistoryView: View {
                                         .foregroundStyle(Color.primary)
                                     Spacer()
                                     Button(action: {
-                                        let tempSets = convertToTempSets(sets: exercise.sets)
+                                        let tempSets = convertToTempSets(sets: exercise.sets!)
                                         onSelectHistory?(tempSets)
                                         dismiss()
                                     }, label: {

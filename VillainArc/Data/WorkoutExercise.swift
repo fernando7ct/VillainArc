@@ -3,15 +3,15 @@ import SwiftData
 
 @Model
 class WorkoutExercise: Identifiable {
-    var id: String
-    var name: String
-    var category: String
-    var notes: String
-    var date: Date
-    var order: Int
-    var workout: Workout
+    var id: String = UUID().uuidString
+    var name: String = ""
+    var category: String = ""
+    var notes: String = ""
+    var date: Date = Date()
+    var order: Int = 0
+    var workout: Workout?
     @Relationship(deleteRule: .cascade, inverse: \ExerciseSet.exercise)
-    var sets: [ExerciseSet]
+    var sets: [ExerciseSet]?
     
     init(id: String, name: String, category: String, notes: String, date: Date, order: Int, workout: Workout, sets: [ExerciseSet]) {
         self.id = id
@@ -63,7 +63,7 @@ struct TempExercise: Identifiable {
         self.name = exercise.name
         self.category = exercise.category
         self.notes = exercise.notes
-        self.sets = exercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
+        self.sets = exercise.sets!.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
     }
 }
 struct ExerciseInfo {

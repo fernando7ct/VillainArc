@@ -9,8 +9,12 @@
 		<string>Default</string>
 	</array>
 	<key>com.apple.developer.icloud-container-identifiers</key>
-	<array/>
+	<array>
+		<string>iCloud.name.FernandoCaudilloTafoya.VillainArc</string>
+	</array>
 	<key>com.apple.developer.icloud-services</key>
-	<array/>
+	<array>
+		<string>CloudKit</string>
+	</array>
 </dict>
 </plist>
