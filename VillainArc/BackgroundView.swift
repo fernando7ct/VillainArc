@@ -7,7 +7,7 @@ struct BackgroundView: View {
         if colorScheme == .light {
             Color("lightBackground")
                 .ignoresSafeArea()
-                .blur(radius: 150)
+                .blur(radius: 225)
         } else {
             RadialGradient(colors: [.black, Color(uiColor: .darkGray)], center: .center, startRadius: 0, endRadius: 600)
                 .ignoresSafeArea()
