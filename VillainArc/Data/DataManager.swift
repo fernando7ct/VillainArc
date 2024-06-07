@@ -2,6 +2,7 @@ import Foundation
 import SwiftData
 import FirebaseFirestore
 import FirebaseAuth
+import FirebaseStorage
 import SwiftUI
 import CloudKit
 
@@ -9,6 +10,7 @@ class DataManager {
     @AppStorage("iCloudEnabled") var iCloudEnabled: Bool = false
     static let shared = DataManager()
     private let db = Firestore.firestore()
+    private let storageRef = Storage.storage().reference()
     
     private init() {
         self.checkICloudAvailability()
@@ -26,23 +28,50 @@ class DataManager {
             }
         }
     }
-    
-    func saveWeightEntry(weight: Double, notes: String, date: Date, context: ModelContext) {
+    func saveWeightEntry(weight: Double, notes: String, date: Date, photoData: Data?, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
         }
-        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weight, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), date: date)
+        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weight, notes: notes.trimmingCharacters(in: .whitespacesAndNewlines), date: date, photoData: photoData)
         context.insert(newWeightEntry)
-        let weightEntryData: [String: Any] = [
+        var weightEntryData: [String: Any] = [
             "id": newWeightEntry.id,
-            "weight": weight,
-            "notes" : notes,
-            "date": date
+            "weight": newWeightEntry.weight,
+            "notes" : newWeightEntry.notes,
+            "date": newWeightEntry.date
         ]
-        db.collection("users").document(userID).collection("WeightEntries").document(newWeightEntry.id).setData(weightEntryData) { error in
-            if let error = error {
-                print("Error saving weight entry to Firebase: \(error.localizedDescription)")
+        if let photoData = photoData {
+            let storagePath = "images/\(userID)/\(newWeightEntry.id).jpg"
+            let imageRef = storageRef.child(storagePath)
+            
+            imageRef.putData(photoData, metadata: nil) { metadata, error in
+                if let error = error {
+                    print("Error uploading photo: \(error.localizedDescription)")
+                    return
+                }
+                imageRef.downloadURL { url, error in
+                    if let error = error {
+                        print("Error getting photo URL: \(error.localizedDescription)")
+                        return
+                    }
+                    guard let photoURL = url else {
+                        print("Photo URL is nil")
+                        return
+                    }
+                    weightEntryData["photoURL"] = photoURL.absoluteString
+                    self.db.collection("users").document(userID).collection("WeightEntries").document(newWeightEntry.id).setData(weightEntryData) { error in
+                        if let error = error {
+                            print("Error saving weight entry to Firebase: \(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
+        } else {
+            db.collection("users").document(userID).collection("WeightEntries").document(newWeightEntry.id).setData(weightEntryData) { error in
+                if let error = error {
+                    print("Error saving weight entry to Firebase: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -178,6 +207,13 @@ class DataManager {
             return
         }
         context.delete(weightEntry)
+        let storagePath = "images/\(userID)/\(weightEntry.id).jpg"
+        let imageRef = storageRef.child(storagePath)
+        imageRef.delete { error in
+            if let error = error {
+                print("Error deleting image from Firebase Storage: \(error.localizedDescription)")
+            }
+        }
         db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).delete { error in
             if let error = error {
                 print("Error deleting weight entry from Firebase: \(error.localizedDescription)")
@@ -240,9 +276,20 @@ class DataManager {
         db.collection("users").document(userID).collection("WeightEntries").getDocuments { snapshot, error in
             if let snapshot = snapshot {
                 for document in snapshot.documents {
-                    if let id = document.data()["id"] as? String, let weight = document.data()["weight"] as? Double, let notes = document.data()["notes"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue() {
-                        let newWeightEntry = WeightEntry(id: id, weight: weight, notes: notes, date: date)
-                        context.insert(newWeightEntry)
+                    if let id = document.data()["id"] as? String,
+                       let weight = document.data()["weight"] as? Double,
+                       let notes = document.data()["notes"] as? String,
+                       let date = (document.data()["date"] as? Timestamp)?.dateValue() {
+                        if let photoURLString = document.data()["photoURL"] as? String,
+                           let photoURL = URL(string: photoURLString) {
+                            self.downloadPhotoData(from: photoURL) { photoData in
+                                let newWeightEntry = WeightEntry(id: id, weight: weight, notes: notes, date: date, photoData: photoData)
+                                context.insert(newWeightEntry)
+                            }
+                        } else {
+                            let newWeightEntry = WeightEntry(id: id, weight: weight, notes: notes, date: date, photoData: nil)
+                            context.insert(newWeightEntry)
+                        }
                     }
                 }
                 completion(true)
@@ -251,6 +298,20 @@ class DataManager {
                 completion(false)
             }
         }
+    }
+    private func downloadPhotoData(from url: URL?, completion: @escaping (Data?) -> Void) {
+        guard let url = url else {
+            completion(nil)
+            return
+        }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error downloading photo data: \(error.localizedDescription)")
+                completion(nil)
+            } else {
+                completion(data)
+            }
+        }.resume()
     }
     private func downloadWorkouts(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).collection("Workouts").getDocuments { snapshot, error in

@@ -162,6 +162,10 @@ struct WeightGraphView: View {
             }
             .fontWeight(.medium)
             Chart(graphableEntries(), id: \.date) { weightEntry in
+                if graphableEntries().count == 1 {
+                    PointMark(x: .value("Date", weightEntry.date), y: .value("Weight", weightEntry.weight))
+                        .foregroundStyle(Color.blue)
+                }
                 LineMark(
                     x: .value("Date", weightEntry.date),
                     y: .value("Weight", weightEntry.weight)

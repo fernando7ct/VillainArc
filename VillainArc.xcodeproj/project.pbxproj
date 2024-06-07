@@ -26,6 +26,8 @@
 		FD2E77B12BF6D0E300245E06 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */; };
 		FD2E77B82BF6D37200245E06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B72BF6D37200245E06 /* User.swift */; };
 		FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */; };
+		FD7714BE2C1273E100FF12AF /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7714BD2C1273E100FF12AF /* CalendarView.swift */; };
+		FD7714C02C12CF3700FF12AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FD7714BF2C12CF3700FF12AF /* FirebaseStorage */; };
 		FD7C6EF22C0AD531001453F2 /* ExerciseHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6EF12C0AD531001453F2 /* ExerciseHistoryView.swift */; };
 		FD7C6EF42C0BB6B0001453F2 /* BackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6EF32C0BB6B0001453F2 /* BackgroundView.swift */; };
 		FD7C6EF62C0BFA82001453F2 /* WorkoutSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7C6EF52C0BFA82001453F2 /* WorkoutSectionView.swift */; };
@@ -83,6 +85,7 @@
 		FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FD2E77B72BF6D37200245E06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WeightGraphView.swift; path = VillainArc/WeightViews/WeightGraphView.swift; sourceTree = SOURCE_ROOT; };
+		FD7714BD2C1273E100FF12AF /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		FD7C6EF12C0AD531001453F2 /* ExerciseHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHistoryView.swift; sourceTree = "<group>"; };
 		FD7C6EF32C0BB6B0001453F2 /* BackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundView.swift; sourceTree = "<group>"; };
 		FD7C6EF52C0BFA82001453F2 /* WorkoutSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSectionView.swift; sourceTree = "<group>"; };
@@ -112,6 +115,7 @@
 			files = (
 				FD7C6F312C0EB2A6001453F2 /* FirebaseAuth in Frameworks */,
 				FD7C6F332C0EB2A6001453F2 /* FirebaseFirestore in Frameworks */,
+				FD7714C02C12CF3700FF12AF /* FirebaseStorage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +158,7 @@
 				FD2E77962BF57CF800245E06 /* ContentView.swift */,
 				FD2E77AD2BF6D03C00245E06 /* LogInView.swift */,
 				FD2201C02BFF033E00487151 /* HomeTab.swift */,
+				FD7714BD2C1273E100FF12AF /* CalendarView.swift */,
 				FDB39EA82C0A4378008929DF /* WorkoutViews */,
 				FD2E77A52BF57ED700245E06 /* WeightTab.swift */,
 				FD2201C22BFF03F600487151 /* WeightViews */,
@@ -241,6 +246,7 @@
 			packageProductDependencies = (
 				FD7C6F302C0EB2A6001453F2 /* FirebaseAuth */,
 				FD7C6F322C0EB2A6001453F2 /* FirebaseFirestore */,
+				FD7714BF2C12CF3700FF12AF /* FirebaseStorage */,
 			);
 			productName = VillainArc;
 			productReference = FD2E77912BF57CF800245E06 /* VillainArc.app */;
@@ -321,6 +327,7 @@
 				FD2201C62BFF066A00487151 /* WorkoutExercise.swift in Sources */,
 				FD7C6F062C0E874D001453F2 /* SetRestTimeView.swift in Sources */,
 				FD2E77AC2BF6AA5500245E06 /* DataManager.swift in Sources */,
+				FD7714BE2C1273E100FF12AF /* CalendarView.swift in Sources */,
 				FD7C6EF62C0BFA82001453F2 /* WorkoutSectionView.swift in Sources */,
 				FD2E77A62BF57ED700245E06 /* WeightTab.swift in Sources */,
 				FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */,
@@ -568,6 +575,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		FD7714BF2C12CF3700FF12AF /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FD2E77B22BF6D12C00245E06 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		FD7C6F302C0EB2A6001453F2 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = FD2E77B22BF6D12C00245E06 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

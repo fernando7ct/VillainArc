@@ -34,6 +34,11 @@ struct AllWeightEntriesView: View {
                         Text("\(formattedWeight(weightEntry.weight)) lbs")
                             .fontWeight(.semibold)
                         Spacer()
+                        if weightEntry.photoData != nil {
+                            Image(systemName: "photo")
+                                .foregroundStyle(Color.secondary)
+                                .font(.footnote)
+                        }
                         if !weightEntry.notes.isEmpty {
                             Image(systemName: "doc.plaintext")
                                 .foregroundStyle(Color.secondary)
