@@ -164,13 +164,13 @@ struct WeightGraphView: View {
             Chart(graphableEntries(), id: \.date) { weightEntry in
                 if graphableEntries().count == 1 {
                     PointMark(x: .value("Date", weightEntry.date), y: .value("Weight", weightEntry.weight))
-                        .foregroundStyle(Color.blue)
+                        .foregroundStyle(Color.primary)
                 }
                 LineMark(
                     x: .value("Date", weightEntry.date),
                     y: .value("Weight", weightEntry.weight)
                 )
-                .foregroundStyle(Color.blue)
+                .foregroundStyle(Color.primary)
                 .interpolationMethod(.monotone)
                 .lineStyle(StrokeStyle(lineWidth: 1.5))
                 AreaMark(
@@ -178,12 +178,14 @@ struct WeightGraphView: View {
                     yStart: .value("Weight", yAxisRange().lowerBound),
                     yEnd: .value("Weight", weightEntry.weight)
                 )
-                .foregroundStyle(Color.blue.gradient.opacity(0.5))
+                .foregroundStyle(Color.primary.gradient.opacity(0.6))
                 .interpolationMethod(.monotone)
                 if let selectedEntry {
                     RuleMark(
                         x: .value("Date", selectedEntry.date)
                     )
+                    .foregroundStyle(Color.primary)
+                    .lineStyle(StrokeStyle(lineWidth: 2))
                     .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                         VStack(alignment: .leading, spacing: 5) {
                             Text("Weight")
