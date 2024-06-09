@@ -5,7 +5,7 @@ import CloudKit
 
 @main
 struct VillainArcApp: App {
-    @AppStorage("iCloudEnabled") var iCloudEnabled: Bool = false
+    @AppStorage("iCloudEnabled") var iCloudEnabled = false
     
     init() {
         FirebaseApp.configure()
@@ -16,7 +16,7 @@ struct VillainArcApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [WeightEntry.self, User.self, Workout.self, WorkoutExercise.self, ExerciseSet.self])
+        .modelContainer(for: [WeightEntry.self, User.self, Workout.self, WorkoutExercise.self, ExerciseSet.self, HealthSteps.self])
     }
     
     func checkICloudAvailability() {

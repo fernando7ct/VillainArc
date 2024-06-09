@@ -4,8 +4,6 @@ import UserNotifications
 class NotificationManager {
     static let shared = NotificationManager()
     
-    private init() { }
-    
     func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
             if let error = error {

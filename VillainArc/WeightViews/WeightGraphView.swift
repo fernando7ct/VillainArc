@@ -2,17 +2,17 @@ import SwiftUI
 import SwiftData
 import Charts
 
+enum GraphRanges {
+    case week
+    case month
+    case sixMonths
+}
+
 struct WeightGraphView: View {
     @Query(sort: \WeightEntry.date, order: .reverse) private var weightEntries: [WeightEntry]
-    @State private var selectedWeightRange: weightGraphRange = .week
+    @State private var selectedWeightRange: GraphRanges = .week
     @State private var selectedEntry: (date: Date, weight: Double)? = nil
-    
-    enum weightGraphRange {
-        case week
-        case month
-        case sixMonths
-    }
-    
+        
     private func yAxisRange() -> ClosedRange<Double> {
         let filteredEntries = filteredEntries()
         guard let minWeight = filteredEntries.map({ $0.weight }).min(),
@@ -131,9 +131,9 @@ struct WeightGraphView: View {
     var body: some View {
         VStack {
             Picker("Time Range", selection: $selectedWeightRange) {
-                Text("Week").tag(weightGraphRange.week)
-                Text("Month").tag(weightGraphRange.month)
-                Text("6 Months").tag(weightGraphRange.sixMonths)
+                Text("Week").tag(GraphRanges.week)
+                Text("Month").tag(GraphRanges.month)
+                Text("6 Months").tag(GraphRanges.sixMonths)
             }
             .pickerStyle(.segmented)
     

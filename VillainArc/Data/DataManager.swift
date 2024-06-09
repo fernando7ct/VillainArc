@@ -7,7 +7,7 @@ import SwiftUI
 import CloudKit
 
 class DataManager {
-    @AppStorage("iCloudEnabled") var iCloudEnabled: Bool = false
+    @AppStorage("iCloudEnabled") var iCloudEnabled = false
     static let shared = DataManager()
     private let db = Firestore.firestore()
     private let storageRef = Storage.storage().reference()
@@ -39,7 +39,8 @@ class DataManager {
             "id": newWeightEntry.id,
             "weight": newWeightEntry.weight,
             "notes" : newWeightEntry.notes,
-            "date": newWeightEntry.date
+            "date": newWeightEntry.date,
+            "photoURL": ""
         ]
         if let photoData = photoData {
             let storagePath = "images/\(userID)/\(newWeightEntry.id).jpg"
@@ -189,6 +190,47 @@ class DataManager {
             }
         }
     }
+    func saveHealthStep(healthSteps: HealthSteps, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        context.insert(healthSteps)
+        let healthStepsData: [String: Any] = [
+            "id": healthSteps.id,
+            "date": healthSteps.date,
+            "steps": healthSteps.steps
+        ]
+        db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData) { error in
+            if let error = error {
+                print("Error saving health steps to Firebase: \(error.localizedDescription)")
+            }
+        }
+    }
+    func updateHealthStep(healthSteps: HealthSteps, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        do {
+            try context.save()
+            print("Health Steps updated successfully")
+        } catch {
+            print("Error updating steps: \(error)")
+        }
+        let healthStepsData: [String: Any] = [
+            "id": healthSteps.id,
+            "date": healthSteps.date,
+            "steps": healthSteps.steps
+        ]
+        db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).updateData(healthStepsData) { error in
+            if let error = error {
+                print("Error updating health steps in Firebase: \(error.localizedDescription)")
+            } else {
+                print("Updated steps in Firebase")
+            }
+        }
+    }
     func deleteWorkout(workout: Workout, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
@@ -265,6 +307,7 @@ class DataManager {
                     context.insert(user)
                     self.downloadWeightEntries(userID: userID, context: context, completion: completion)
                     self.downloadWorkouts(userID: userID, context: context, completion: completion)
+                    self.downloadHealthSteps(userID: userID, context: context, completion: completion)
                 }
             } else {
                 print("Error downloading user data: \(error?.localizedDescription ?? "Unknown error")")
@@ -322,7 +365,7 @@ class DataManager {
                         context.insert(newWorkout)
                         for exerciseData in exercisesData {
                             if let exerciseId = exerciseData["id"] as? String,
-                                let name = exerciseData["name"] as? String,
+                               let name = exerciseData["name"] as? String,
                                let category = exerciseData["category"] as? String,
                                let exerciseNotes = exerciseData["notes"] as? String,
                                let date = (exerciseData["date"] as? Timestamp)?.dateValue(),
@@ -332,7 +375,7 @@ class DataManager {
                                 context.insert(newExercise)
                                 for setData in setsData {
                                     if let setId = setData["id"] as? String,
-                                        let reps = setData["reps"] as? Int,
+                                       let reps = setData["reps"] as? Int,
                                        let weight = setData["weight"] as? Double,
                                        let order = setData["order"] as? Int,
                                        let restMinutes = setData["restMinutes"] as? Int,
@@ -350,6 +393,22 @@ class DataManager {
                 completion(true)
             } else {
                 print("Error downloading workouts: \(error?.localizedDescription ?? "Unknown error")")
+                completion(false)
+            }
+        }
+    }
+    private func downloadHealthSteps(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
+        db.collection("users").document(userID).collection("HealthSteps").getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                for document in snapshot.documents {
+                    if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let steps = document.data()["steps"] as? Double {
+                        let newHealthSteps = HealthSteps(id: id, date: date, steps: steps)
+                        context.insert(newHealthSteps)
+                    }
+                }
+                completion(true)
+            } else {
+                print("Error downloading health steps: \(error?.localizedDescription ?? "Unknown error")")
                 completion(false)
             }
         }
