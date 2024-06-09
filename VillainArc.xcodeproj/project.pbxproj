@@ -54,6 +54,7 @@
 		FDB39EAE2C0A95D8008929DF /* TemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDB39EAD2C0A95D8008929DF /* TemplateView.swift */; };
 		FDD4FB652C155D850028BADB /* StepsSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB642C155D850028BADB /* StepsSectionView.swift */; };
 		FDD4FB672C1564190028BADB /* StepsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB662C1564190028BADB /* StepsView.swift */; };
+		FDD4FB692C1588230028BADB /* HealthActiveEnergy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB682C1588230028BADB /* HealthActiveEnergy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -118,6 +119,7 @@
 		FDB39EAD2C0A95D8008929DF /* TemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateView.swift; sourceTree = "<group>"; };
 		FDD4FB642C155D850028BADB /* StepsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsSectionView.swift; sourceTree = "<group>"; };
 		FDD4FB662C1564190028BADB /* StepsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsView.swift; sourceTree = "<group>"; };
+		FDD4FB682C1588230028BADB /* HealthActiveEnergy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthActiveEnergy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,6 +205,7 @@
 				FD2E77A32BF57D6600245E06 /* WeightEntry.swift */,
 				FD2E77B72BF6D37200245E06 /* User.swift */,
 				FD7714C92C14F8D800FF12AF /* HealthSteps.swift */,
+				FDD4FB682C1588230028BADB /* HealthActiveEnergy.swift */,
 				FD2E77AB2BF6AA5500245E06 /* DataManager.swift */,
 				FD2201C32BFF060E00487151 /* Workout.swift */,
 				FD2201C52BFF066A00487151 /* WorkoutExercise.swift */,
@@ -349,6 +352,7 @@
 				FD2201C62BFF066A00487151 /* WorkoutExercise.swift in Sources */,
 				FD7C6F062C0E874D001453F2 /* SetRestTimeView.swift in Sources */,
 				FD2E77AC2BF6AA5500245E06 /* DataManager.swift in Sources */,
+				FDD4FB692C1588230028BADB /* HealthActiveEnergy.swift in Sources */,
 				FD7714BE2C1273E100FF12AF /* CalendarView.swift in Sources */,
 				FD7C6EF62C0BFA82001453F2 /* WorkoutSectionView.swift in Sources */,
 				FD2E77A62BF57ED700245E06 /* WeightTab.swift in Sources */,

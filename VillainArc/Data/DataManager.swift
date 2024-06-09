@@ -190,7 +190,7 @@ class DataManager {
             }
         }
     }
-    func saveHealthStep(healthSteps: HealthSteps, context: ModelContext) {
+    func saveHealthSteps(healthSteps: HealthSteps, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
@@ -207,7 +207,7 @@ class DataManager {
             }
         }
     }
-    func updateHealthStep(healthSteps: HealthSteps, context: ModelContext) {
+    func updateHealthSteps(healthSteps: HealthSteps, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
@@ -228,6 +228,47 @@ class DataManager {
                 print("Error updating health steps in Firebase: \(error.localizedDescription)")
             } else {
                 print("Updated steps in Firebase")
+            }
+        }
+    }
+    func saveHealthActiveEnergy(activeEnergy: HealthActiveEnergy, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        context.insert(activeEnergy)
+        let healthActiveEnergy: [String: Any] = [
+            "id": activeEnergy.id,
+            "date": activeEnergy.date,
+            "activeEnergy": activeEnergy.activeEnergy
+        ]
+        db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).setData(healthActiveEnergy) { error in
+            if let error = error {
+                print("Error saving health active energy to Firebase: \(error.localizedDescription)")
+            }
+        }
+    }
+    func updateHealthActiveEnergy(activeEnergy: HealthActiveEnergy, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        do {
+            try context.save()
+            print("Health Steps updated successfully")
+        } catch {
+            print("Error updating steps: \(error)")
+        }
+        let healthActiveEnergy: [String: Any] = [
+            "id": activeEnergy.id,
+            "date": activeEnergy.date,
+            "activeEnergy": activeEnergy.activeEnergy
+        ]
+        db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).updateData(healthActiveEnergy) { error in
+            if let error = error {
+                print("Error updating health active energy in Firebase: \(error.localizedDescription)")
+            } else {
+                print("Updated active energy in Firebase")
             }
         }
     }
@@ -308,6 +349,7 @@ class DataManager {
                     self.downloadWeightEntries(userID: userID, context: context, completion: completion)
                     self.downloadWorkouts(userID: userID, context: context, completion: completion)
                     self.downloadHealthSteps(userID: userID, context: context, completion: completion)
+                    self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
                 }
             } else {
                 print("Error downloading user data: \(error?.localizedDescription ?? "Unknown error")")
@@ -404,6 +446,22 @@ class DataManager {
                     if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let steps = document.data()["steps"] as? Double {
                         let newHealthSteps = HealthSteps(id: id, date: date, steps: steps)
                         context.insert(newHealthSteps)
+                    }
+                }
+                completion(true)
+            } else {
+                print("Error downloading health steps: \(error?.localizedDescription ?? "Unknown error")")
+                completion(false)
+            }
+        }
+    }
+    private func downloadHealthActiveEnergy(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
+        db.collection("users").document(userID).collection("HealthActiveEnergy").getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                for document in snapshot.documents {
+                    if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let activeEnergy = document.data()["activeEnergy"] as? Double {
+                        let newHealthActiveEnergy = HealthActiveEnergy(id: id, date: date, activeEnergy: activeEnergy)
+                        context.insert(newHealthActiveEnergy)
                     }
                 }
                 completion(true)

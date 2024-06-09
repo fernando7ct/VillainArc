@@ -36,6 +36,7 @@ struct HealthTab: View {
                         HealthManager.shared.accessGranted { success in
                             if success {
                                 HealthManager.shared.fetchSteps(context: context)
+                                HealthManager.shared.fetchActiveEnergy(context: context)
                                 healthAccess = true
                             }
                         }
@@ -51,6 +52,7 @@ struct HealthTab: View {
         HealthManager.shared.accessGranted { success in
             if success {
                 HealthManager.shared.fetchSteps(context: context)
+                HealthManager.shared.fetchActiveEnergy(context: context)
             } else {
                 healthAccess = false
             }
