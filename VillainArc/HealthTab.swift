@@ -12,11 +12,16 @@ struct HealthTab: View {
                 if healthAccess {
                     ScrollView {
                         StepsSectionView()
+                        CaloriesSectionView()
+                    }
+                    .onAppear {
+                        HealthManager.shared.accessGranted { success in
+                            if !success {
+                                healthAccess = false
+                            }
+                        }
                     }
                     .navigationTitle("Health")
-                    .onAppear {
-                        fetchStepsAndDisplay()
-                    }
                 } else {
                     unavailableView
                 }
@@ -37,6 +42,7 @@ struct HealthTab: View {
                             if success {
                                 HealthManager.shared.fetchSteps(context: context)
                                 HealthManager.shared.fetchActiveEnergy(context: context)
+                                HealthManager.shared.fetchRestingEnergy(context: context)
                                 healthAccess = true
                             }
                         }
@@ -47,16 +53,6 @@ struct HealthTab: View {
                     .fontWeight(.semibold)
             }
         })
-    }
-    func fetchStepsAndDisplay() {
-        HealthManager.shared.accessGranted { success in
-            if success {
-                HealthManager.shared.fetchSteps(context: context)
-                HealthManager.shared.fetchActiveEnergy(context: context)
-            } else {
-                healthAccess = false
-            }
-        }
     }
 }
 

@@ -255,9 +255,9 @@ class DataManager {
         }
         do {
             try context.save()
-            print("Health Steps updated successfully")
+            print("Health active energy updated successfully")
         } catch {
-            print("Error updating steps: \(error)")
+            print("Error updating health active energy: \(error)")
         }
         let healthActiveEnergy: [String: Any] = [
             "id": activeEnergy.id,
@@ -269,6 +269,47 @@ class DataManager {
                 print("Error updating health active energy in Firebase: \(error.localizedDescription)")
             } else {
                 print("Updated active energy in Firebase")
+            }
+        }
+    }
+    func saveHealthRestingEnergy(restingEnergy: HealthRestingEnergy, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        context.insert(restingEnergy)
+        let healthRestingEnergy: [String: Any] = [
+            "id": restingEnergy.id,
+            "date": restingEnergy.date,
+            "restingEnergy": restingEnergy.restingEnergy
+        ]
+        db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).setData(healthRestingEnergy) { error in
+            if let error = error {
+                print("Error saving health resting energy to Firebase: \(error.localizedDescription)")
+            }
+        }
+    }
+    func updateHealthRestingEnergy(restingEnergy: HealthRestingEnergy, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        do {
+            try context.save()
+            print("Health Steps updated successfully")
+        } catch {
+            print("Error updating steps: \(error)")
+        }
+        let healthRestingEnergy: [String: Any] = [
+            "id": restingEnergy.id,
+            "date": restingEnergy.date,
+            "restingEnergy": restingEnergy.restingEnergy
+        ]
+        db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).updateData(healthRestingEnergy) { error in
+            if let error = error {
+                print("Error updating health resting energy in Firebase: \(error.localizedDescription)")
+            } else {
+                print("Updated resting energy in Firebase")
             }
         }
     }
@@ -350,6 +391,7 @@ class DataManager {
                     self.downloadWorkouts(userID: userID, context: context, completion: completion)
                     self.downloadHealthSteps(userID: userID, context: context, completion: completion)
                     self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
+                    self.downloadHealthRestingEnergy(userID: userID, context: context, completion: completion)
                 }
             } else {
                 print("Error downloading user data: \(error?.localizedDescription ?? "Unknown error")")
@@ -466,7 +508,23 @@ class DataManager {
                 }
                 completion(true)
             } else {
-                print("Error downloading health steps: \(error?.localizedDescription ?? "Unknown error")")
+                print("Error downloading health active energy: \(error?.localizedDescription ?? "Unknown error")")
+                completion(false)
+            }
+        }
+    }
+    private func downloadHealthRestingEnergy(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
+        db.collection("users").document(userID).collection("HealthRestingEnergy").getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                for document in snapshot.documents {
+                    if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let restingEnergy = document.data()["restingEnergy"] as? Double {
+                        let newHealthRestingEnergy = HealthRestingEnergy(id: id, date: date, restingEnergy: restingEnergy)
+                        context.insert(newHealthRestingEnergy)
+                    }
+                }
+                completion(true)
+            } else {
+                print("Error downloading health resting energy: \(error?.localizedDescription ?? "Unknown error")")
                 completion(false)
             }
         }

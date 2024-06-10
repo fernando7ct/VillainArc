@@ -16,7 +16,7 @@ struct VillainArcApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [WeightEntry.self, User.self, Workout.self, WorkoutExercise.self, ExerciseSet.self, HealthSteps.self, HealthActiveEnergy.self])
+        .modelContainer(for: [WeightEntry.self, User.self, Workout.self, WorkoutExercise.self, ExerciseSet.self, HealthSteps.self, HealthActiveEnergy.self, HealthRestingEnergy.self])
     }
     
     func checkICloudAvailability() {

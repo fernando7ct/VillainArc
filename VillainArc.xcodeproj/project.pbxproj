@@ -55,6 +55,9 @@
 		FDD4FB652C155D850028BADB /* StepsSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB642C155D850028BADB /* StepsSectionView.swift */; };
 		FDD4FB672C1564190028BADB /* StepsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB662C1564190028BADB /* StepsView.swift */; };
 		FDD4FB692C1588230028BADB /* HealthActiveEnergy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB682C1588230028BADB /* HealthActiveEnergy.swift */; };
+		FDD4FB6B2C1611780028BADB /* HealthRestingEnergy.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB6A2C1611780028BADB /* HealthRestingEnergy.swift */; };
+		FDD4FB6D2C169DEE0028BADB /* CaloriesSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB6C2C169DEE0028BADB /* CaloriesSectionView.swift */; };
+		FDD4FB6F2C16A1B30028BADB /* CaloriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FB6E2C16A1B30028BADB /* CaloriesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -120,6 +123,9 @@
 		FDD4FB642C155D850028BADB /* StepsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsSectionView.swift; sourceTree = "<group>"; };
 		FDD4FB662C1564190028BADB /* StepsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsView.swift; sourceTree = "<group>"; };
 		FDD4FB682C1588230028BADB /* HealthActiveEnergy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthActiveEnergy.swift; sourceTree = "<group>"; };
+		FDD4FB6A2C1611780028BADB /* HealthRestingEnergy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthRestingEnergy.swift; sourceTree = "<group>"; };
+		FDD4FB6C2C169DEE0028BADB /* CaloriesSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesSectionView.swift; sourceTree = "<group>"; };
+		FDD4FB6E2C16A1B30028BADB /* CaloriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaloriesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -175,7 +181,9 @@
 				FD2201C02BFF033E00487151 /* HomeTab.swift */,
 				FD7714C72C14F38E00FF12AF /* HealthTab.swift */,
 				FDD4FB642C155D850028BADB /* StepsSectionView.swift */,
+				FDD4FB6C2C169DEE0028BADB /* CaloriesSectionView.swift */,
 				FDD4FB662C1564190028BADB /* StepsView.swift */,
+				FDD4FB6E2C16A1B30028BADB /* CaloriesView.swift */,
 				FD7714BD2C1273E100FF12AF /* CalendarView.swift */,
 				FDB39EA82C0A4378008929DF /* WorkoutViews */,
 				FD2E77A52BF57ED700245E06 /* WeightTab.swift */,
@@ -209,6 +217,7 @@
 				FD2E77AB2BF6AA5500245E06 /* DataManager.swift */,
 				FD2201C32BFF060E00487151 /* Workout.swift */,
 				FD2201C52BFF066A00487151 /* WorkoutExercise.swift */,
+				FDD4FB6A2C1611780028BADB /* HealthRestingEnergy.swift */,
 				FD2201C72BFF084700487151 /* ExerciseSet.swift */,
 				FD7C6F082C0E9335001453F2 /* NotificationManager.swift */,
 				FD7714C32C14041B00FF12AF /* HealthManager.swift */,
@@ -329,6 +338,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDD4FB6D2C169DEE0028BADB /* CaloriesSectionView.swift in Sources */,
 				FDB39EAC2C0A7D04008929DF /* SaveWorkoutSheet.swift in Sources */,
 				FD7C6F042C0E8381001453F2 /* TimerDisplayView.swift in Sources */,
 				FDD4FB672C1564190028BADB /* StepsView.swift in Sources */,
@@ -362,7 +372,9 @@
 				FD7714CA2C14F8D800FF12AF /* HealthSteps.swift in Sources */,
 				FD7C6EF22C0AD531001453F2 /* ExerciseHistoryView.swift in Sources */,
 				FDAC23252C1154BD007B53B7 /* AllExercisesView.swift in Sources */,
+				FDD4FB6B2C1611780028BADB /* HealthRestingEnergy.swift in Sources */,
 				FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */,
+				FDD4FB6F2C16A1B30028BADB /* CaloriesView.swift in Sources */,
 				FD2E77B82BF6D37200245E06 /* User.swift in Sources */,
 				FDB39EAE2C0A95D8008929DF /* TemplateView.swift in Sources */,
 				FD2E77A42BF57D6600245E06 /* WeightEntry.swift in Sources */,

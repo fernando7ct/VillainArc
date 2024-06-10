@@ -2,31 +2,47 @@ import SwiftUI
 import SwiftData
 
 struct StepsSectionView: View {
-    @Query(sort: \HealthSteps.date, order: .reverse) private var healthSteps: [HealthSteps]
+    @Environment(\.modelContext) private var context
+    @State private var healthSteps: [HealthSteps] = []
+    
+    func getHealthSteps() {
+        HealthManager.shared.fetchSteps(context: context)
+        let fetchDescriptor = FetchDescriptor<HealthSteps>(
+            sortBy: [SortDescriptor(\HealthSteps.date, order: .reverse)]
+        )
+        do {
+            healthSteps = try context.fetch(fetchDescriptor)
+        } catch {
+            
+        }
+        
+    }
     
     var body: some View {
         HStack {
-            ForEach(healthSteps.prefix(1)) { healthSteps in
-                NavigationLink(destination: StepsView()) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("Steps")
-                            .foregroundStyle(Color.secondary)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        Text("\(Int(healthSteps.steps))")
+            NavigationLink(destination: StepsView()) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Steps")
+                        .foregroundStyle(Color.secondary)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    if let steps = healthSteps.first {
+                        Text("\(Int(steps.steps))")
                             .font(.largeTitle)
                             .fontWeight(.semibold)
                     }
+                }
+                Spacer()
+                VStack {
+                    Image(systemName: "figure.walk")
+                        .font(.title2)
+                        .fontWeight(.semibold)
                     Spacer()
-                    VStack {
-                        Image(systemName: "figure.walk")
-                            .font(.title2)
-                            .foregroundStyle(.red)
-                            .fontWeight(.semibold)
-                        Spacer()
-                    }
                 }
             }
+        }
+        .onAppear {
+            getHealthSteps()
         }
         .customStyle()
     }

@@ -5,7 +5,7 @@ import HealthKit
 class HealthManager {
     static let shared = HealthManager()
     let healthStore = HKHealthStore()
-    let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned)]
+    let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned)]
     
     func requestHealthData(completion: @escaping (Bool) -> Void) {
         if HKHealthStore.isHealthDataAvailable() {
@@ -30,9 +30,16 @@ class HealthManager {
                 success(false)
                 return
             }
-            success(true)
         }
         healthStore.execute(query2)
+        let query3 = HKStatisticsQuery(quantityType: HKQuantityType(.basalEnergyBurned), quantitySamplePredicate: predicate) { _, result, error in
+            guard let quantity = result?.sumQuantity(), error == nil else {
+                success(false)
+                return
+            }
+            success(true)
+        }
+        healthStore.execute(query3)
     }
     func fetchSteps(context: ModelContext) {
         let fetchDescriptor = FetchDescriptor<User>()
@@ -46,6 +53,12 @@ class HealthManager {
         let user = users.first!
         fetchAndSaveActiveEnergy(context: context, startDate: Calendar.current.startOfDay(for: user.dateJoined))
     }
+    func fetchRestingEnergy(context: ModelContext) {
+        let fetchDescriptor = FetchDescriptor<User>()
+        let users = try! context.fetch(fetchDescriptor)
+        let user = users.first!
+        fetchAndSaveRestingEnergy(context: context, startDate: Calendar.current.startOfDay(for: user.dateJoined))
+    }
     func fetchAllHealthSteps(context: ModelContext) -> [HealthSteps] {
         let fetchDescriptor = FetchDescriptor<HealthSteps>()
         do {
@@ -57,6 +70,15 @@ class HealthManager {
     }
     func fetchAllHealthActiveEnergy(context: ModelContext) -> [HealthActiveEnergy] {
         let fetchDescriptor = FetchDescriptor<HealthActiveEnergy>()
+        do {
+            return try context.fetch(fetchDescriptor)
+        } catch {
+            print("Error fetching HealthSteps: \(error)")
+            return []
+        }
+    }
+    func fetchAllHealthRestingEnergy(context: ModelContext) -> [HealthRestingEnergy] {
+        let fetchDescriptor = FetchDescriptor<HealthRestingEnergy>()
         do {
             return try context.fetch(fetchDescriptor)
         } catch {
@@ -127,6 +149,40 @@ class HealthManager {
                 } else {
                     let activeEnergyData = HealthActiveEnergy(id: UUID().uuidString, date: statistics.startDate, activeEnergy: activeEnergy)
                     DataManager.shared.saveHealthActiveEnergy(activeEnergy: activeEnergyData, context: context)
+                }
+            }
+        }
+        healthStore.execute(query)
+    }
+    func fetchAndSaveRestingEnergy(context: ModelContext, startDate: Date) {
+        let restingEnergyType = HKQuantityType(.basalEnergyBurned)
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: Date())
+        let query = HKStatisticsCollectionQuery(
+            quantityType: restingEnergyType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum,
+            anchorDate: startDate,
+            intervalComponents: DateComponents(day: 1)
+        )
+        query.initialResultsHandler = { _, result, error in
+            guard let result = result else {
+                print("Error fetching resting energy: \(String(describing: error))")
+                return
+            }
+            let existingRestingEnergy = self.fetchAllHealthRestingEnergy(context: context)
+            
+            result.enumerateStatistics(from: startDate, to: Date()) { statistics, _ in
+                let restingEnergy = statistics.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
+                let date = statistics.startDate
+                
+                if let exisitingSetData = existingRestingEnergy.first(where: { $0.date == date }) {
+                    if exisitingSetData.restingEnergy != restingEnergy {
+                        exisitingSetData.restingEnergy = restingEnergy
+                        DataManager.shared.updateHealthRestingEnergy(restingEnergy: exisitingSetData, context: context)
+                    }
+                } else {
+                    let restingEnergyData = HealthRestingEnergy(id: UUID().uuidString, date: statistics.startDate, restingEnergy: restingEnergy)
+                    DataManager.shared.saveHealthRestingEnergy(restingEnergy: restingEnergyData, context: context)
                 }
             }
         }
