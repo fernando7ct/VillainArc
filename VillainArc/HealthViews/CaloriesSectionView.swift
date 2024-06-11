@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct CaloriesSectionView: View {
-    @Environment(\.modelContext) private var context
     var activeCalories: Double
     var restingCalories: Double
         

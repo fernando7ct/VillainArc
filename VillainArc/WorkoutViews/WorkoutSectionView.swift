@@ -58,6 +58,7 @@ struct WorkoutSectionView: View {
                 NavigationLink(destination: AllWorkoutsView()) {
                     HStack {
                         Text("View All Workouts")
+                            .fontWeight(.semibold)
                         Spacer()
                     }
                     .customStyle()

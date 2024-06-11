@@ -38,11 +38,6 @@ struct ExercisesSectionView: View {
                     .fontWeight(.semibold)
                     .font(.title2)
                 Spacer()
-                if workouts.flatMap({ $0.exercises! }).count > 5 {
-                    NavigationLink(destination: AllExercisesView()) {
-                        Text("All Exercises")
-                    }
-                }
             }
             .padding(.horizontal)
             .padding(.bottom, 5)
@@ -57,6 +52,16 @@ struct ExercisesSectionView: View {
                 ForEach(topExercises, id: \.name) { item in
                     HStack {
                         ExerciseRow(item: item)
+                    }
+                    .customStyle()
+                }
+            }
+            if workouts.flatMap({ $0.exercises! }).count > 5 {
+                NavigationLink(destination: AllExercisesView()) {
+                    HStack {
+                        Text("All Exercises")
+                            .fontWeight(.semibold)
+                        Spacer()
                     }
                     .customStyle()
                 }

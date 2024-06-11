@@ -73,8 +73,9 @@ class DataManager {
             db.collection("users").document(userID).collection("WeightEntries").document(newWeightEntry.id).setData(weightEntryData) { error in
                 if let error = error {
                     print("Error saving weight entry to Firebase: \(error.localizedDescription)")
+                } else {
+                    print("Saved Weight Entry to Firebase")
                 }
-                print("Saved Weight Entry to Firebase")
             }
         }
     }
@@ -132,8 +133,9 @@ class DataManager {
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData) { error in
             if let error = error {
                 print("Error saving workout to Firebase: \(error.localizedDescription)")
+            } else {
+                print("Saved Workout to Firebase")
             }
-            print("Saved Workout to Firebase")
         }
     }
     func saveWorkoutAsTemplate(workout: Workout, context: ModelContext) {
@@ -190,17 +192,27 @@ class DataManager {
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData) { error in
             if let error = error {
                 print("Error saving workout to Firebase: \(error.localizedDescription)")
+            } else {
+                print("Saved Workout to Firebase")
             }
-            print("Saved Workout to Firebase")
         }
     }
-    func saveHealthSteps(healthSteps: HealthSteps, context: ModelContext) {
+    func saveHealthSteps(healthSteps: HealthSteps, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
         }
-        context.insert(healthSteps)
-        print("Saved Health Steps to SwiftData")
+        if update {
+            do {
+                try context.save()
+                print("Health Steps updated in SwiftData")
+            } catch {
+                print("Error updating steps: \(error)")
+            }
+        } else {
+            context.insert(healthSteps)
+            print("Saved Health Steps to SwiftData")
+        }
         let healthStepsData: [String: Any] = [
             "id": healthSteps.id,
             "date": healthSteps.date,
@@ -208,41 +220,32 @@ class DataManager {
         ]
         db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData) { error in
             if let error = error {
-                print("Error saving health steps to Firebase: \(error.localizedDescription)")
+                print("Error saving/updating health steps to Firebase: \(error.localizedDescription)")
+            } else {
+                if update {
+                    print("Health Steps updated in Firebase")
+                } else {
+                    print("Saved Health Steps to Firebase")
+                }
             }
-            print("Saved Health Steps to Firebase")
         }
     }
-    func updateHealthSteps(healthSteps: HealthSteps, context: ModelContext) {
+    func saveHealthActiveEnergy(activeEnergy: HealthActiveEnergy, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
         }
-        do {
-            try context.save()
-            print("Health Steps updated in SwiftData")
-        } catch {
-            print("Error updating steps: \(error)")
-        }
-        let healthStepsData: [String: Any] = [
-            "id": healthSteps.id,
-            "date": healthSteps.date,
-            "steps": healthSteps.steps
-        ]
-        db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).updateData(healthStepsData) { error in
-            if let error = error {
-                print("Error updating health steps in Firebase: \(error.localizedDescription)")
+        if update {
+            do {
+                try context.save()
+                print("Health Active Energy updated in SwiftData")
+            } catch {
+                print("Error updating health active energy: \(error)")
             }
-            print("Health Steps updated in Firebase")
+        } else {
+            context.insert(activeEnergy)
+            print("Saved Health Active Energy to SwiftData")
         }
-    }
-    func saveHealthActiveEnergy(activeEnergy: HealthActiveEnergy, context: ModelContext) {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            print("No user is signed in.")
-            return
-        }
-        context.insert(activeEnergy)
-        print("Saved Health Active Energy to SwiftData")
         let healthActiveEnergy: [String: Any] = [
             "id": activeEnergy.id,
             "date": activeEnergy.date,
@@ -251,40 +254,31 @@ class DataManager {
         db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).setData(healthActiveEnergy) { error in
             if let error = error {
                 print("Error saving health active energy to Firebase: \(error.localizedDescription)")
+            } else {
+                if update {
+                    print("Health Active Energy updated in Firebase")
+                } else {
+                    print("Saved Health Active Energy to Firebase")
+                }
             }
-            print("Saved Health Active Energy to Firebase")
         }
     }
-    func updateHealthActiveEnergy(activeEnergy: HealthActiveEnergy, context: ModelContext) {
+    func saveHealthRestingEnergy(restingEnergy: HealthRestingEnergy, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
         }
-        do {
-            try context.save()
-            print("Health Active Energy updated in SwiftData")
-        } catch {
-            print("Error updating health active energy: \(error)")
-        }
-        let healthActiveEnergy: [String: Any] = [
-            "id": activeEnergy.id,
-            "date": activeEnergy.date,
-            "activeEnergy": activeEnergy.activeEnergy
-        ]
-        db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).updateData(healthActiveEnergy) { error in
-            if let error = error {
-                print("Error updating health active energy in Firebase: \(error.localizedDescription)")
+        if update {
+            do {
+                try context.save()
+                print("Health Resting Energy updated in SwiftData")
+            } catch {
+                print("Error updating steps: \(error)")
             }
-            print("Health Active Energy updated in Firebase")
+        } else {
+            context.insert(restingEnergy)
+            print("Saved Health Resting Energy to SwiftData")
         }
-    }
-    func saveHealthRestingEnergy(restingEnergy: HealthRestingEnergy, context: ModelContext) {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            print("No user is signed in.")
-            return
-        }
-        context.insert(restingEnergy)
-        print("Saved Health Resting Energy to SwiftData")
         let healthRestingEnergy: [String: Any] = [
             "id": restingEnergy.id,
             "date": restingEnergy.date,
@@ -293,31 +287,13 @@ class DataManager {
         db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).setData(healthRestingEnergy) { error in
             if let error = error {
                 print("Error saving health resting energy to Firebase: \(error.localizedDescription)")
+            } else {
+                if update {
+                    print("Health Resting Energy updated in Firebase")
+                } else {
+                    print("Saved Health Resting Energy to Firebase")
+                }
             }
-            print("Saved Health Resting Energy to Firebase")
-        }
-    }
-    func updateHealthRestingEnergy(restingEnergy: HealthRestingEnergy, context: ModelContext) {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            print("No user is signed in.")
-            return
-        }
-        do {
-            try context.save()
-            print("Health Resting Energy updated in SwiftData")
-        } catch {
-            print("Error updating steps: \(error)")
-        }
-        let healthRestingEnergy: [String: Any] = [
-            "id": restingEnergy.id,
-            "date": restingEnergy.date,
-            "restingEnergy": restingEnergy.restingEnergy
-        ]
-        db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).updateData(healthRestingEnergy) { error in
-            if let error = error {
-                print("Error updating health resting energy in Firebase: \(error.localizedDescription)")
-            }
-            print("Health Resting Energy updated in Firebase")
         }
     }
     func deleteWorkout(workout: Workout, context: ModelContext) {
@@ -330,8 +306,9 @@ class DataManager {
         db.collection("users").document(userID).collection("Workouts").document(workout.id).delete { error in
             if let error = error {
                 print("Error deleting workout from Firebase: \(error.localizedDescription)")
+            } else {
+                print("Workout deleted in Firebase")
             }
-            print("Workout deleted in Firebase")
         }
     }
     func deleteWeightEntry(weightEntry: WeightEntry, context: ModelContext) {

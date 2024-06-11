@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct StepsSectionView: View {
-    @Environment(\.modelContext) private var context
     var todaysSteps: Double
     
     var body: some View {

@@ -54,6 +54,7 @@ struct TemplateSectionView: View {
                 NavigationLink(destination: AllTemplatesView()) {
                     HStack {
                         Text("View All Templates")
+                            .fontWeight(.semibold)
                         Spacer()
                     }
                     .customStyle()
