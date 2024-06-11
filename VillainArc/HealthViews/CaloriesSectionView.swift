@@ -3,8 +3,8 @@ import SwiftData
 
 struct CaloriesSectionView: View {
     @Environment(\.modelContext) private var context
-    @Binding var activeCalories: Double
-    @Binding var restingCalories: Double
+    var activeCalories: Double
+    var restingCalories: Double
         
     var body: some View {
         HStack {
@@ -18,7 +18,6 @@ struct CaloriesSectionView: View {
                     Text("\(Int(totalCalories))")
                         .font(.largeTitle)
                         .fontWeight(.semibold)
-                        .contentTransition(.numericText(value: totalCalories))
                 }
                 Spacer()
                 VStack {

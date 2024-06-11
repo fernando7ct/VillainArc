@@ -3,7 +3,7 @@ import SwiftData
 
 struct StepsSectionView: View {
     @Environment(\.modelContext) private var context
-    @Binding var todaysSteps: Double
+    var todaysSteps: Double
     
     var body: some View {
         HStack {
@@ -16,7 +16,6 @@ struct StepsSectionView: View {
                     Text("\(Int(todaysSteps))")
                         .font(.largeTitle)
                         .fontWeight(.semibold)
-                        .contentTransition(.numericText(value: todaysSteps))
                 }
                 Spacer()
                 VStack {

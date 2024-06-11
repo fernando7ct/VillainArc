@@ -37,8 +37,8 @@ struct HealthTab: View {
                 BackgroundView()
                 if healthAccess {
                     ScrollView {
-                        StepsSectionView(todaysSteps: $todaysSteps)
-                        CaloriesSectionView(activeCalories: $activeCalories, restingCalories: $restingCalories)
+                        StepsSectionView(todaysSteps: todaysSteps)
+                        CaloriesSectionView(activeCalories: activeCalories, restingCalories: restingCalories)
                     }
                     .onAppear {
                         update()
