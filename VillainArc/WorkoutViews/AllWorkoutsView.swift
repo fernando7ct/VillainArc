@@ -60,6 +60,8 @@ struct AllWorkoutsView: View {
                 }
             }
             .navigationTitle("All Workouts")
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing && !workouts.isEmpty)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

@@ -64,6 +64,8 @@ struct AllWeightEntriesView: View {
                 }
             }
             .navigationTitle("All Weight Entries")
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing && !weightEntries.isEmpty)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

@@ -58,6 +58,8 @@ struct AllTemplatesView: View {
                 }
             }
             .navigationTitle("All Templates")
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing && !templates.isEmpty)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

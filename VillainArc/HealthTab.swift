@@ -45,6 +45,8 @@ struct HealthTab: View {
                         getTodaysData()
                     }
                     .navigationTitle("Health")
+                    .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                    .toolbarBackground(.ultraThinMaterial, for: .tabBar)
                 } else {
                     unavailableView
                 }

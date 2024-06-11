@@ -49,6 +49,8 @@ struct AllExercisesView: View {
                 }
             }
             .navigationTitle("All Exercises")
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         }
     }
 }
