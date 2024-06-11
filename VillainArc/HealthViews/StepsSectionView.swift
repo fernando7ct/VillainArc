@@ -16,6 +16,7 @@ struct StepsSectionView: View {
                     Text("\(Int(todaysSteps))")
                         .font(.largeTitle)
                         .fontWeight(.semibold)
+                        .contentTransition(.numericText(value: todaysSteps))
                 }
                 Spacer()
                 VStack {

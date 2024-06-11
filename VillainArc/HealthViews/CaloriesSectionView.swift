@@ -18,6 +18,7 @@ struct CaloriesSectionView: View {
                     Text("\(Int(totalCalories))")
                         .font(.largeTitle)
                         .fontWeight(.semibold)
+                        .contentTransition(.numericText(value: totalCalories))
                 }
                 Spacer()
                 VStack {

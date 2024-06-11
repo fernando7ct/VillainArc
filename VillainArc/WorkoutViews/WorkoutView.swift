@@ -16,6 +16,7 @@ struct WorkoutView: View {
     @State private var isTemplate = false
     @State private var showSaveSheet = false
     @StateObject private var timer = TimerDisplayViewModel()
+    @State private var activityStarted = false
     var existingWorkout: Workout?
     
     @State private var activity: Activity<WorkoutAttributes>?
@@ -84,7 +85,7 @@ struct WorkoutView: View {
     }
     private func fetchLatestExercise(for exerciseName: String) -> WorkoutExercise? {
         let fetchDescriptor = FetchDescriptor<WorkoutExercise>(
-            predicate: #Predicate { $0.name == exerciseName },
+            predicate: #Predicate { $0.name == exerciseName && $0.workout?.template != true },
             sortBy: [SortDescriptor(\WorkoutExercise.date, order: .reverse)]
         )
         do {
@@ -310,7 +311,10 @@ struct WorkoutView: View {
                     self.exercises = recentExercises ?? []
                     isTemplate = false
                 }
-                startLiveActivity()
+                if !activityStarted {
+                    startLiveActivity()
+                    activityStarted.toggle()
+                }
             }
         }
     }

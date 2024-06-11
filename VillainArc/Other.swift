@@ -17,11 +17,9 @@ struct CustomStyleModifier: ViewModifier {
         content
             .frame(maxWidth: .infinity)
             .padding()
-            .background(BlurView())
-            .cornerRadius(12)
-            .shadow(color: Color.primary, radius: 1)
+            .background(.ultraThinMaterial, in: .rect(cornerRadius: 12))
             .padding(.horizontal)
-            .padding(.vertical, 4)
+            .padding(.vertical, 3)
     }
 }
 func concatenatedExerciseNames(for workout: Workout) -> String {
