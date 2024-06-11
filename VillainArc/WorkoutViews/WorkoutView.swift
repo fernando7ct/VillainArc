@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import ActivityKit
 
 struct WorkoutView: View {
     @Environment(\.modelContext) private var context
@@ -17,6 +18,54 @@ struct WorkoutView: View {
     @StateObject private var timer = TimerDisplayViewModel()
     var existingWorkout: Workout?
     
+    @State private var activity: Activity<WorkoutAttributes>?
+    func startLiveActivity() {
+        let data = currentActiveSet()
+        let contentState = WorkoutAttributes.ContentState(exerciesName: currentActiveExercise(), setNumber: data.0, setReps: data.1, setWeight: data.2, date: startTime, isEmpty: exercises.isEmpty)
+        let attributes = WorkoutAttributes(workoutTitle: title)
+        let activityContent = ActivityContent(state: contentState, staleDate: nil)
+        do {
+            activity = try Activity<WorkoutAttributes>.request(attributes: attributes, content: activityContent)
+        } catch {
+            print("Failed to start live activity: \(error)")
+        }
+    }
+    private func updateLiveActivity() {
+        let data = currentActiveSet()
+        let updatedContentState = WorkoutAttributes.ContentState(
+            exerciesName: currentActiveExercise(),
+            setNumber: data.0,
+            setReps: data.1,
+            setWeight: data.2,
+            date: startTime,
+            isEmpty: exercises.isEmpty
+        )
+        let updatedContent = ActivityContent(state: updatedContentState, staleDate: nil)
+        Task {
+            await activity?.update(updatedContent)
+        }
+    }
+    private func currentActiveExercise() -> String {
+        for exercise in exercises {
+            for set in exercise.sets where !set.completed {
+                return exercise.name
+            }
+        }
+        return ""
+    }
+    private func currentActiveSet() -> (Int, Int, Double) {
+        for exercise in exercises {
+            for (index, set) in exercise.sets.enumerated() where !set.completed {
+                return ((index + 1), (set.reps), (set.weight))
+            }
+        }
+        return (0,0,0)
+    }
+    private func endLiveActivity() {
+        Task {
+            await activity?.end(dismissalPolicy: .immediate)
+        }
+    }
     init(existingWorkout: Workout? = nil) {
         self.existingWorkout = existingWorkout
         if let workout = existingWorkout {
@@ -49,6 +98,7 @@ struct WorkoutView: View {
     private func deleteExercise(at offsets: IndexSet) {
         withAnimation {
             exercises.remove(atOffsets: offsets)
+            updateLiveActivity()
         }
     }
     private func completedSets(for exercise: TempExercise) -> Int {
@@ -57,19 +107,22 @@ struct WorkoutView: View {
     private func moveExercise(from source: IndexSet, to destination: Int) {
         withAnimation {
             exercises.move(fromOffsets: source, toOffset: destination)
+            updateLiveActivity()
         }
     }
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
             exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
+        updateLiveActivity()
     }
     private func saveWorkout(title: String) {
         DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
         timer.endActivity()
+        endLiveActivity()
         dismiss()
     }
-
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -110,6 +163,7 @@ struct WorkoutView: View {
                                 }
                                 Button(action: {
                                     timer.endActivity()
+                                    endLiveActivity()
                                     dismiss()
                                 }, label: {
                                     Label("Cancel Workout", systemImage: "xmark")
@@ -169,7 +223,7 @@ struct WorkoutView: View {
                         }
                         Section {
                             ForEach(exercises.indices, id: \.self) { index in
-                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer)) {
+                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, updateLiveActivity: updateLiveActivity)) {
                                     HStack {
                                         VStack(alignment: .leading) {
                                             Text(exercises[index].name)
@@ -256,6 +310,7 @@ struct WorkoutView: View {
                     self.exercises = recentExercises ?? []
                     isTemplate = false
                 }
+                startLiveActivity()
             }
         }
     }

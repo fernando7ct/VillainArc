@@ -7,14 +7,17 @@ struct ExerciseView: View {
     @FocusState private var notesFocused: Bool
     @State private var showHistorySheet = false
     @State private var setRestTimeSheet = false
-
+    let updateLiveActivity: () -> Void
+    
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
             exercise.sets.remove(atOffsets: offsets)
         }
+        updateLiveActivity()
     }
     private func populateSets(from historySets: [TempSet]) {
         exercise.sets = historySets
+        updateLiveActivity()
     }
     
     var body: some View {
@@ -91,6 +94,7 @@ struct ExerciseView: View {
                                         timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
                                     }
                                     exercise.sets[setIndex].completed.toggle()
+                                    updateLiveActivity()
                                 }, label: {
                                     Image(systemName: "checkmark")
                                         .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
@@ -119,6 +123,7 @@ struct ExerciseView: View {
                                     let lastSet = exercise.sets.last!
                                     exercise.sets.append(TempSet(reps: lastSet.reps, weight: lastSet.weight, restMinutes: lastSet.restMinutes, restSeconds: lastSet.restSeconds, completed: false))
                                 }
+                                updateLiveActivity()
                             }
                         }, label: {
                             HStack {
