@@ -2,32 +2,31 @@ import SwiftUI
 import Charts
 import SwiftData
 
-struct CaloriesView: View {
-    @Query(sort: \HealthActiveEnergy.date, order: .reverse) private var healthActiveEnergy: [HealthActiveEnergy]
-    @Query(sort: \HealthRestingEnergy.date, order: .reverse) private var healthRestingEnergy: [HealthRestingEnergy]
-    @State private var selectedCaloriesRange: GraphRanges = .week
-    @State private var selectedEntry: (date: Date, calories: Double)? = nil
+struct StepsView: View {
+    @Query(sort: \HealthSteps.date, order: .reverse) private var healthSteps: [HealthSteps]
+    @State private var selectedStepRange: GraphRanges = .week
+    @State private var selectedEntry: (date: Date, steps: Double)? = nil
     
     private func yAxisRange() -> ClosedRange<Double> {
         let filteredEntries = filteredEntries()
-        guard let maxCalories = filteredEntries.map({ $0.calories }).max() else {
-            return 0...1000
+        guard let maxSteps = filteredEntries.map({ $0.steps }).max() else {
+            return 0...10000
         }
-        return 0...(maxCalories + 100)
+        return 0...(maxSteps + 1000)
     }
     
     private func xAxisRange() -> ClosedRange<Date> {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let (startDate, endDate): (Date, Date) = {
-            switch selectedCaloriesRange {
+            switch selectedStepRange {
             case .week:
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
                 return (start, end)
             case .month:
                 let start = calendar.date(byAdding: .day, value: -28, to: today)!
-                let end = calendar.date(byAdding: .day, value: 1, to: today)!
+                let end = calendar.date(byAdding: .day, value: 4, to: today)!
                 return (start, end)
             case .sixMonths:
                 let startOfPrevious5thMonth = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
@@ -38,11 +37,11 @@ struct CaloriesView: View {
         return startDate...endDate
     }
     
-    private func filteredEntries() -> [(date: Date, calories: Double)] {
+    private func filteredEntries() -> [HealthSteps] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let (startDate, endDate): (Date, Date) = {
-            switch selectedCaloriesRange {
+            switch selectedStepRange {
             case .week:
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
@@ -58,63 +57,56 @@ struct CaloriesView: View {
             }
         }()
         
-        let activeEnergy = healthActiveEnergy.filter { $0.date >= startDate && $0.date < endDate }
-        let restingEnergy = healthRestingEnergy.filter { $0.date >= startDate && $0.date < endDate }
-        
-        var combinedEntries: [Date: Double] = [:]
-        
-        for entry in activeEnergy {
-            combinedEntries[entry.date, default: 0] += entry.activeEnergy
-        }
-        
-        for entry in restingEnergy {
-            combinedEntries[entry.date, default: 0] += entry.restingEnergy
-        }
-        
-        return combinedEntries.map { (date: $0.key, calories: $0.value) }.sorted { $0.date < $1.date }
+        return healthSteps.filter { $0.date >= startDate && $0.date < endDate }
     }
     
-    private func graphableEntries() -> [(date: Date, calories: Double)] {
+    private func graphableEntries() -> [(date: Date, steps: Double)] {
         let calendar = Calendar.current
         let entries = filteredEntries()
-        var averages: [(date: Date, calories: Double)] = []
+        var averages: [(date: Date, steps: Double)] = []
         
-        if selectedCaloriesRange == .sixMonths {
+        if selectedStepRange == .sixMonths {
             let groupedByWeek = Dictionary(grouping: entries, by: { calendar.dateInterval(of: .weekOfYear, for: $0.date)!.start })
             for (startOfWeek, entries) in groupedByWeek {
-                let totalCalories = entries.reduce(0) { $0 + $1.calories }
-                let average = totalCalories / Double(entries.count)
-                averages.append((date: startOfWeek, calories: average))
+                let totalSteps = entries.reduce(0) { $0 + $1.steps }
+                let averageWeight = totalSteps / Double(entries.count)
+                averages.append((date: startOfWeek, steps: averageWeight))
             }
         } else {
-            averages = entries
+            let groupedByDay = Dictionary(grouping: entries, by: { calendar.startOfDay(for: $0.date) })
+            for (date, entries) in groupedByDay {
+                let totalSteps = entries.reduce(0) { $0 + $1.steps }
+                let averageWeight = totalSteps / Double(entries.count)
+                let startOfDay = calendar.startOfDay(for: date)
+                averages.append((date: startOfDay, steps: averageWeight))
+            }
         }
         
         return averages.sorted { $0.date < $1.date }
     }
     
-    private func caloriesData() -> (String, String, String) {
+    private func stepsData() -> (String, String, String) {
         let calendar = Calendar.current
         let entries = filteredEntries()
         let today = calendar.startOfDay(for: Date())
         
         var average: String
-        var averageCalories: String
+        var averageSteps: String
         var timeRange: String
         
         if entries.isEmpty {
             average = ""
-            averageCalories = "No Data"
+            averageSteps = "No Data"
         } else if entries.count == 1 {
             average = ""
-            averageCalories = "\(Int(entries.first!.calories))"
+            averageSteps = "\(Int(entries.first!.steps))"
         } else {
             average = "Average"
-            let average = entries.map { $0.calories }.reduce(0, +) / Double(entries.count)
-            averageCalories = "\(Int(average))"
+            let average = entries.map { $0.steps }.reduce(0, +) / Double(entries.count)
+            averageSteps = "\(Int(average))"
         }
         
-        switch selectedCaloriesRange {
+        switch selectedStepRange {
         case .week:
             let start = calendar.date(byAdding: .day, value: -6, to: today)!
             timeRange = "\(start.formatted(.dateTime.month().day())) - \(today.formatted(.dateTime.month().day()))"
@@ -126,14 +118,14 @@ struct CaloriesView: View {
             timeRange = "\(start.formatted(.dateTime.month().year())) - \(today.formatted(.dateTime.month().year()))"
         }
         
-        return (average, averageCalories, timeRange)
+        return (average, averageSteps, timeRange)
     }
     
     var body: some View {
         ZStack {
             BackgroundView()
             VStack {
-                Picker("Time Range", selection: $selectedCaloriesRange) {
+                Picker("Time Range", selection: $selectedStepRange) {
                     Text("Week").tag(GraphRanges.week)
                     Text("Month").tag(GraphRanges.month)
                     Text("6 Months").tag(GraphRanges.sixMonths)
@@ -142,16 +134,16 @@ struct CaloriesView: View {
                 .padding(.top)
                 HStack {
                     VStack(alignment: .leading) {
-                        let (averageText, calories, range) = caloriesData()
+                        let (averageText, steps, range) = stepsData()
                         Text(averageText)
                             .foregroundStyle(.secondary)
                             .font(.headline)
                         HStack(alignment: .bottom, spacing: 3) {
-                            Text(calories)
+                            Text(steps)
                                 .foregroundStyle(.primary)
                                 .font(.largeTitle)
-                            if calories != "No Data" {
-                                Text("Calories")
+                            if steps != "No Data" {
+                                Text("Steps")
                                     .foregroundStyle(.secondary)
                                     .offset(y: -4.0)
                             }
@@ -164,24 +156,24 @@ struct CaloriesView: View {
                     Spacer()
                 }
                 .fontWeight(.medium)
-                Chart(graphableEntries(), id: \.date) { entry in
+                Chart(graphableEntries(), id: \.date) { healthStep in
                     if graphableEntries().count == 1 {
-                        PointMark(x: .value("Date", entry.date), y: .value("Calories", entry.calories))
+                        PointMark(x: .value("Date", healthStep.date), y: .value("Steps", healthStep.steps))
                             .foregroundStyle(Color.primary)
                     }
                     LineMark(
-                        x: .value("Date", entry.date),
-                        y: .value("Calories", entry.calories)
+                        x: .value("Date", healthStep.date),
+                        y: .value("Steps", healthStep.steps)
                     )
                     .foregroundStyle(Color.primary)
                     .interpolationMethod(.monotone)
                     .lineStyle(StrokeStyle(lineWidth: 1.5))
                     AreaMark(
-                        x: .value("Date", entry.date),
-                        yStart: .value("Calories", yAxisRange().lowerBound),
-                        yEnd: .value("Calories", entry.calories)
+                        x: .value("Date", healthStep.date),
+                        yStart: .value("Steps", yAxisRange().lowerBound),
+                        yEnd: .value("Steps", healthStep.steps)
                     )
-                    .foregroundStyle(Color.primary.gradient.opacity(0.6))
+                    .foregroundStyle(Color.primary.opacity(0.6))
                     .interpolationMethod(.monotone)
                     if let selectedEntry {
                         RuleMark(
@@ -191,10 +183,10 @@ struct CaloriesView: View {
                         .lineStyle(StrokeStyle(lineWidth: 2))
                         .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                             VStack(alignment: .leading, spacing: 5) {
-                                Text("Calories")
+                                Text("Steps")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                Text("\(Int(selectedEntry.calories))")
+                                Text("\(Int(selectedEntry.steps))")
                                     .font(.title3)
                                     .bold()
                             }
@@ -210,13 +202,13 @@ struct CaloriesView: View {
                 .chartYScale(domain: yAxisRange())
                 .chartXScale(domain: xAxisRange())
                 .chartXAxis {
-                    if selectedCaloriesRange == .week {
+                    if selectedStepRange == .week {
                         AxisMarks(values: .automatic(desiredCount: 7)) { value in
                             AxisGridLine()
                             AxisTick()
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated))
                         }
-                    } else if selectedCaloriesRange == .month {
+                    } else if selectedStepRange == .month {
                         AxisMarks(values: .stride(by: .day, count: 7))
                     } else {
                         AxisMarks(values: .stride(by: .month, count: 1)) { value in
@@ -239,7 +231,7 @@ struct CaloriesView: View {
                                             let timeComponent: Calendar.Component
                                             let entries = graphableEntries()
                                             
-                                            switch selectedCaloriesRange {
+                                            switch selectedStepRange {
                                             case .week, .month:
                                                 timeComponent = .day
                                             case .sixMonths:
@@ -264,12 +256,12 @@ struct CaloriesView: View {
                 Spacer()
             }
             .padding(.horizontal)
-            .navigationTitle("Calories")
+            .navigationTitle("Steps")
             .navigationBarTitleDisplayMode(.large)
         }
     }
 }
 
 #Preview {
-    CaloriesView()
+    StepsView()
 }

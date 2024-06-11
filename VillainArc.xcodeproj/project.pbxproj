@@ -180,10 +180,7 @@
 				FD2E77AD2BF6D03C00245E06 /* LogInView.swift */,
 				FD2201C02BFF033E00487151 /* HomeTab.swift */,
 				FD7714C72C14F38E00FF12AF /* HealthTab.swift */,
-				FDD4FB642C155D850028BADB /* StepsSectionView.swift */,
-				FDD4FB6C2C169DEE0028BADB /* CaloriesSectionView.swift */,
-				FDD4FB662C1564190028BADB /* StepsView.swift */,
-				FDD4FB6E2C16A1B30028BADB /* CaloriesView.swift */,
+				FDD4FB712C16A6170028BADB /* HealthViews */,
 				FD7714BD2C1273E100FF12AF /* CalendarView.swift */,
 				FDB39EA82C0A4378008929DF /* WorkoutViews */,
 				FD2E77A52BF57ED700245E06 /* WeightTab.swift */,
@@ -255,6 +252,17 @@
 				FD7C6F032C0E8381001453F2 /* TimerDisplayView.swift */,
 			);
 			path = WorkoutViews;
+			sourceTree = "<group>";
+		};
+		FDD4FB712C16A6170028BADB /* HealthViews */ = {
+			isa = PBXGroup;
+			children = (
+				FDD4FB642C155D850028BADB /* StepsSectionView.swift */,
+				FDD4FB6C2C169DEE0028BADB /* CaloriesSectionView.swift */,
+				FDD4FB662C1564190028BADB /* StepsView.swift */,
+				FDD4FB6E2C16A1B30028BADB /* CaloriesView.swift */,
+			);
+			path = HealthViews;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -521,7 +529,8 @@
 				INFOPLIST_FILE = VillainArc/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Villain Arc";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to your step count data to display your daily steps.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to some health data to fully understand you.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app will likely never update any on-device health data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -531,7 +540,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -559,7 +568,8 @@
 				INFOPLIST_FILE = VillainArc/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Villain Arc";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to your step count data to display your daily steps.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to some health data to fully understand you.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app will likely never update any on-device health data.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -569,7 +579,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.1;
+				MARKETING_VERSION = 0.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

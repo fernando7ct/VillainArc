@@ -16,30 +16,92 @@ class HealthManager {
             completion(false)
         }
     }
-    func accessGranted(success: @escaping (Bool) -> Void) {
-        let predicate = HKQuery.predicateForSamples(withStart: .distantPast, end: .now)
+    func accessGranted(context: ModelContext, success: @escaping (Bool) -> Void) {
+        let fetchDescriptor = FetchDescriptor<User>()
+        let users = try! context.fetch(fetchDescriptor)
+        let user = users.first!
+        let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.startOfDay(for: user.dateJoined), end: .now)
+        
         let query = HKStatisticsQuery(quantityType: HKQuantityType(.stepCount), quantitySamplePredicate: predicate) { _, result, error in
-            guard let quantity = result?.sumQuantity(), error == nil else {
+            guard let _ = result?.sumQuantity(), error == nil else {
                 success(false)
                 return
             }
         }
         healthStore.execute(query)
         let query2 = HKStatisticsQuery(quantityType: HKQuantityType(.activeEnergyBurned), quantitySamplePredicate: predicate) { _, result, error in
-            guard let quantity = result?.sumQuantity(), error == nil else {
+            guard let _ = result?.sumQuantity(), error == nil else {
                 success(false)
                 return
             }
         }
         healthStore.execute(query2)
         let query3 = HKStatisticsQuery(quantityType: HKQuantityType(.basalEnergyBurned), quantitySamplePredicate: predicate) { _, result, error in
-            guard let quantity = result?.sumQuantity(), error == nil else {
+            guard let _ = result?.sumQuantity(), error == nil else {
                 success(false)
                 return
             }
             success(true)
         }
         healthStore.execute(query3)
+    }
+    func fetchTodaySteps(completion: @escaping (Double) -> Void) {
+        let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.startOfDay(for: Date()), end: Date())
+        
+        let query = HKStatisticsQuery(quantityType: HKQuantityType(.stepCount), quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
+            var totalSteps: Double = 0
+            
+            if let result = result, let sum = result.sumQuantity() {
+                totalSteps = sum.doubleValue(for: HKUnit.count())
+            } else {
+                print("Failed to fetch steps: \(error?.localizedDescription ?? "No error")")
+            }
+            
+            DispatchQueue.main.async {
+                completion(totalSteps)
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    func fetchTodayActiveEnergy(completion: @escaping (Double) -> Void) {
+        let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.startOfDay(for: Date()), end: Date())
+        
+        let query = HKStatisticsQuery(quantityType: HKQuantityType(.activeEnergyBurned), quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
+            var totalActiveEnergy: Double = 0
+            
+            if let result = result, let sum = result.sumQuantity() {
+                totalActiveEnergy = sum.doubleValue(for: HKUnit.kilocalorie())
+            } else {
+                print("Failed to fetch active energy: \(error?.localizedDescription ?? "No error")")
+            }
+            
+            DispatchQueue.main.async {
+                completion(totalActiveEnergy)
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    func fetchTodayRestingEnergy(completion: @escaping (Double) -> Void) {
+        let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.startOfDay(for: Date()), end: Date())
+        
+        let query = HKStatisticsQuery(quantityType: HKQuantityType(.basalEnergyBurned), quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
+            var totalRestingEnergy: Double = 0
+            
+            if let result = result, let sum = result.sumQuantity() {
+                totalRestingEnergy = sum.doubleValue(for: HKUnit.kilocalorie())
+            } else {
+                print("Failed to fetch resting energy: \(error?.localizedDescription ?? "No error")")
+            }
+            
+            DispatchQueue.main.async {
+                completion(totalRestingEnergy)
+            }
+        }
+        
+        healthStore.execute(query)
     }
     func fetchSteps(context: ModelContext) {
         let fetchDescriptor = FetchDescriptor<User>()
@@ -73,7 +135,7 @@ class HealthManager {
         do {
             return try context.fetch(fetchDescriptor)
         } catch {
-            print("Error fetching HealthSteps: \(error)")
+            print("Error fetching Health Active Energy: \(error)")
             return []
         }
     }
@@ -82,7 +144,7 @@ class HealthManager {
         do {
             return try context.fetch(fetchDescriptor)
         } catch {
-            print("Error fetching HealthSteps: \(error)")
+            print("Error fetching Health Resting Energy: \(error)")
             return []
         }
     }

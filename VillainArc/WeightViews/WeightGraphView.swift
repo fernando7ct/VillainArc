@@ -33,7 +33,7 @@ struct WeightGraphView: View {
                 return (start, end)
             case .month:
                 let start = calendar.date(byAdding: .day, value: -28, to: today)!
-                let end = calendar.date(byAdding: .day, value: 7, to: today)!
+                let end = calendar.date(byAdding: .day, value: 4, to: today)!
                 return (start, end)
             case .sixMonths:
                 let startOfPrevious5thMonth = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
@@ -178,7 +178,7 @@ struct WeightGraphView: View {
                     yStart: .value("Weight", yAxisRange().lowerBound),
                     yEnd: .value("Weight", weightEntry.weight)
                 )
-                .foregroundStyle(Color.primary.gradient.opacity(0.6))
+                .foregroundStyle(Color.primary.opacity(0.6))
                 .interpolationMethod(.monotone)
                 if let selectedEntry {
                     RuleMark(
