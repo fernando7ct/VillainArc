@@ -44,6 +44,7 @@ struct SetRestTimeView: View {
                         .font(.title2)
                     }
                 }
+                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                 .listStyle(.plain)
                 .navigationTitle("Set Rest Times")
                 .navigationBarTitleDisplayMode(.inline)

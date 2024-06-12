@@ -12,7 +12,7 @@ struct HealthTab: View {
                 BackgroundView()
                 if healthAccess {
                     ScrollView {
-                        StepsSectionView(todaysSteps: healthManager.todaysSteps)
+                        StepsSectionView(todaysSteps: healthManager.todaysSteps, todaysDistance: healthManager.todaysWalkingRunningDistance)
                         CaloriesSectionView(activeCalories: healthManager.todaysActiveCalories, restingCalories: healthManager.todaysRestingCalories)
                     }
                     .task {

@@ -39,7 +39,8 @@ struct AddWeightEntryView: View {
             print("Failed to combine date and time components")
             return
         }
-        DataManager.shared.saveWeightEntry(weight: Double(weight)!, notes: notes, date: combinedDate, photoData: selectedPhotoData, context: context)
+        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: Double(weight)!, notes: notes, date: combinedDate, photoData: selectedPhotoData)
+        DataManager.shared.saveWeightEntry(weightEntry: newWeightEntry, context: context, update: false)
         dismiss()
     }
     private func gestureTap() {
@@ -179,6 +180,7 @@ struct AddWeightEntryView: View {
                 }
             }
             .navigationTitle("Add Weight Entry")
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {

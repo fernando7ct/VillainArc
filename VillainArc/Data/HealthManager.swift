@@ -8,12 +8,13 @@ class HealthManager: ObservableObject {
     @Published var todaysSteps: Double = 0
     @Published var todaysActiveCalories: Double = 0
     @Published var todaysRestingCalories: Double = 0
+    @Published var todaysWalkingRunningDistance: Double = 0
     
     private let updateQueue = DispatchQueue(label: "com.yourapp.healthUpdateQueue", attributes: .concurrent)
     
     func requestHealthData(completion: @escaping (Bool) -> Void) {
         if HKHealthStore.isHealthDataAvailable() {
-            let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned)]
+            let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned), HKQuantityType(.distanceWalkingRunning)]
             healthStore.requestAuthorization(toShare: [], read: healthTypes) { success, _ in
                 DispatchQueue.main.async {
                     completion(success)
@@ -39,9 +40,6 @@ class HealthManager: ObservableObject {
                 }
                 return
             }
-            DispatchQueue.main.async {
-                success(true)
-            }
         }
         healthStore.execute(query)
         
@@ -62,11 +60,21 @@ class HealthManager: ObservableObject {
                 }
                 return
             }
+        }
+        healthStore.execute(query3)
+        
+        let query4 = HKStatisticsQuery(quantityType: HKQuantityType(.distanceWalkingRunning), quantitySamplePredicate: predicate) { _, result, error in
+            guard let _ = result?.sumQuantity(), error == nil else {
+                DispatchQueue.main.async {
+                    success(false)
+                }
+                return
+            }
             DispatchQueue.main.async {
                 success(true)
             }
         }
-        healthStore.execute(query3)
+        healthStore.execute(query4)
     }
     
     func fetchAndUpdateAllData(context: ModelContext) async {
@@ -85,19 +93,28 @@ class HealthManager: ObservableObject {
                 self.todaysRestingCalories = restingEnergy
             }
         }
+        fetchTodayWalkingRunningDistance { distance in
+            DispatchQueue.main.async {
+                self.todaysWalkingRunningDistance = distance
+            }
+        }
         
         let fetchDescriptor = FetchDescriptor<User>()
         let users = try! context.fetch(fetchDescriptor)
         let user = users.first!
+        let userStartDate = Calendar.current.startOfDay(for: user.dateJoined)
         
-        let startDate = getMostRecentHealthStepsDate(context: context) ?? Calendar.current.startOfDay(for: user.dateJoined)
+        let startDate = getMostRecentHealthStepsDate(context: context) ?? userStartDate
         fetchAndSaveSteps(context: context, startDate: startDate)
         
-        let startDate2 = getMostRecentHealthActiveEnergyDate(context: context) ?? Calendar.current.startOfDay(for: user.dateJoined)
+        let startDate2 = getMostRecentHealthActiveEnergyDate(context: context) ?? userStartDate
         fetchAndSaveActiveEnergy(context: context, startDate: startDate2)
         
-        let startDate3 = getMostRecentHealthRestingEnergyDate(context: context) ?? Calendar.current.startOfDay(for: user.dateJoined)
+        let startDate3 = getMostRecentHealthRestingEnergyDate(context: context) ?? userStartDate
         fetchAndSaveRestingEnergy(context: context, startDate: startDate3)
+        
+        let startDate4 = getMostRecentHealthWalkingRunningDistanceDate(context: context) ?? userStartDate
+        fetchAndSaveWalkingRunningDistance(context: context, startDate: startDate4)
     }
     
     func fetchTodaySteps(completion: @escaping (Double) -> Void) {
@@ -107,7 +124,7 @@ class HealthManager: ObservableObject {
             if let result = result, let sum = result.sumQuantity() {
                 totalSteps = sum.doubleValue(for: HKUnit.count())
             } else {
-                print("Failed to fetch steps: \(error?.localizedDescription ?? "No error")")
+                print("Failed to fetch steps: \(error?.localizedDescription ?? "Unknown error")")
             }
             DispatchQueue.main.async {
                 completion(totalSteps)
@@ -115,7 +132,6 @@ class HealthManager: ObservableObject {
         }
         healthStore.execute(query)
     }
-    
     func fetchTodayActiveEnergy(completion: @escaping (Double) -> Void) {
         let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.startOfDay(for: Date()), end: Date())
         let query = HKStatisticsQuery(quantityType: HKQuantityType(.activeEnergyBurned), quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
@@ -123,7 +139,7 @@ class HealthManager: ObservableObject {
             if let result = result, let sum = result.sumQuantity() {
                 totalActiveEnergy = sum.doubleValue(for: HKUnit.kilocalorie())
             } else {
-                print("Failed to fetch active energy: \(error?.localizedDescription ?? "No error")")
+                print("Failed to fetch active energy: \(error?.localizedDescription ?? "Unknown error")")
             }
             DispatchQueue.main.async {
                 completion(totalActiveEnergy)
@@ -131,7 +147,6 @@ class HealthManager: ObservableObject {
         }
         healthStore.execute(query)
     }
-    
     func fetchTodayRestingEnergy(completion: @escaping (Double) -> Void) {
         let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.startOfDay(for: Date()), end: Date())
         let query = HKStatisticsQuery(quantityType: HKQuantityType(.basalEnergyBurned), quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
@@ -139,7 +154,7 @@ class HealthManager: ObservableObject {
             if let result = result, let sum = result.sumQuantity() {
                 totalRestingEnergy = sum.doubleValue(for: HKUnit.kilocalorie())
             } else {
-                print("Failed to fetch resting energy: \(error?.localizedDescription ?? "No error")")
+                print("Failed to fetch resting energy: \(error?.localizedDescription ?? "Unknown error")")
             }
             DispatchQueue.main.async {
                 completion(totalRestingEnergy)
@@ -147,30 +162,47 @@ class HealthManager: ObservableObject {
         }
         healthStore.execute(query)
     }
-    
+    func fetchTodayWalkingRunningDistance(completion: @escaping (Double) -> Void) {
+        let predicate = HKQuery.predicateForSamples(withStart: Calendar.current.startOfDay(for: Date()), end: Date())
+        let query = HKStatisticsQuery(quantityType: HKQuantityType(.distanceWalkingRunning), quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
+            var totalDistance: Double = 0
+            if let result = result, let sum = result.sumQuantity() {
+                totalDistance = sum.doubleValue(for: HKUnit.mile())
+            } else {
+                print("Failed to fetch walking and running distance: \(error?.localizedDescription ?? "Unknown error")")
+            }
+            DispatchQueue.main.async {
+                completion(totalDistance)
+            }
+        }
+        healthStore.execute(query)
+    }
     private func getMostRecentHealthStepsDate(context: ModelContext) -> Date? {
         let fetchDescriptor = FetchDescriptor<HealthSteps>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         let healthSteps = try? context.fetch(fetchDescriptor)
         return healthSteps?.first?.date
     }
-    
     private func getMostRecentHealthActiveEnergyDate(context: ModelContext) -> Date? {
         let fetchDescriptor = FetchDescriptor<HealthActiveEnergy>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         let healthActiveEnergy = try? context.fetch(fetchDescriptor)
         return healthActiveEnergy?.first?.date
     }
-    
     private func getMostRecentHealthRestingEnergyDate(context: ModelContext) -> Date? {
         let fetchDescriptor = FetchDescriptor<HealthRestingEnergy>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         let healthRestingEnergy = try? context.fetch(fetchDescriptor)
         return healthRestingEnergy?.first?.date
+    }
+    private func getMostRecentHealthWalkingRunningDistanceDate(context: ModelContext) -> Date? {
+        let fetchDescriptor = FetchDescriptor<HealthWalkingRunningDistance>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        let healthWalkingRunningDistance = try? context.fetch(fetchDescriptor)
+        return healthWalkingRunningDistance?.first?.date
     }
     func fetchAllHealthSteps(context: ModelContext) -> [HealthSteps] {
         let fetchDescriptor = FetchDescriptor<HealthSteps>()
         do {
             return try context.fetch(fetchDescriptor)
         } catch {
-            print("Error fetching HealthSteps: \(error)")
+            print("Error fetching Health Steps: \(error.localizedDescription)")
             return []
         }
     }
@@ -179,7 +211,7 @@ class HealthManager: ObservableObject {
         do {
             return try context.fetch(fetchDescriptor)
         } catch {
-            print("Error fetching Health Active Energy: \(error)")
+            print("Error fetching Health Active Energy: \(error.localizedDescription)")
             return []
         }
     }
@@ -188,13 +220,23 @@ class HealthManager: ObservableObject {
         do {
             return try context.fetch(fetchDescriptor)
         } catch {
-            print("Error fetching Health Resting Energy: \(error)")
+            print("Error fetching Health Resting Energy: \(error.localizedDescription)")
+            return []
+        }
+    }
+    func fetchAllHealthWalkingRunningDistance(context: ModelContext) -> [HealthWalkingRunningDistance] {
+        let fetchDescriptor = FetchDescriptor<HealthWalkingRunningDistance>()
+        do {
+            return try context.fetch(fetchDescriptor)
+        } catch {
+            print("Error fetching Health Resting Energy: \(error.localizedDescription)")
             return []
         }
     }
     func fetchAndSaveSteps(context: ModelContext, startDate: Date) {
         let steps = HKQuantityType(.stepCount)
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: Date())
+        let endDate = Date()
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
         let query = HKStatisticsCollectionQuery(
             quantityType: steps,
             quantitySamplePredicate: predicate,
@@ -209,7 +251,7 @@ class HealthManager: ObservableObject {
             }
             let existingHealthSteps = self.fetchAllHealthSteps(context: context)
             self.updateQueue.async(flags: .barrier) {
-                result.enumerateStatistics(from: startDate, to: Date()) { statistics, _ in
+                result.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
                     let steps = statistics.sumQuantity()?.doubleValue(for: .count()) ?? 0
                     let date = statistics.startDate
                     if let exisitingSetData = existingHealthSteps.first(where: { $0.date == date }) {
@@ -230,10 +272,10 @@ class HealthManager: ObservableObject {
         }
         healthStore.execute(query)
     }
-    
     func fetchAndSaveActiveEnergy(context: ModelContext, startDate: Date) {
         let activeEnergyType = HKQuantityType(.activeEnergyBurned)
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: Date())
+        let endDate = Date()
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
         let query = HKStatisticsCollectionQuery(
             quantityType: activeEnergyType,
             quantitySamplePredicate: predicate,
@@ -248,7 +290,7 @@ class HealthManager: ObservableObject {
             }
             let existingActiveEnergy = self.fetchAllHealthActiveEnergy(context: context)
             self.updateQueue.async(flags: .barrier) {
-                result.enumerateStatistics(from: startDate, to: Date()) { statistics, _ in
+                result.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
                     let activeEnergy = statistics.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
                     let date = statistics.startDate
                     if let exisitingSetData = existingActiveEnergy.first(where: { $0.date == date }) {
@@ -272,7 +314,8 @@ class HealthManager: ObservableObject {
     
     func fetchAndSaveRestingEnergy(context: ModelContext, startDate: Date) {
         let restingEnergyType = HKQuantityType(.basalEnergyBurned)
-        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: Date())
+        let endDate = Date()
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
         let query = HKStatisticsCollectionQuery(
             quantityType: restingEnergyType,
             quantitySamplePredicate: predicate,
@@ -287,7 +330,7 @@ class HealthManager: ObservableObject {
             }
             let existingRestingEnergy = self.fetchAllHealthRestingEnergy(context: context)
             self.updateQueue.async(flags: .barrier) {
-                result.enumerateStatistics(from: startDate, to: Date()) { statistics, _ in
+                result.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
                     let restingEnergy = statistics.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
                     let date = statistics.startDate
                     if let exisitingSetData = existingRestingEnergy.first(where: { $0.date == date }) {
@@ -301,6 +344,45 @@ class HealthManager: ObservableObject {
                         let restingEnergyData = HealthRestingEnergy(id: UUID().uuidString, date: statistics.startDate, restingEnergy: restingEnergy)
                         DispatchQueue.main.async {
                             DataManager.shared.saveHealthRestingEnergy(restingEnergy: restingEnergyData, context: context, update: false)
+                        }
+                    }
+                }
+            }
+        }
+        healthStore.execute(query)
+    }
+    func fetchAndSaveWalkingRunningDistance(context: ModelContext, startDate: Date) {
+        let walkingRunningDistance = HKQuantityType(.distanceWalkingRunning)
+        let endDate = Date()
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
+        let query = HKStatisticsCollectionQuery(
+            quantityType: walkingRunningDistance,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum,
+            anchorDate: startDate,
+            intervalComponents: DateComponents(day: 1)
+        )
+        query.initialResultsHandler = { _, result, error in
+            guard let result = result else {
+                print("Error fetching walking running distance: \(String(describing: error))")
+                return
+            }
+            let existingHealthWalkingRunningDistance = self.fetchAllHealthWalkingRunningDistance(context: context)
+            self.updateQueue.async(flags: .barrier) {
+                result.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
+                    let distance = statistics.sumQuantity()?.doubleValue(for: .mile()) ?? 0
+                    let date = statistics.startDate
+                    if let exisitingSetData = existingHealthWalkingRunningDistance.first(where: { $0.date == date }) {
+                        if exisitingSetData.distance != distance {
+                            exisitingSetData.distance = distance
+                            DispatchQueue.main.async {
+                                DataManager.shared.saveHealthWalkingRunningDistance(healthDistance: exisitingSetData, context: context, update: true)
+                            }
+                        }
+                    } else {
+                        let distanceData = HealthWalkingRunningDistance(id: UUID().uuidString, date: statistics.startDate, distance: distance)
+                        DispatchQueue.main.async {
+                            DataManager.shared.saveHealthWalkingRunningDistance(healthDistance: distanceData, context: context, update: false)
                         }
                     }
                 }

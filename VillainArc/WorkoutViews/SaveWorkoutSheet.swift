@@ -112,6 +112,7 @@ struct SaveWorkoutSheet: View {
                 .padding()
             }
             .navigationTitle(originalIsTemplate ? "Save Template" : "Save Workout")
+            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 endTime = Date()

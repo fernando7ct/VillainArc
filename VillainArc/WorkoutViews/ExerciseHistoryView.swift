@@ -66,6 +66,7 @@ struct ExerciseHistoryView: View {
                         }
                     }
                 }
+                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                 .scrollContentBackground(.hidden)
                 .onAppear(perform: fetchExerciseHistory)
                 .navigationTitle(exerciseName)

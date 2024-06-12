@@ -67,6 +67,7 @@
 		FDD4FBDD2C17F8840028BADB /* WorkoutLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FDD4FBCD2C17F8820028BADB /* WorkoutLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FDD4FBE22C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */; };
 		FDD4FBE32C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */; };
+		FDD4FBE72C19216A0028BADB /* HealthWalkingRunningDistance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE62C19216A0028BADB /* HealthWalkingRunningDistance.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,6 +155,7 @@
 		FDD4FBD82C17F8840028BADB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FDD4FBDA2C17F8840028BADB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutAttributes.swift; sourceTree = "<group>"; };
+		FDD4FBE62C19216A0028BADB /* HealthWalkingRunningDistance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthWalkingRunningDistance.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -248,6 +250,7 @@
 				FDB39EA62C0933B0008929DF /* exercises.json */,
 				FD2E77A32BF57D6600245E06 /* WeightEntry.swift */,
 				FD2E77B72BF6D37200245E06 /* User.swift */,
+				FDD4FBE62C19216A0028BADB /* HealthWalkingRunningDistance.swift */,
 				FD7714C92C14F8D800FF12AF /* HealthSteps.swift */,
 				FDD4FB682C1588230028BADB /* HealthActiveEnergy.swift */,
 				FD2E77AB2BF6AA5500245E06 /* DataManager.swift */,
@@ -446,6 +449,7 @@
 				FDAC23272C116AD6007B53B7 /* TemplateExerciseView.swift in Sources */,
 				FD2201CC2BFF304C00487151 /* ExerciseView.swift in Sources */,
 				FD2E77972BF57CF800245E06 /* ContentView.swift in Sources */,
+				FDD4FBE72C19216A0028BADB /* HealthWalkingRunningDistance.swift in Sources */,
 				FD7C6EF82C0BFA92001453F2 /* TemplateSectionView.swift in Sources */,
 				FD2201C42BFF060E00487151 /* Workout.swift in Sources */,
 				FD2E77A82BF581F200245E06 /* AddWeightEntryView.swift in Sources */,
@@ -645,7 +649,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.3;
+				MARKETING_VERSION = 0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -686,7 +690,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.3;
+				MARKETING_VERSION = 0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

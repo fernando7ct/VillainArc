@@ -50,11 +50,53 @@ struct ExerciseSelectionView: View {
         return []
     }
     
+    private func tokenize(_ text: String) -> [String] {
+        return text.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+    }
+    
+    private func fuzzyMatch(_ text: String, with searchTokens: [String]) -> Bool {
+        let tokens = tokenize(text)
+        for searchToken in searchTokens {
+            if !tokens.contains(where: { $0.contains(searchToken) || levenshteinDistance($0, searchToken) <= 2 }) {
+                return false
+            }
+        }
+        return true
+    }
+    
+    private func levenshteinDistance(_ lhs: String, _ rhs: String) -> Int {
+        let lhsCount = lhs.count
+        let rhsCount = rhs.count
+        var matrix = Array(repeating: Array(repeating: 0, count: rhsCount + 1), count: lhsCount + 1)
+        
+        for i in 0...lhsCount { matrix[i][0] = i }
+        for j in 0...rhsCount { matrix[0][j] = j }
+        
+        for i in 1...lhsCount {
+            for j in 1...rhsCount {
+                if lhs[lhs.index(lhs.startIndex, offsetBy: i - 1)] == rhs[rhs.index(rhs.startIndex, offsetBy: j - 1)] {
+                    matrix[i][j] = matrix[i - 1][j - 1]
+                } else {
+                    matrix[i][j] = min(
+                        matrix[i - 1][j] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j - 1] + 1
+                    )
+                }
+            }
+        }
+        return matrix[lhsCount][rhsCount]
+    }
+    
     var filteredExercises: [Exercise] {
-        if searchText.isEmpty {
+        let searchTokens = tokenize(searchText)
+        
+        if searchTokens.isEmpty {
             return exercises.sorted { $0.name < $1.name }
         } else {
-            return exercises.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+            return exercises.filter { exercise in
+                fuzzyMatch(exercise.name, with: searchTokens) || fuzzyMatch(exercise.category, with: searchTokens)
+            }
         }
     }
     
@@ -63,7 +105,6 @@ struct ExerciseSelectionView: View {
             ZStack {
                 BackgroundView()
                 VStack {
-                    CustomSearchBar(searchText: $searchText)
                     List(filteredExercises) { exercise in
                         Button(action: {
                             if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
@@ -87,11 +128,12 @@ struct ExerciseSelectionView: View {
                         .buttonStyle(BorderlessButtonStyle())
                         .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
                     }
-                    //.searchable(text: $searchText)
+                    .searchable(text: $searchText)
                     .listStyle(.plain)
                 }
                 .navigationTitle("Exercises")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(action: {
@@ -113,64 +155,6 @@ struct ExerciseSelectionView: View {
                         .disabled(selectedExercises.count == 0)
                     }
                 }
-            }
-        }
-    }
-}
-import SwiftUI
-
-struct CustomSearchBar: View {
-    @Binding var searchText: String
-    @State private var isEditing = false
-    
-    var body: some View {
-        HStack {
-            TextField("Search...", text: $searchText)
-                .autocorrectionDisabled()
-                .padding(7)
-                .padding(.horizontal, 25)
-                .background(BlurView())
-                .cornerRadius(8)
-                .overlay(
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                            .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
-                            .padding(.leading, 8)
-                        
-                        if isEditing {
-                            Button(action: {
-                                withAnimation {
-                                    self.searchText = ""
-                                }
-                            }) {
-                                Image(systemName: "multiply.circle.fill")
-                                    .foregroundColor(.gray)
-                                    .padding(.trailing, 8)
-                            }
-                        }
-                    }
-                )
-                .padding(.horizontal, 10)
-                .onTapGesture {
-                    withAnimation {
-                        self.isEditing = true
-                    }
-                }
-            
-            if isEditing {
-                Button(action: {
-                    withAnimation {
-                        self.isEditing = false
-                        self.searchText = ""
-                        hideKeyboard()
-                    }
-                }) {
-                    Text("Cancel")
-                        .foregroundStyle(Color.primary)
-                }
-                .padding(.trailing, 10)
-                .transition(.move(edge: .trailing))
             }
         }
     }
