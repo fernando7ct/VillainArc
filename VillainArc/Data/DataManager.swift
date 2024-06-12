@@ -4,30 +4,12 @@ import FirebaseFirestore
 import FirebaseAuth
 import FirebaseStorage
 import SwiftUI
-import CloudKit
 
 class DataManager {
-    @AppStorage("iCloudEnabled") var iCloudEnabled = false
     static let shared = DataManager()
     private let db = Firestore.firestore()
     private let storageRef = Storage.storage().reference()
     
-    private init() {
-        self.checkICloudAvailability()
-    }
-    
-    func checkICloudAvailability() {
-        CKContainer.default().accountStatus { status, error in
-            DispatchQueue.main.async {
-                switch status {
-                case .available:
-                    self.iCloudEnabled = true
-                default:
-                    self.iCloudEnabled = false
-                }
-            }
-        }
-    }
     func saveWeightEntry(weightEntry: WeightEntry, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
@@ -367,11 +349,7 @@ class DataManager {
         }
         db.collection("users").document(userID).getDocument { [self] document, error in
             if let document = document, document.exists {
-                if !iCloudEnabled {
-                    self.downloadUserData(userID: userID, context: context, completion: completion)
-                } else {
-                    completion(true)
-                }
+                self.downloadUserData(userID: userID, context: context, completion: completion)
             } else {
                 self.createUser(userID: userID, userName: userName, context: context, completion: completion)
             }
