@@ -5,7 +5,7 @@ struct AllWorkoutsView: View {
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<Workout> { workout in
         !workout.template
-    }, sort: \Workout.startTime, order: .reverse) private var workouts: [Workout]
+    }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var workouts: [Workout]
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
     

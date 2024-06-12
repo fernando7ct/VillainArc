@@ -4,7 +4,7 @@ import SwiftData
 struct TemplateSectionView: View {
     @Query(filter: #Predicate<Workout> { workout in
         workout.template
-    }, sort: \Workout.startTime, order: .reverse) private var templates: [Workout]
+    }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var templates: [Workout]
     @State private var creatingTemplate = false
     
     var body: some View {

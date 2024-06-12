@@ -26,7 +26,6 @@
 		FD2E77B12BF6D0E300245E06 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */; };
 		FD2E77B82BF6D37200245E06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B72BF6D37200245E06 /* User.swift */; };
 		FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */; };
-		FD7714BE2C1273E100FF12AF /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7714BD2C1273E100FF12AF /* CalendarView.swift */; };
 		FD7714C02C12CF3700FF12AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FD7714BF2C12CF3700FF12AF /* FirebaseStorage */; };
 		FD7714C42C14041B00FF12AF /* HealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7714C32C14041B00FF12AF /* HealthManager.swift */; };
 		FD7714C62C14062400FF12AF /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD7714C52C14062400FF12AF /* HealthKit.framework */; };
@@ -116,7 +115,6 @@
 		FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FD2E77B72BF6D37200245E06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WeightGraphView.swift; path = VillainArc/WeightViews/WeightGraphView.swift; sourceTree = SOURCE_ROOT; };
-		FD7714BD2C1273E100FF12AF /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		FD7714C32C14041B00FF12AF /* HealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthManager.swift; sourceTree = "<group>"; };
 		FD7714C52C14062400FF12AF /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		FD7714C72C14F38E00FF12AF /* HealthTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthTab.swift; sourceTree = "<group>"; };
@@ -222,7 +220,6 @@
 				FD2201C02BFF033E00487151 /* HomeTab.swift */,
 				FD7714C72C14F38E00FF12AF /* HealthTab.swift */,
 				FDD4FB712C16A6170028BADB /* HealthViews */,
-				FD7714BD2C1273E100FF12AF /* CalendarView.swift */,
 				FDB39EA82C0A4378008929DF /* WorkoutViews */,
 				FD2E77A52BF57ED700245E06 /* WeightTab.swift */,
 				FD2201C22BFF03F600487151 /* WeightViews */,
@@ -458,7 +455,6 @@
 				FD7C6F062C0E874D001453F2 /* SetRestTimeView.swift in Sources */,
 				FD2E77AC2BF6AA5500245E06 /* DataManager.swift in Sources */,
 				FDD4FB692C1588230028BADB /* HealthActiveEnergy.swift in Sources */,
-				FD7714BE2C1273E100FF12AF /* CalendarView.swift in Sources */,
 				FD7C6EF62C0BFA82001453F2 /* WorkoutSectionView.swift in Sources */,
 				FD2E77A62BF57ED700245E06 /* WeightTab.swift in Sources */,
 				FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */,
