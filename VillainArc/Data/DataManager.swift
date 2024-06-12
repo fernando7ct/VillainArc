@@ -385,6 +385,7 @@ class DataManager {
                     self.downloadHealthSteps(userID: userID, context: context, completion: completion)
                     self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
                     self.downloadHealthRestingEnergy(userID: userID, context: context, completion: completion)
+                    self.downloadHealthWalkingRunningDistance(userID: userID, context: context, completion: completion)
                     print("User data successfully downloaded")
                 }
             } else {
