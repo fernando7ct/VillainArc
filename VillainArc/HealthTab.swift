@@ -15,7 +15,7 @@ struct HealthTab: View {
                         StepsSectionView(todaysSteps: healthManager.todaysSteps, todaysDistance: healthManager.todaysWalkingRunningDistance)
                         CaloriesSectionView(activeCalories: healthManager.todaysActiveCalories, restingCalories: healthManager.todaysRestingCalories)
                     }
-                    .task {
+                    .task(priority: .high) {
                         await healthManager.fetchAndUpdateAllData(context: context)
                     }
                     .navigationTitle("Health")
@@ -37,7 +37,7 @@ struct HealthTab: View {
             Button(action: {
                 healthManager.requestHealthData { granted in
                     if granted {
-                        healthManager.accessGranted(context: context) { success in
+                        healthManager.accessGranted { success in
                             if success {
                                 healthAccess = true
                             }

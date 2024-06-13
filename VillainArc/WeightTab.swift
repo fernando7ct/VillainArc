@@ -15,14 +15,10 @@ struct WeightTab: View {
                     NavigationLink(destination: AllWeightEntriesView()) {
                         HStack {
                             Text("All Weight Entries")
+                                .fontWeight(.semibold)
                             Spacer()
-                            Image(systemName: "chevron.right")
                         }
-                        .foregroundStyle(Color.primary)
-                        .padding()
-                        .background(BlurView())
-                        .cornerRadius(12)
-                        .padding(.horizontal)
+                        .customStyle()
                     }
                 }
                 .scrollDisabled(true)

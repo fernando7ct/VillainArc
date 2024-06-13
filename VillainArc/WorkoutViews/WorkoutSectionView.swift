@@ -57,7 +57,7 @@ struct WorkoutSectionView: View {
             if workouts.count > 3 {
                 NavigationLink(destination: AllWorkoutsView()) {
                     HStack {
-                        Text("View All Workouts")
+                        Text("All Workouts")
                             .fontWeight(.semibold)
                         Spacer()
                     }

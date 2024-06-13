@@ -53,7 +53,7 @@ struct TemplateSectionView: View {
             if templates.count > 5 {
                 NavigationLink(destination: AllTemplatesView()) {
                     HStack {
-                        Text("View All Templates")
+                        Text("All Templates")
                             .fontWeight(.semibold)
                         Spacer()
                     }
