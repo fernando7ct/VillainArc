@@ -32,25 +32,15 @@ struct TemplateSectionView: View {
                 }
                 .customStyle()
             } else {
-                ForEach(templates.prefix(5)) { template in
-                    NavigationLink(destination: WorkoutDetailView(workout: template)) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(template.title)
-                                    .fontWeight(.semibold)
-                                Text(concatenatedExerciseNames(for: template))
-                                    .lineLimit(2)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.secondary)
-                                    .multilineTextAlignment(.leading)
-                            }
-                            Spacer()
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 0) {
+                        ForEach(templates.prefix(5)) { template in
+                            WorkoutHomeRow(workout: template, deleteOn: true)
                         }
-                        .customStyle()
                     }
                 }
             }
-            if templates.count > 5 {
+            if templates.count > 2 {
                 NavigationLink(destination: AllTemplatesView()) {
                     HStack {
                         Text("All Templates")

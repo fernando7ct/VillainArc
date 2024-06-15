@@ -92,6 +92,7 @@ class DataManager {
                 "id": newExercise.id,
                 "name": newExercise.name,
                 "category": newExercise.category,
+                "repRange": newExercise.repRange,
                 "notes": newExercise.notes,
                 "date": newExercise.date,
                 "order": newExercise.order,
@@ -151,6 +152,7 @@ class DataManager {
                 "id": newExercise.id,
                 "name": newExercise.name,
                 "category": newExercise.category,
+                "repRange": newExercise.repRange,
                 "notes": newExercise.notes,
                 "date": newExercise.date,
                 "order": newExercise.order,
@@ -325,11 +327,13 @@ class DataManager {
         }
         context.delete(weightEntry)
         print("Weight Entry delete from SwiftData")
-        let storagePath = "images/\(userID)/\(weightEntry.id).jpg"
-        let imageRef = storageRef.child(storagePath)
-        imageRef.delete { error in
-            if let error = error {
-                print("Error deleting image from Firebase Storage: \(error.localizedDescription)")
+        if weightEntry.photoData != nil {
+            let storagePath = "images/\(userID)/\(weightEntry.id).jpg"
+            let imageRef = storageRef.child(storagePath)
+            imageRef.delete { error in
+                if let error = error {
+                    print("Error deleting image from Firebase Storage: \(error.localizedDescription)")
+                }
             }
         }
         db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).delete { error in
@@ -446,11 +450,12 @@ class DataManager {
                             if let exerciseId = exerciseData["id"] as? String,
                                let name = exerciseData["name"] as? String,
                                let category = exerciseData["category"] as? String,
+                               let repRange = exerciseData["repRange"] as? String,
                                let exerciseNotes = exerciseData["notes"] as? String,
                                let date = (exerciseData["date"] as? Timestamp)?.dateValue(),
                                let order = exerciseData["order"] as? Int,
                                let setsData = exerciseData["sets"] as? [[String: Any]] {
-                                let newExercise = WorkoutExercise(id: exerciseId, name: name, category: category, notes: exerciseNotes, date: date, order: order, workout: newWorkout, sets: [])
+                                let newExercise = WorkoutExercise(id: exerciseId, name: name, category: category, repRange: repRange, notes: exerciseNotes, date: date, order: order, workout: newWorkout, sets: [])
                                 context.insert(newExercise)
                                 for setData in setsData {
                                     if let setId = setData["id"] as? String,

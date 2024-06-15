@@ -42,8 +42,6 @@ struct WorkoutLiveActivityLiveActivity: Widget {
                 }
             }
             .padding()
-            .background(Color.gray.opacity(0.2))
-            
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {

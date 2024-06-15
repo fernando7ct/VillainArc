@@ -76,7 +76,7 @@ struct WorkoutView: View {
             
             if workout.template {
                 self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
-                    return TempExercise(name: exercise.name, category: exercise.category, notes: exercise.notes, sets: [])
+                    return TempExercise(name: exercise.name, category: exercise.category, repRange: exercise.repRange, notes: exercise.notes, sets: [])
                 })
             } else {
                 self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
@@ -100,6 +100,11 @@ struct WorkoutView: View {
         withAnimation {
             exercises.remove(atOffsets: offsets)
             updateLiveActivity()
+            if exercises.isEmpty {
+                if isEditing {
+                    isEditing.toggle()
+                }
+            }
         }
     }
     private func completedSets(for exercise: TempExercise) -> Int {
@@ -113,7 +118,7 @@ struct WorkoutView: View {
     }
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
-            exercises.append(TempExercise(name: exercise.name, category: exercise.category, notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
+            exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
         updateLiveActivity()
     }
@@ -128,158 +133,181 @@ struct WorkoutView: View {
         NavigationView {
             ZStack {
                 BackgroundView()
-                VStack(spacing: 0) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(title)
-                                .font(.title)
-                                .fontWeight(.semibold)
-                            Text("\(startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
+                List {
+                    Section {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(title)
+                                    .font(.title)
+                                    .fontWeight(.semibold)
+                                Text("\(startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.secondary)
+                                HStack(spacing: 0) {
+                                    Text("Total Time: ")
+                                    Text(startTime, style: .timer)
+                                }
                                 .font(.subheadline)
                                 .foregroundStyle(Color.secondary)
-                            HStack(spacing: 0) {
-                                Text("Total Time: ")
-                                Text(startTime, style: .timer)
                             }
-                            .font(.subheadline)
-                            .foregroundStyle(Color.secondary)
-                        }
-                        Spacer()
-                        TimerDisplayView(viewModel: timer)
-                        if !isEditing {
-                            Menu {
-                                if !exercises.isEmpty {
+                            Spacer()
+                            TimerDisplayView(viewModel: timer)
+                            if !isEditing {
+                                Menu {
+                                    if !exercises.isEmpty {
+                                        Button(action: {
+                                            showSaveSheet = true
+                                        }, label: {
+                                            Label("Save Workout", systemImage: "checkmark")
+                                        })
+                                    }
                                     Button(action: {
-                                        withAnimation {
-                                            isEditing.toggle()
-                                        }
+                                        timer.endActivity()
+                                        endLiveActivity()
+                                        dismiss()
                                     }, label: {
-                                        Label("Edit Exercises", systemImage: "list.bullet")
+                                        Label("Cancel Workout", systemImage: "xmark")
                                     })
-                                    Button(action: {
-                                        showSaveSheet = true
-                                    }, label: {
-                                        Label("Save Workout", systemImage: "checkmark")
-                                    })
+                                    if !exercises.isEmpty {
+                                        Button(action: {
+                                            withAnimation {
+                                                isEditing.toggle()
+                                            }
+                                        }, label: {
+                                            Label("Edit Exercises", systemImage: "list.bullet")
+                                        })
+                                    }
+                                } label: {
+                                    Image(systemName: "chevron.down.circle")
+                                        .font(.title)
+                                        .foregroundStyle(Color.primary)
                                 }
+                            } else {
                                 Button(action: {
-                                    timer.endActivity()
-                                    endLiveActivity()
-                                    dismiss()
+                                    withAnimation {
+                                        isEditing.toggle()
+                                    }
                                 }, label: {
-                                    Label("Cancel Workout", systemImage: "xmark")
+                                    Text("Done")
+                                        .fontWeight(.semibold)
+                                        .font(.title2)
                                 })
-                            } label: {
-                                Image(systemName: "chevron.down.circle")
-                                    .font(.title)
-                                    .foregroundStyle(Color.primary)
                             }
-                        } else {
-                            Button(action: {
-                                withAnimation {
-                                    isEditing.toggle()
+                        }
+                        .sheet(isPresented: $showSaveSheet) {
+                            SaveWorkoutSheet(
+                                title: title,
+                                exercises: $exercises,
+                                notes: $notes,
+                                startTime: $startTime,
+                                endTime: $endTime,
+                                isTemplate: $isTemplate,
+                                onSave: { editableTitle in
+                                    saveWorkout(title: editableTitle)
                                 }
-                            }, label: {
-                                Text("Done")
-                                    .fontWeight(.semibold)
-                                    .font(.title2)
-                            })
+                            )
+                            .interactiveDismissDisabled()
                         }
                     }
-                    .padding(.horizontal)
-                    .sheet(isPresented: $showSaveSheet) {
-                        SaveWorkoutSheet(
-                            title: title,
-                            exercises: $exercises,
-                            notes: $notes,
-                            startTime: $startTime,
-                            endTime: $endTime,
-                            isTemplate: $isTemplate,
-                            onSave: { editableTitle in
-                                saveWorkout(title: editableTitle)
-                            }
-                        )
-                        .interactiveDismissDisabled()
-                    }
-                    List {
-                        if !isEditing {
-                            Section {
-                                ZStack(alignment: .leading) {
-                                    TextEditor(text: $notes)
-                                        .focused($notesFocused)
-                                        .textEditorStyle(.plain)
-                                        .autocorrectionDisabled()
-                                    if !notesFocused && notes.isEmpty {
-                                        Text("Notes...")
-                                            .foregroundStyle(.secondary)
-                                            .font(.subheadline)
-                                            .onTapGesture {
-                                                notesFocused = true
-                                            }
-                                    }
-                                }
-                            }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                        }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    if !isEditing {
                         Section {
-                            ForEach(exercises.indices, id: \.self) { index in
-                                NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, updateLiveActivity: updateLiveActivity)) {
-                                    HStack {
-                                        VStack(alignment: .leading) {
-                                            Text(exercises[index].name)
-                                                .font(.title2)
-                                                .fontWeight(.semibold)
-                                                .foregroundStyle(Color.primary)
-                                            if !exercises[index].notes.isEmpty {
-                                                Text("Notes: \(exercises[index].notes.trimmingCharacters(in: .whitespacesAndNewlines))")
-                                                    .lineLimit(2)
-                                                    .multilineTextAlignment(.leading)
-                                            }
-                                            Text(exercises[index].category)
-                                            Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
-                                        }
+                            ZStack(alignment: .leading) {
+                                TextEditor(text: $notes)
+                                    .focused($notesFocused)
+                                    .textEditorStyle(.plain)
+                                    .autocorrectionDisabled()
+                                if !notesFocused && notes.isEmpty {
+                                    Text("Notes...")
+                                        .foregroundStyle(.secondary)
                                         .font(.subheadline)
-                                        .foregroundStyle(Color.secondary)
-                                        Spacer()
-                                        if exercises[index].sets.count != 0 && completedSets(for: exercises[index]) == exercises[index].sets.count {
-                                            Text("Sets Completed")
-                                                .font(.subheadline)
-                                                .foregroundStyle(Color.secondary)
+                                        .onTapGesture {
+                                            notesFocused = true
                                         }
-                                    }
                                 }
                             }
-                            .onDelete(perform: deleteExercise)
-                            .onMove(perform: moveExercise)
                         }
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                        if !isEditing {
-                            Section {
-                                Button(action: {
-                                    showExerciseSelection = true
-                                }, label: {
-                                    HStack {
-                                        Label("Add Exercise", systemImage: "plus")
-                                        Spacer()
+                    }
+                    Section {
+                        ForEach(exercises.indices, id: \.self) { index in
+                            NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, updateLiveActivity: updateLiveActivity)) {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(exercises[index].name)
+                                            .font(.title2)
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(Color.primary)
+                                        if !exercises[index].repRange.isEmpty {
+                                            Text("Rep Range: \(exercises[index].repRange)")
+                                        }
+                                        if !exercises[index].notes.isEmpty {
+                                            Text("Notes: \(exercises[index].notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                                .lineLimit(2)
+                                                .multilineTextAlignment(.leading)
+                                        }
+                                        Text(exercises[index].category)
+                                        Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
                                     }
-                                    .foregroundStyle(Color.primary)
-                                })
-                                .padding()
-                                .background(BlurView())
-                                .cornerRadius(12)
-                                .sheet(isPresented: $showExerciseSelection) {
-                                    ExerciseSelectionView(onAdd: addSelectedExercises)
-                                        .interactiveDismissDisabled()
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.secondary)
+                                    Spacer()
+                                    if exercises[index].sets.count != 0 && completedSets(for: exercises[index]) == exercises[index].sets.count {
+                                        Text("Sets Completed")
+                                            .font(.subheadline)
+                                            .foregroundStyle(Color.secondary)
+                                    }
                                 }
                             }
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
                         }
+                        .onDelete(perform: deleteExercise)
+                        .onMove(perform: moveExercise)
                     }
-                    .listStyle(.plain)
-                    .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    if !isEditing {
+                        Section {
+                            Button(action: {
+                                showExerciseSelection = true
+                            }, label: {
+                                HStack {
+                                    Label("Add Exercise", systemImage: "plus")
+                                        .fontWeight(.semibold)
+                                    Spacer()
+                                }
+                                .foregroundStyle(Color.primary)
+                            })
+                            .padding()
+                            .background(BlurView())
+                            .cornerRadius(12)
+                            .sheet(isPresented: $showExerciseSelection) {
+                                ExerciseSelectionView(onAdd: addSelectedExercises)
+                                    .interactiveDismissDisabled()
+                            }
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(.plain)
+                .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
+                .onAppear {
+                    if isTemplate {
+                        let recentExercises = existingWorkout?.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
+                            guard let latestExercise = fetchLatestExercise(for: exercise.name) else {
+                                return TempExercise(name: exercise.name, category: exercise.category, repRange: exercise.repRange, notes: exercise.notes, sets: [])
+                            }
+                            return TempExercise(name: latestExercise.name, category: latestExercise.category, repRange: exercise.repRange, notes: exercise.notes, sets: latestExercise.sets!.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) })
+                        }
+                        self.exercises = recentExercises ?? []
+                        isTemplate = false
+                    }
+                    if !activityStarted {
+                        startLiveActivity()
+                        activityStarted.toggle()
+                    }
                 }
                 VStack(alignment: .trailing) {
                     Spacer()
@@ -299,22 +327,6 @@ struct WorkoutView: View {
                     }
                 }
                 .padding()
-            }
-            .onAppear {
-                if isTemplate {
-                    let recentExercises = existingWorkout?.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
-                        guard let latestExercise = fetchLatestExercise(for: exercise.name) else {
-                            return TempExercise(name: exercise.name, category: exercise.category, notes: exercise.notes, sets: [])
-                        }
-                        return TempExercise(name: latestExercise.name, category: latestExercise.category, notes: latestExercise.notes, sets: latestExercise.sets!.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) })
-                    }
-                    self.exercises = recentExercises ?? []
-                    isTemplate = false
-                }
-                if !activityStarted {
-                    startLiveActivity()
-                    activityStarted.toggle()
-                }
             }
         }
     }

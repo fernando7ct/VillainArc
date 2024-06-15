@@ -6,6 +6,7 @@ class WorkoutExercise: Identifiable {
     var id: String = UUID().uuidString
     var name: String = ""
     var category: String = ""
+    var repRange: String = ""
     var notes: String = ""
     var date: Date = Date()
     var order: Int = 0
@@ -13,10 +14,11 @@ class WorkoutExercise: Identifiable {
     @Relationship(deleteRule: .cascade, inverse: \ExerciseSet.exercise)
     var sets: [ExerciseSet]?
     
-    init(id: String, name: String, category: String, notes: String, date: Date, order: Int, workout: Workout, sets: [ExerciseSet]) {
+    init(id: String, name: String, category: String, repRange: String, notes: String, date: Date, order: Int, workout: Workout, sets: [ExerciseSet]) {
         self.id = id
         self.name = name
         self.category = category
+        self.repRange = repRange
         self.notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.date = date
         self.order = order
@@ -27,6 +29,7 @@ class WorkoutExercise: Identifiable {
         self.id = id
         self.name = tempExercise.name
         self.category = tempExercise.category
+        self.repRange = tempExercise.repRange
         self.notes = tempExercise.notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.date = date
         self.order = order
@@ -37,6 +40,7 @@ class WorkoutExercise: Identifiable {
         self.id = id
         self.name = exercise.name
         self.category = exercise.category
+        self.repRange = exercise.repRange
         self.notes = exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.date = date
         self.order = exercise.order
@@ -49,12 +53,14 @@ struct TempExercise: Identifiable {
     var id = UUID()
     var name: String
     var category: String
+    var repRange: String
     var notes: String
     var sets: [TempSet]
     
-    init(name: String, category: String, notes: String, sets: [TempSet]) {
+    init(name: String, category: String, repRange: String, notes: String, sets: [TempSet]) {
         self.name = name
         self.category = category
+        self.repRange = repRange
         self.notes = notes
         self.sets = sets
     }
@@ -62,6 +68,7 @@ struct TempExercise: Identifiable {
     init(from exercise: WorkoutExercise) {
         self.name = exercise.name
         self.category = exercise.category
+        self.repRange = exercise.repRange
         self.notes = exercise.notes
         self.sets = exercise.sets!.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
     }

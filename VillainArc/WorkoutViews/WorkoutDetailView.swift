@@ -3,6 +3,7 @@ import SwiftData
 
 struct WorkoutDetailView: View {
     @State var workout: Workout
+    @State var deleteOn: Bool
     @State private var workoutStarted: Bool = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
@@ -30,139 +31,167 @@ struct WorkoutDetailView: View {
     var body: some View {
         ZStack {
             BackgroundView()
-            VStack(spacing: 0) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(workout.title)
-                            .font(.title)
-                            .fontWeight(.semibold)
-                        Text("\(workout.template ? "Created: " : "" )\(workout.startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
-                            .font(.subheadline)
-                            .foregroundStyle(Color.secondary)
-                        if !workout.template {
-                            Text("Total Time: \(totalWorkoutTime(startTime: workout.startTime, endTime: workout.endTime))")
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
-                        }
-                    }
-                    Spacer()
-                }
-                .padding([.horizontal, .bottom])
-                if !workout.template {
-                    List {
-                        if !workout.notes.isEmpty {
-                            Section(content: {
-                                Text(workout.notes)
-                            }, header: {
-                                Text("Notes")
-                                    .foregroundStyle(Color.primary)
+            if !workout.template {
+                List {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(workout.title)
+                                    .font(.title)
                                     .fontWeight(.semibold)
-                            })
-                            .listRowBackground(BlurView())
-                        }
-                        ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
-                            Section(content: {
-                                ForEach(exercise.sets!.sorted(by: { $0.order < $1.order})) { set in
-                                    HStack {
-                                        Text("Set: \(set.order + 1)")
-                                        Spacer()
-                                        Text("Reps: \(set.reps)")
-                                        Spacer()
-                                        Text("Weight: \(formattedWeight(set.weight)) lbs")
-                                    }
-                                }
-                                .listRowSeparator(.hidden)
-                            }, header: {
-                                VStack(alignment: .leading) {
-                                    Text(exercise.name)
-                                        .foregroundStyle(Color.primary)
-                                        .fontWeight(.semibold)
-                                    if !exercise.notes.isEmpty {
-                                        Text("Notes: \(exercise.notes)")
-                                            .lineLimit(2)
-                                    }
-                                }
-                            })
-                            .listRowBackground(BlurView())
-                        }
-                    }
-                    .scrollContentBackground(.hidden)
-                } else {
-                    List {
-                        if !workout.notes.isEmpty {
-                            Section {
-                                Text("Notes: \(workout.notes)")
-                            }
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                        }
-                        Section {
-                            ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(exercise.name)
-                                            .font(.title2)
-                                            .fontWeight(.semibold)
-                                            .foregroundStyle(Color.primary)
-                                        if !exercise.notes.isEmpty {
-                                            Text("Notes: \(exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines))")
-                                                .lineLimit(2)
-                                                .multilineTextAlignment(.leading)
-                                        }
-                                        Text(exercise.category)
-                                        Text("\(exercise.sets!.count) \(exercise.sets!.count == 1 ? "set" : "sets")")
-                                    }
+                                Text("\(workout.template ? "Created: " : "" )\(workout.startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.secondary)
-                                    Spacer()
+                                if !workout.template {
+                                    Text("Total Time: \(totalWorkoutTime(startTime: workout.startTime, endTime: workout.endTime))")
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.secondary)
                                 }
-                                .listRowSeparator(.hidden)
                             }
+                            Spacer()
+                        }
+                        .listRowBackground(BlurView())
+                    if !workout.notes.isEmpty {
+                        Section(content: {
+                            Text(workout.notes)
+                        }, header: {
+                            Text("Notes")
+                                .foregroundStyle(Color.primary)
+                                .fontWeight(.semibold)
+                        })
+                        .listRowBackground(BlurView())
+                    }
+                    ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                        Section(content: {
+                            ForEach(exercise.sets!.sorted(by: { $0.order < $1.order})) { set in
+                                HStack {
+                                    Text("Set: \(set.order + 1)")
+                                    Spacer()
+                                    Text("Reps: \(set.reps)")
+                                    Spacer()
+                                    Text("Weight: \(formattedDouble(set.weight)) lbs")
+                                }
+                            }
+                            .listRowSeparator(.hidden)
+                        }, header: {
+                            VStack(alignment: .leading) {
+                                Text(exercise.name)
+                                    .foregroundStyle(Color.primary)
+                                    .fontWeight(.semibold)
+                                if !exercise.repRange.isEmpty {
+                                    Text("Rep Range: \(exercise.repRange)")
+                                }
+                                if !exercise.notes.isEmpty {
+                                    Text("Notes: \(exercise.notes)")
+                                        .lineLimit(2)
+                                }
+                            }
+                        })
+                        .listRowBackground(BlurView())
+                    }
+                }
+                .scrollContentBackground(.hidden)
+                .navigationBarTitleDisplayMode(.inline)
+            } else {
+                List {
+                    Section {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(workout.title)
+                                    .font(.title)
+                                    .fontWeight(.semibold)
+                                Text("\(workout.template ? "Created: " : "" )\(workout.startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.secondary)
+                                if !workout.template {
+                                    Text("Total Time: \(totalWorkoutTime(startTime: workout.startTime, endTime: workout.endTime))")
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.secondary)
+                                }
+                            }
+                            Spacer()
+                        }
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    if !workout.notes.isEmpty {
+                        Section {
+                            Text("Notes: \(workout.notes)")
                         }
                         .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                     }
-                    .listStyle(.plain)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .alert(isPresented: $showDeleteAlert) {
-                Alert(
-                    title: Text("Delete \(workout.template ? "Template" : "Workout")"),
-                    message: Text("Are you sure you want to delete this \(workout.template ? "template" : "workout")?"),
-                    primaryButton: .destructive(Text("Delete")) {
-                        deleteWorkout()
-                    },
-                    secondaryButton: .cancel()
-                )
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        if !workout.template {
-                            Button(action: {
-                                saveWorkoutAsTemplate()
-                                dismiss()
-                            }, label: {
-                                Label("Make into Template", systemImage: "doc.text")
-                            })
+                    Section {
+                        ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(exercise.name)
+                                        .font(.title2)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(Color.primary)
+                                    if !exercise.repRange.isEmpty {
+                                        Text("Rep Range: \(exercise.repRange)")
+                                    }
+                                    if !exercise.notes.isEmpty {
+                                        Text("Notes: \(exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                            .lineLimit(2)
+                                            .multilineTextAlignment(.leading)
+                                    }
+                                    Text(exercise.category)
+                                    Text("\(exercise.sets!.count) \(exercise.sets!.count == 1 ? "set" : "sets")")
+                                }
+                                .font(.subheadline)
+                                .foregroundStyle(Color.secondary)
+                                Spacer()
+                            }
+                            .listRowSeparator(.hidden)
                         }
+                    }
+                    .listRowBackground(Color.clear)
+                }
+                .listStyle(.plain)
+                .navigationBarTitleDisplayMode(.inline)
+            }
+        }
+        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .alert(isPresented: $showDeleteAlert) {
+            Alert(
+                title: Text("Delete \(workout.template ? "Template" : "Workout")"),
+                message: Text("Are you sure you want to delete this \(workout.template ? "template" : "workout")?"),
+                primaryButton: .destructive(Text("Delete")) {
+                    deleteWorkout()
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    if !workout.template {
                         Button(action: {
-                            workoutStarted.toggle()
+                            saveWorkoutAsTemplate()
+                            dismiss()
                         }, label: {
-                            Label("Use \(workout.template ? "" : "as ")Template", systemImage: "doc.text")
+                            Label("Make into Template", systemImage: "doc.text")
                         })
+                    }
+                    Button(action: {
+                        workoutStarted.toggle()
+                    }, label: {
+                        Label("Use \(workout.template ? "" : "as ")Template", systemImage: "doc.text")
+                    })
+                    if deleteOn {
                         Button(action: {
                             showDeleteAlert = true
                         }, label: {
                             Label("Delete \(workout.template ? "Template" : "Workout")", systemImage: "trash")
                         })
-                    } label: {
-                        Image(systemName: "chevron.down.circle")
-                            .font(.title2)
                     }
-                    .fullScreenCover(isPresented: $workoutStarted) {
-                        WorkoutView(existingWorkout: workout)
-                    }
+                } label: {
+                    Image(systemName: "chevron.down.circle")
+                        .font(.title2)
+                }
+                .fullScreenCover(isPresented: $workoutStarted) {
+                    WorkoutView(existingWorkout: workout)
                 }
             }
         }

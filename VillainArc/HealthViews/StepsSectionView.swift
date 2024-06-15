@@ -10,7 +10,7 @@ struct StepsSectionView: View {
             NavigationLink(destination: StepsView()) {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .bottom, spacing: 2) {
-                        Text(formattedWeight(todaysDistance))
+                        Text(formattedDouble(todaysDistance))
                             .font(.title2)
                         Text("MILES")
                             .font(.subheadline)

@@ -7,10 +7,30 @@ struct CaloriesView: View {
     @Query(sort: \HealthRestingEnergy.date, order: .reverse) private var healthRestingEnergy: [HealthRestingEnergy]
     @State private var selectedCaloriesRange: GraphRanges = .week
     @State private var selectedEntry: (date: Date, calories: Double)? = nil
+    @State private var selectedDate: Date?
+    @State private var scrollPosition = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
+    @State private var scrollDatePosition: Date = Date()
     
+    private func domainLength() -> Int {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        switch selectedCaloriesRange {
+        case .week:
+            let start = calendar.date(byAdding: .day, value: -6, to: today)!
+            let end = calendar.date(byAdding: .day, value: 1, to: today)!
+            return Int(end.timeIntervalSince(start))
+        case .month:
+            let start = calendar.date(byAdding: .day, value: -28, to: today)!
+            let end = calendar.date(byAdding: .day, value: 7, to: today)!
+            return Int(end.timeIntervalSince(start))
+        case .sixMonths:
+            let start = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+            let end = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+            return Int(end.timeIntervalSince(start))
+        }
+    }
     private func yAxisRange() -> ClosedRange<Double> {
-        let filteredEntries = filteredEntries()
-        guard let maxCalories = filteredEntries.map({ $0.calories }).max() else {
+        guard let maxCalories = combinedEntries().map({ $0.calories }).max() else {
             return 0...1000
         }
         return 0...(maxCalories + 100)
@@ -19,47 +39,62 @@ struct CaloriesView: View {
     private func xAxisRange() -> ClosedRange<Date> {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
+        
         let (startDate, endDate): (Date, Date) = {
             switch selectedCaloriesRange {
             case .week:
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
+                let rangeDifference = end.timeIntervalSince(start)
+                if let firstEntry = combinedEntries().last {
+                    let difference = end.timeIntervalSince(firstEntry.date)
+                    if difference < rangeDifference {
+                        return (start, end)
+                    } else {
+                        let remainder = Int(difference / rangeDifference)
+                        let newStart = calendar.date(byAdding: .day, value: (-7 * remainder), to: start)!
+                        return (newStart, end)
+                    }
+                }
                 return (start, end)
             case .month:
                 let start = calendar.date(byAdding: .day, value: -28, to: today)!
-                let end = calendar.date(byAdding: .day, value: 4, to: today)!
+                let end = calendar.date(byAdding: .day, value: 7, to: today)!
+                let rangeDifference = end.timeIntervalSince(start)
+                if let firstEntry = combinedEntries().last {
+                    let difference = end.timeIntervalSince(firstEntry.date)
+                    if difference < rangeDifference {
+                        return (start, end)
+                    } else {
+                        let remainder = Int(difference / rangeDifference)
+                        let newStart = calendar.date(byAdding: .day, value: (-35 * remainder), to: start)!
+                        return (newStart, end)
+                    }
+                }
                 return (start, end)
             case .sixMonths:
-                let startOfPrevious5thMonth = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
-                let endOfCurrentMonth = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
-                return (startOfPrevious5thMonth, endOfCurrentMonth)
+                let start = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+                let end = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+                let rangeDifference = end.timeIntervalSince(start)
+                if let firstEntry = combinedEntries().last {
+                    let difference = end.timeIntervalSince(firstEntry.date)
+                    if difference < rangeDifference {
+                        return (start, end)
+                    } else {
+                        let remainder = Int(difference / rangeDifference)
+                        let newStart = calendar.date(byAdding: .month, value: (-6 * remainder), to: start)!
+                        return (newStart, end)
+                    }
+                }
+                return (start, end)
             }
         }()
         return startDate...endDate
     }
     
-    private func filteredEntries() -> [(date: Date, calories: Double)] {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let (startDate, endDate): (Date, Date) = {
-            switch selectedCaloriesRange {
-            case .week:
-                let start = calendar.date(byAdding: .day, value: -6, to: today)!
-                let end = calendar.date(byAdding: .day, value: 1, to: today)!
-                return (start, end)
-            case .month:
-                let start = calendar.date(byAdding: .day, value: -28, to: today)!
-                let end = calendar.date(byAdding: .day, value: 1, to: today)!
-                return (start, end)
-            case .sixMonths:
-                let start = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
-                let end = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
-                return (start, end)
-            }
-        }()
-        
-        let activeEnergy = healthActiveEnergy.filter { $0.date >= startDate && $0.date < endDate }
-        let restingEnergy = healthRestingEnergy.filter { $0.date >= startDate && $0.date < endDate }
+    private func combinedEntries() -> [(date: Date, calories: Double)] {
+        let activeEnergy = healthActiveEnergy
+        let restingEnergy = healthRestingEnergy
         
         var combinedEntries: [Date: Double] = [:]
         
@@ -73,10 +108,9 @@ struct CaloriesView: View {
         
         return combinedEntries.map { (date: $0.key, calories: $0.value) }.sorted { $0.date < $1.date }
     }
-    
     private func graphableEntries() -> [(date: Date, calories: Double)] {
         let calendar = Calendar.current
-        let entries = filteredEntries()
+        let entries = combinedEntries()
         var averages: [(date: Date, calories: Double)] = []
         
         if selectedCaloriesRange == .sixMonths {
@@ -93,40 +127,56 @@ struct CaloriesView: View {
         return averages.sorted { $0.date < $1.date }
     }
     
-    private func caloriesData() -> (String, String, String) {
+    private func caloriesData() -> (average: String, calories: String, dateRange: String) {
         let calendar = Calendar.current
-        let entries = filteredEntries()
         let today = calendar.startOfDay(for: Date())
         
-        var average: String
-        var averageCalories: String
-        var timeRange: String
+        let (startDate, endDate): (Date, Date) = {
+            switch selectedCaloriesRange {
+            case .week:
+                let end = calendar.date(byAdding: .day, value: 7, to: scrollDatePosition)!
+                return (scrollDatePosition, end)
+            case .month:
+                let end = calendar.date(byAdding: .day, value: 35, to: scrollDatePosition)!
+                return (scrollDatePosition, end)
+            case .sixMonths:
+                let end = calendar.date(byAdding: .month, value: 6, to: calendar.date(from: calendar.dateComponents([.year, .month], from: scrollDatePosition))!)!
+                return (scrollDatePosition, end)
+            }
+        }()
         
+        let entries = combinedEntries().filter { $0.date >= startDate && $0.date <= endDate}
+        var average: String
+        var calories: String
         if entries.isEmpty {
-            average = ""
-            averageCalories = "No Data"
+            average = " "
+            calories = "No Data"
         } else if entries.count == 1 {
-            average = ""
-            averageCalories = "\(Int(entries.first!.calories))"
+            average = " "
+            calories = "\(Int(entries.first!.calories))"
         } else {
             average = "Average"
-            let average = entries.map { $0.calories }.reduce(0, +) / Double(entries.count)
-            averageCalories = "\(Int(average))"
+            let averageCalories = entries.map { $0.calories }.reduce(0, +) / Double(entries.count)
+            calories = "\(Int(averageCalories))"
         }
         
+        var dateRange: String
         switch selectedCaloriesRange {
-        case .week:
-            let start = calendar.date(byAdding: .day, value: -6, to: today)!
-            timeRange = "\(start.formatted(.dateTime.month().day())) - \(today.formatted(.dateTime.month().day()))"
-        case .month:
-            let start = calendar.date(byAdding: .day, value: -28, to: today)!
-            timeRange = "\(start.formatted(.dateTime.month().day())) - \(today.formatted(.dateTime.month().day()))"
+        case .week, .month:
+            if today >= startDate && today <= endDate {
+                dateRange = "\(startDate.formatted(.dateTime.month().day())) - \(today.formatted(.dateTime.month().day()))"
+            } else {
+                dateRange = "\(startDate.formatted(.dateTime.month().day())) - \(endDate.formatted(.dateTime.month().day()))"
+            }
         case .sixMonths:
-            let start = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
-            timeRange = "\(start.formatted(.dateTime.month().year())) - \(today.formatted(.dateTime.month().year()))"
+            if today >= startDate && today <= endDate {
+                dateRange = "\(startDate.formatted(.dateTime.month().year())) - \(today.formatted(.dateTime.month().year()))"
+            } else {
+                dateRange = "\(startDate.formatted(.dateTime.month().year())) - \(endDate.formatted(.dateTime.month().year()))"
+            }
         }
         
-        return (average, averageCalories, timeRange)
+        return (average, calories, dateRange)
     }
     
     var body: some View {
@@ -139,24 +189,36 @@ struct CaloriesView: View {
                     Text("6 Months").tag(GraphRanges.sixMonths)
                 }
                 .pickerStyle(.segmented)
+                .onChange(of: selectedCaloriesRange) {
+                    let calendar = Calendar.current
+                    let today = calendar.startOfDay(for: Date())
+                    switch selectedCaloriesRange {
+                    case .week:
+                        scrollPosition = calendar.date(byAdding: .day, value: -6, to: today)!
+                    case .month:
+                        scrollPosition = calendar.date(byAdding: .day, value: -28, to: today)!
+                    case .sixMonths:
+                        scrollPosition = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
+                    }
+                }
                 .padding(.top)
                 HStack {
                     VStack(alignment: .leading) {
-                        let (averageText, calories, range) = caloriesData()
-                        Text(averageText)
+                        let data = caloriesData()
+                        Text(data.average)
                             .foregroundStyle(.secondary)
                             .font(.headline)
                         HStack(alignment: .bottom, spacing: 3) {
-                            Text(calories)
+                            Text(data.calories)
                                 .foregroundStyle(.primary)
                                 .font(.largeTitle)
-                            if calories != "No Data" {
+                            if data.calories != "No Data" {
                                 Text("Calories")
                                     .foregroundStyle(.secondary)
                                     .offset(y: -4.0)
                             }
                         }
-                        Text(range)
+                        Text(data.dateRange)
                             .foregroundStyle(.secondary)
                             .font(.headline)
                     }
@@ -165,10 +227,8 @@ struct CaloriesView: View {
                 }
                 .fontWeight(.medium)
                 Chart(graphableEntries(), id: \.date) { entry in
-                    if graphableEntries().count == 1 {
-                        PointMark(x: .value("Date", entry.date), y: .value("Calories", entry.calories))
-                            .foregroundStyle(Color.primary)
-                    }
+                    PointMark(x: .value("Date", entry.date), y: .value("Calories", entry.calories))
+                        .foregroundStyle(Color.primary)
                     LineMark(
                         x: .value("Date", entry.date),
                         y: .value("Calories", entry.calories)
@@ -176,13 +236,6 @@ struct CaloriesView: View {
                     .foregroundStyle(Color.primary)
                     .interpolationMethod(.monotone)
                     .lineStyle(StrokeStyle(lineWidth: 1.5))
-                    AreaMark(
-                        x: .value("Date", entry.date),
-                        yStart: .value("Calories", yAxisRange().lowerBound),
-                        yEnd: .value("Calories", entry.calories)
-                    )
-                    .foregroundStyle(Color.primary.opacity(0.6))
-                    .interpolationMethod(.monotone)
                     if let selectedEntry {
                         RuleMark(
                             x: .value("Date", selectedEntry.date)
@@ -202,13 +255,52 @@ struct CaloriesView: View {
                             .padding(.vertical, 4)
                             .background {
                                 RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .fill(Color(uiColor: UIColor.secondarySystemBackground).shadow(.drop(radius: 2)))
+                                    .fill(Color(uiColor: UIColor.secondarySystemBackground))
                             }
                         }
                     }
                 }
+                chartScrollableAxes(.horizontal)
+                .chartXVisibleDomain(length: domainLength())
+                .chartScrollTargetBehavior(.paging)
+                .chartScrollPosition(x: $scrollPosition)
+                .onChange(of: scrollPosition) {
+                    scrollDatePosition = Calendar.current.startOfDay(for: scrollPosition)
+                }
                 .chartYScale(domain: yAxisRange())
                 .chartXScale(domain: xAxisRange())
+                .chartXSelection(value: $selectedDate)
+                .onChange(of: selectedDate) { _, newValue in
+                    if let newValue {
+                        let calendar = Calendar.current
+                        let entries = graphableEntries()
+
+                        switch selectedCaloriesRange {
+                        case .week, .month:
+                            let dayComponent = calendar.component(.day, from: newValue)
+                            let monthComponent = calendar.component(.month, from: newValue)
+                            if let currentEntry = entries.first(where: { item in
+                                calendar.component(.day, from: item.date) == dayComponent &&
+                                calendar.component(.month, from: item.date) == monthComponent
+                            }) {
+                                selectedEntry = currentEntry
+                            } else {
+                                selectedEntry = nil
+                            }
+                        case .sixMonths:
+                            let weekOfYearComponent = calendar.component(.weekOfYear, from: newValue)
+                            if let currentEntry = entries.first(where: { item in
+                                calendar.component(.weekOfYear, from: item.date) == weekOfYearComponent
+                            }) {
+                                selectedEntry = currentEntry
+                            } else {
+                                selectedEntry = nil
+                            }
+                        }
+                    } else {
+                        selectedEntry = nil
+                    }
+                }
                 .chartXAxis {
                     if selectedCaloriesRange == .week {
                         AxisMarks(values: .automatic(desiredCount: 7)) { value in
@@ -217,7 +309,11 @@ struct CaloriesView: View {
                             AxisValueLabel(format: .dateTime.weekday(.abbreviated))
                         }
                     } else if selectedCaloriesRange == .month {
-                        AxisMarks(values: .stride(by: .day, count: 7))
+                        AxisMarks(values: .stride(by: .day, count: 7)) { value in
+                            AxisGridLine()
+                            AxisTick()
+                            AxisValueLabel(format: .dateTime.month().day())
+                        }
                     } else {
                         AxisMarks(values: .stride(by: .month, count: 1)) { value in
                             AxisGridLine()
@@ -226,39 +322,6 @@ struct CaloriesView: View {
                         }
                     }
                 }
-                .chartOverlay(content: { proxy in
-                    GeometryReader { innerProxy in
-                        Rectangle()
-                            .fill(.clear).contentShape(Rectangle())
-                            .gesture(
-                                DragGesture()
-                                    .onChanged { value in
-                                        let location = value.location
-                                        if let date: Date = proxy.value(atX: location.x) {
-                                            let calendar = Calendar.current
-                                            let timeComponent: Calendar.Component
-                                            let entries = graphableEntries()
-                                            
-                                            switch selectedCaloriesRange {
-                                            case .week, .month:
-                                                timeComponent = .day
-                                            case .sixMonths:
-                                                timeComponent = .weekOfYear
-                                            }
-                                            
-                                            let time = calendar.component(timeComponent, from: date)
-                                            if let currentEntry = entries.first(where: { item in
-                                                calendar.component(timeComponent, from: item.date) == time
-                                            }) {
-                                                selectedEntry = currentEntry
-                                            }
-                                        }
-                                    }.onEnded { value in
-                                        selectedEntry = nil
-                                    }
-                            )
-                    }
-                })
                 .padding(.vertical)
                 .frame(maxHeight: 400)
                 Spacer()

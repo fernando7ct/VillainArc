@@ -5,9 +5,10 @@ struct BackgroundView: View {
     
     var body: some View {
         if colorScheme == .light {
-            Color("lightBackground")
-                .ignoresSafeArea()
-                .blur(radius: 225)
+            Color.white
+//            Color("lightBackground")
+//                .ignoresSafeArea()
+//                .blur(radius: 225)
         } else {
             RadialGradient(colors: [.black, Color(uiColor: .darkGray)], center: .center, startRadius: 0, endRadius: 600)
                 .ignoresSafeArea()
@@ -17,10 +18,25 @@ struct BackgroundView: View {
 }
 struct BlurView: UIViewRepresentable, View {
     func makeUIView(context: Context) -> UIVisualEffectView {
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
         return view
     }
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
+}
+struct CustomStyleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(.thickMaterial, in: .rect(cornerRadius: 12))
+            .padding(.horizontal)
+            .padding(.vertical, 3)
+    }
+}
+extension View {
+    func customStyle() -> some View {
+        self.modifier(CustomStyleModifier())
+    }
 }
 #Preview {
     BackgroundView()

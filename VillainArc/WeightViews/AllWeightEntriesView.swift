@@ -31,7 +31,7 @@ struct AllWeightEntriesView: View {
             List {
                 ForEach(weightEntries, id: \.self) { weightEntry in
                     HStack {
-                        Text("\(formattedWeight(weightEntry.weight)) lbs")
+                        Text("\(formattedDouble(weightEntry.weight)) lbs")
                             .fontWeight(.semibold)
                         Spacer()
                         if weightEntry.photoData != nil {

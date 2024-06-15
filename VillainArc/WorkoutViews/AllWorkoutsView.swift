@@ -22,7 +22,6 @@ struct AllWorkoutsView: View {
             for workout in workouts {
                 DataManager.shared.deleteWorkout(workout: workout, context: context)
             }
-            isEditing.toggle()
         }
     }
     
@@ -31,41 +30,49 @@ struct AllWorkoutsView: View {
             BackgroundView()
             List {
                 ForEach(workouts) { workout in
-                    NavigationLink(destination: WorkoutDetailView(workout: workout)) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(workout.title)
+                    Section {
+                        NavigationLink(destination: WorkoutDetailView(workout: workout, deleteOn: workouts.count == 3 ? false : true)) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                HStack {
+                                    Spacer()
+                                    VStack(alignment: .trailing, spacing: 0) {
+                                        Text(workout.title)
+                                        Text("\(workout.startTime.formatted(.dateTime.month().day().year()))")
+                                            .font(.caption2)
+                                            .foregroundStyle(Color.secondary)
+                                    }
                                     .fontWeight(.semibold)
-                                Text(concatenatedExerciseNames(for: workout))
-                                    .lineLimit(2)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.secondary)
-                                    .multilineTextAlignment(.leading)
+                                }
+                                .padding(.bottom, 3)
+                                ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                                    HStack(spacing: 1) {
+                                        Text("\(exercise.sets!.count)x")
+                                            .foregroundStyle(Color.primary)
+                                        Text(exercise.name)
+                                            .foregroundStyle(Color.secondary)
+                                    }
+                                    .lineLimit(1)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .padding(.top, 3)
+                                }
                             }
-                            Spacer()
-                            Text("\(workout.startTime.formatted(.dateTime.month().day().year()))")
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
                         }
                     }
                 }
                 .onDelete(perform: deleteWorkout)
                 .listRowBackground(BlurView())
+                .listRowSeparator(.hidden)
             }
             .scrollContentBackground(.hidden)
             .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
-            .overlay {
-                if workouts.isEmpty {
-                    ContentUnavailableView("You have no workouts.", systemImage: "dumbbell")
-                }
-            }
             .navigationTitle("All Workouts")
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .tabBar)
-            .navigationBarBackButtonHidden(isEditing && !workouts.isEmpty)
+            .navigationBarBackButtonHidden(isEditing)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if isEditing && !workouts.isEmpty {
+                    if isEditing{
                         Button(action: {
                             showDeleteAllAlert = true
                         }, label: {

@@ -82,16 +82,36 @@ class HealthManager: ObservableObject {
         
         let endDate = Date()
         
-        let startDate = getMostRecentHealthSteps(context: context)?.date ?? userStartDate
+        let mostRecentStepsDate = getMostRecentHealthSteps(context: context)?.date
+        var secondToLast: Date? = nil
+        if let mostRecentStepsDate {
+            secondToLast = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentStepsDate)
+        }
+        let startDate = secondToLast ?? userStartDate
         fetchAndSaveSteps(context: context, startDate: startDate, endDate: endDate)
         
-        let startDate2 = getMostRecentHealthActiveEnergy(context: context)?.date ?? userStartDate
+        let mostRecentActiveDate = getMostRecentHealthActiveEnergy(context: context)?.date
+        var secondToLast2: Date? = nil
+        if let mostRecentActiveDate {
+            secondToLast2 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentActiveDate)
+        }
+        let startDate2 = secondToLast2 ?? userStartDate
         fetchAndSaveActiveEnergy(context: context, startDate: startDate2, endDate: endDate)
         
-        let startDate3 = getMostRecentHealthRestingEnergy(context: context)?.date ?? userStartDate
+        let mostRecentRestingDate = getMostRecentHealthRestingEnergy(context: context)?.date
+        var secondToLast3: Date? = nil
+        if let mostRecentRestingDate {
+            secondToLast3 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentRestingDate)
+        }
+        let startDate3 = secondToLast3 ?? userStartDate
         fetchAndSaveRestingEnergy(context: context, startDate: startDate3, endDate: endDate)
         
-        let startDate4 = getMostRecentHealthWalkingRunningDistance(context: context)?.date ?? userStartDate
+        let mostRecentDistanceDate = getMostRecentHealthWalkingRunningDistance(context: context)?.date
+        var secondToLast4: Date? = nil
+        if let mostRecentDistanceDate {
+            secondToLast4 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentDistanceDate)
+        }
+        let startDate4 = secondToLast4 ?? userStartDate
         fetchAndSaveWalkingRunningDistance(context: context, startDate: startDate4, endDate: endDate)
         
         fetchTodaySteps(context: context) { steps in

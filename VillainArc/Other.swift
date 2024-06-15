@@ -8,22 +8,14 @@ extension View {
 }
 #endif
 
-func formattedWeight(_ weight: Double) -> String {
+func formattedDouble(_ weight: Double) -> String {
     let weightInt = Int(weight)
     return weight.truncatingRemainder(dividingBy: 1) == 0 ? "\(weightInt)" : String(format: "%.1f", weight)
 }
-struct CustomStyleModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(.ultraThinMaterial, in: .rect(cornerRadius: 12))
-            .padding(.horizontal)
-            .padding(.vertical, 3)
-    }
-}
-func concatenatedExerciseNames(for workout: Workout) -> String {
-    return workout.exercises!.sorted(by: { $0.order < $1.order }).map { $0.name }.joined(separator: ", ")
+func exerciseCategories(for workout: Workout) -> String {
+    guard let exercises = workout.exercises else { return "" }
+    let categories = Set(exercises.map { $0.category })
+    return categories.joined(separator: ", ")
 }
 func topSet(for exerciseInfo: ExerciseInfo) -> String {
     guard let topSet = exerciseInfo.sets.max(by: {
@@ -35,10 +27,5 @@ func topSet(for exerciseInfo: ExerciseInfo) -> String {
     }) else {
         return "No sets"
     }
-    return "Top Set: \(topSet.reps)x\(formattedWeight(topSet.weight)) lbs"
-}
-extension View {
-    func customStyle() -> some View {
-        self.modifier(CustomStyleModifier())
-    }
+    return "Top Set: \(topSet.reps)x\(formattedDouble(topSet.weight)) lbs"
 }

@@ -67,6 +67,7 @@
 		FDD4FBE22C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */; };
 		FDD4FBE32C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */; };
 		FDD4FBE72C19216A0028BADB /* HealthWalkingRunningDistance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE62C19216A0028BADB /* HealthWalkingRunningDistance.swift */; };
+		FDD4FBE92C1A78FD0028BADB /* SetRepRangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE82C1A78FD0028BADB /* SetRepRangeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,6 +155,7 @@
 		FDD4FBDA2C17F8840028BADB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutAttributes.swift; sourceTree = "<group>"; };
 		FDD4FBE62C19216A0028BADB /* HealthWalkingRunningDistance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthWalkingRunningDistance.swift; sourceTree = "<group>"; };
+		FDD4FBE82C1A78FD0028BADB /* SetRepRangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetRepRangeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -285,6 +287,7 @@
 				FDB39EAD2C0A95D8008929DF /* TemplateView.swift */,
 				FD2201CB2BFF304C00487151 /* ExerciseView.swift */,
 				FDAC23262C116AD6007B53B7 /* TemplateExerciseView.swift */,
+				FDD4FBE82C1A78FD0028BADB /* SetRepRangeView.swift */,
 				FDB39EA42C093041008929DF /* ExerciseSelectionView.swift */,
 				FDB39EA92C0A4496008929DF /* WorkoutDetailView.swift */,
 				FD7C6F052C0E874C001453F2 /* SetRestTimeView.swift */,
@@ -460,6 +463,7 @@
 				FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */,
 				FD7C6EFA2C0BFC9B001453F2 /* AllWorkoutsView.swift in Sources */,
 				FD7C6F092C0E9336001453F2 /* NotificationManager.swift in Sources */,
+				FDD4FBE92C1A78FD0028BADB /* SetRepRangeView.swift in Sources */,
 				FD7714CA2C14F8D800FF12AF /* HealthSteps.swift in Sources */,
 				FD7C6EF22C0AD531001453F2 /* ExerciseHistoryView.swift in Sources */,
 				FDAC23252C1154BD007B53B7 /* AllExercisesView.swift in Sources */,
@@ -638,7 +642,7 @@
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -679,7 +683,7 @@
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

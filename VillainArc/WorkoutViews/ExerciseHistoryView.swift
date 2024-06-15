@@ -41,7 +41,7 @@ struct ExerciseHistoryView: View {
                                         Spacer()
                                         Text("Reps: \(set.reps)")
                                         Spacer()
-                                        Text("Weight: \(formattedWeight(set.weight)) lbs")
+                                        Text("Weight: \(formattedDouble(set.weight)) lbs")
                                     }
                                     .listRowSeparator(.hidden)
                                 }

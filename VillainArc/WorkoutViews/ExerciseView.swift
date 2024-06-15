@@ -7,6 +7,7 @@ struct ExerciseView: View {
     @FocusState private var notesFocused: Bool
     @State private var showHistorySheet = false
     @State private var setRestTimeSheet = false
+    @State private var setRepRangeSheet = false
     let updateLiveActivity: () -> Void
     
     private func deleteSet(at offsets: IndexSet) {
@@ -23,124 +24,131 @@ struct ExerciseView: View {
     var body: some View {
         ZStack {
             BackgroundView()
-            VStack(spacing: 0) {
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(exercise.name)
-                            .font(.title)
-                            .fontWeight(.semibold)
-                        Text(exercise.category)
-                            .font(.subheadline)
-                            .foregroundStyle(Color.secondary)
+            
+            List {
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(exercise.name)
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .lineLimit(1)
+                            Text("Rep Range: \(exercise.repRange.isEmpty ? "Not Set" : exercise.repRange)")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.secondary)
+                            Text(exercise.category)
+                                .font(.subheadline)
+                                .foregroundStyle(Color.secondary)
+                        }
+                        Spacer()
+                        TimerDisplayView(viewModel: timer)
                     }
-                    Spacer()
-                    TimerDisplayView(viewModel: timer)
                 }
-                .padding(.horizontal)
-                List {
-                    Section {
-                        ZStack(alignment: .leading) {
-                            TextEditor(text: $exercise.notes)
-                                .focused($notesFocused)
-                                .textEditorStyle(.plain)
-                                .autocorrectionDisabled()
-                            if !notesFocused && exercise.notes.isEmpty {
-                                Text("Notes...")
-                                    .foregroundStyle(.secondary)
-                                    .font(.subheadline)
-                                    .onTapGesture {
-                                        notesFocused = true
-                                    }
-                            }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                Section {
+                    ZStack(alignment: .leading) {
+                        TextEditor(text: $exercise.notes)
+                            .focused($notesFocused)
+                            .textEditorStyle(.plain)
+                            .autocorrectionDisabled()
+                        if !notesFocused && exercise.notes.isEmpty {
+                            Text("Notes...")
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                                .onTapGesture {
+                                    notesFocused = true
+                                }
                         }
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    Section {
-                        if !exercise.sets.isEmpty {
-                            HStack {
-                                Text("Set")
-                                    .offset(x: 5)
-                                Text("Reps")
-                                    .offset(x: 30)
-                                Text("Weight")
-                                    .offset(x: 130)
-                            }
-                            .fontWeight(.semibold)
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                Section {
+                    if !exercise.sets.isEmpty {
+                        HStack {
+                            Text("Set")
+                                .padding(.trailing)
+                            Text("Reps")
+                            Spacer()
+                            Text("Weight")
+                            Spacer()
                         }
-                        ForEach(exercise.sets.indices, id: \.self) { setIndex in
-                            HStack {
-                                Text("\(setIndex + 1)")
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 7)
-                                    .background(BlurView())
-                                    .cornerRadius(12)
-                                TextField("", value: $exercise.sets[setIndex].reps, format: .number)
-                                    .keyboardType(.numberPad)
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 7)
-                                    .background(BlurView())
-                                    .cornerRadius(12)
-                                    .focused($keyboardActive)
-                                TextField("", value: $exercise.sets[setIndex].weight, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 7)
-                                    .background(BlurView())
-                                    .cornerRadius(12)
-                                    .focused($keyboardActive)
-                                Button(action: {
-                                    if !exercise.sets[setIndex].completed {
-                                        timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
-                                    }
-                                    exercise.sets[setIndex].completed.toggle()
-                                    updateLiveActivity()
-                                }, label: {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
-                                        .font(.title)
-                                        .fontWeight(.semibold)
-                                })
-                                .padding(.horizontal, 7)
+                        .fontWeight(.semibold)
+                        .font(.title2)
+                    }
+                    ForEach(exercise.sets.indices, id: \.self) { setIndex in
+                        HStack {
+                            Text("\(setIndex + 1)")
+                                .padding(.horizontal)
                                 .padding(.vertical, 7)
                                 .background(BlurView())
                                 .cornerRadius(12)
-                                .buttonStyle(BorderlessButtonStyle())
-                            }
-                            .font(.title2)
-                        }
-                        .onDelete(perform: deleteSet)
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-                    
-                    Section {
-                        Button(action: {
-                            withAnimation {
-                                if exercise.sets.isEmpty {
-                                    exercise.sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
-                                } else {
-                                    let lastSet = exercise.sets.last!
-                                    exercise.sets.append(TempSet(reps: lastSet.reps, weight: lastSet.weight, restMinutes: lastSet.restMinutes, restSeconds: lastSet.restSeconds, completed: false))
+                            TextField("", value: $exercise.sets[setIndex].reps, format: .number)
+                                .keyboardType(.numberPad)
+                                .padding(.horizontal)
+                                .padding(.vertical, 7)
+                                .background(BlurView())
+                                .cornerRadius(12)
+                                .focused($keyboardActive)
+                            TextField("", value: $exercise.sets[setIndex].weight, format: .number)
+                                .keyboardType(.decimalPad)
+                                .padding(.horizontal)
+                                .padding(.vertical, 7)
+                                .background(BlurView())
+                                .cornerRadius(12)
+                                .focused($keyboardActive)
+                            Button(action: {
+                                if !exercise.sets[setIndex].completed {
+                                    timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
                                 }
+                                exercise.sets[setIndex].completed.toggle()
                                 updateLiveActivity()
-                            }
-                        }, label: {
-                            HStack {
-                                Label("Add Set", systemImage: "plus")
-                                Spacer()
-                            }
-                            .foregroundStyle(Color.primary)
-                        })
-                        .padding()
-                        .background(BlurView())
-                        .cornerRadius(12)
+                            }, label: {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
+                                    .fontWeight(.semibold)
+                            })
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 9)
+                            .background(BlurView())
+                            .cornerRadius(12)
+                            .buttonStyle(BorderlessButtonStyle())
+                        }
+                        .font(.title)
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                    .onDelete(perform: deleteSet)
                 }
-                .listStyle(.plain)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                
+                Section {
+                    Button(action: {
+                        withAnimation {
+                            if exercise.sets.isEmpty {
+                                exercise.sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
+                            } else {
+                                let lastSet = exercise.sets.last!
+                                exercise.sets.append(TempSet(reps: lastSet.reps, weight: lastSet.weight, restMinutes: lastSet.restMinutes, restSeconds: lastSet.restSeconds, completed: false))
+                            }
+                            updateLiveActivity()
+                        }
+                    }, label: {
+                        HStack {
+                            Label("Add Set", systemImage: "plus")
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                        .foregroundStyle(Color.primary)
+                    })
+                    .padding()
+                    .background(BlurView())
+                    .cornerRadius(12)
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
+            .listStyle(.plain)
             VStack(alignment: .trailing) {
                 Spacer()
                 HStack(alignment: .bottom) {
@@ -161,6 +169,7 @@ struct ExerciseView: View {
             }
             .padding()
         }
+        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing, content: {
                 Menu {
@@ -171,6 +180,11 @@ struct ExerciseView: View {
                             Label("Set Rest Times", systemImage: "timer")
                         })
                     }
+                    Button(action: {
+                        setRepRangeSheet.toggle()
+                    }, label: {
+                        Label("Set Rep Range", systemImage: "alternatingcurrent")
+                    })
                     Button(action: {
                         showHistorySheet.toggle()
                     }, label: {
@@ -183,10 +197,17 @@ struct ExerciseView: View {
                 .sheet(isPresented: $showHistorySheet) {
                     ExerciseHistoryView(exerciseName: $exercise.name, onSelectHistory: populateSets)
                         .presentationDragIndicator(.visible)
+                        .presentationDetents([.medium, .large])
                 }
                 .sheet(isPresented: $setRestTimeSheet) {
                     SetRestTimeView(exercise: $exercise)
                         .presentationDragIndicator(.visible)
+                        .presentationDetents([.medium, .large])
+                }
+                .sheet(isPresented: $setRepRangeSheet) {
+                    SetRepRangeView(exercise: $exercise)
+                        .interactiveDismissDisabled()
+                        .presentationDetents([.medium])
                 }
             })
         }

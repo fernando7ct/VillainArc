@@ -23,7 +23,6 @@ struct AllTemplatesView: View {
             for template in templates {
                 DataManager.shared.deleteWorkout(workout: template, context: context)
             }
-            isEditing.toggle()
         }
     }
     
@@ -31,39 +30,50 @@ struct AllTemplatesView: View {
         ZStack {
             BackgroundView()
             List {
-                ForEach(templates) { template in
-                    NavigationLink(destination: WorkoutDetailView(workout: template)) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(template.title)
+                ForEach(templates) { workout in
+                    Section {
+                        NavigationLink(destination: WorkoutDetailView(workout: workout, deleteOn: templates.count == 3 ? false : true)) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                HStack {
+                                    Spacer()
+                                    VStack(alignment: .trailing, spacing: 0) {
+                                        Text(workout.title)
+                                        Text(exerciseCategories(for: workout))
+                                            .font(.caption2)
+                                            .foregroundStyle(Color.secondary)
+                                    }
                                     .fontWeight(.semibold)
-                                Text(concatenatedExerciseNames(for: template))
-                                    .lineLimit(2)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.secondary)
-                                    .multilineTextAlignment(.leading)
+                                }
+                                .padding(.bottom, 3)
+                                ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                                    HStack(spacing: 1) {
+                                        Text("\(exercise.sets!.count)x")
+                                            .foregroundStyle(Color.primary)
+                                        Text(exercise.name)
+                                            .foregroundStyle(Color.secondary)
+                                    }
+                                    .lineLimit(1)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .padding(.top, 3)
+                                }
                             }
-                            Spacer()
                         }
                     }
                 }
                 .onDelete(perform: deleteTemplate)
                 .listRowBackground(BlurView())
+                .listRowSeparator(.hidden)
             }
             .scrollContentBackground(.hidden)
             .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
-            .overlay {
-                if templates.isEmpty {
-                    ContentUnavailableView("You have no templates.", systemImage: "doc.text")
-                }
-            }
             .navigationTitle("All Templates")
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .tabBar)
-            .navigationBarBackButtonHidden(isEditing && !templates.isEmpty)
+            .navigationBarBackButtonHidden(isEditing)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if isEditing && !templates.isEmpty {
+                    if isEditing {
                         Button(action: {
                             showDeleteAllAlert = true
                         }, label: {
