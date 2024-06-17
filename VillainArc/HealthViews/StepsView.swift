@@ -167,6 +167,29 @@ struct StepsView: View {
         
         return (average, steps, dateRange)
     }
+    private func annotationPosition() -> AnnotationPosition {
+        guard let selectedEntry else { return .top }
+        let calendar = Calendar.current
+        let start: Date
+        let end: Date
+        switch selectedStepRange {
+        case .week:
+            start = calendar.date(byAdding: .day, value: 1, to: scrollPosition)!
+            end = calendar.date(byAdding: .day, value: 5, to: start)!
+        case .month:
+            start = calendar.date(byAdding: .day, value: 3, to: scrollPosition)!
+            end = calendar.date(byAdding: .day, value: 29, to: start)!
+        case .sixMonths:
+            return .top
+        }
+        if selectedEntry.date < start {
+            return .topTrailing
+        } else if selectedEntry.date > end {
+            return .topLeading
+        } else {
+            return .top
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -231,7 +254,7 @@ struct StepsView: View {
                         )
                         .foregroundStyle(Color.primary)
                         .lineStyle(StrokeStyle(lineWidth: 2))
-                        .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                        .annotation(position: annotationPosition(), overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text("Steps")
                                     .font(.caption)

@@ -11,6 +11,19 @@ struct CaloriesView: View {
     @State private var scrollPosition = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
     @State private var scrollDatePosition: Date = Date()
     
+    private func combinedEntries() -> [(date: Date, calories: Double)] {
+        let activeEnergy = healthActiveEnergy
+        let restingEnergy = healthRestingEnergy
+        
+        var combinedEntries: [Date: Double] = [:]
+        for entry in activeEnergy {
+            combinedEntries[entry.date, default: 0] += entry.activeEnergy
+        }
+        for entry in restingEnergy {
+            combinedEntries[entry.date, default: 0] += entry.restingEnergy
+        }
+        return combinedEntries.map { (date: $0.key, calories: $0.value) }.sorted { $0.date < $1.date }
+    }
     private func domainLength() -> Int {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -46,7 +59,7 @@ struct CaloriesView: View {
                 let start = calendar.date(byAdding: .day, value: -6, to: today)!
                 let end = calendar.date(byAdding: .day, value: 1, to: today)!
                 let rangeDifference = end.timeIntervalSince(start)
-                if let firstEntry = combinedEntries().last {
+                if let firstEntry = healthActiveEnergy.last {
                     let difference = end.timeIntervalSince(firstEntry.date)
                     if difference < rangeDifference {
                         return (start, end)
@@ -61,7 +74,7 @@ struct CaloriesView: View {
                 let start = calendar.date(byAdding: .day, value: -28, to: today)!
                 let end = calendar.date(byAdding: .day, value: 7, to: today)!
                 let rangeDifference = end.timeIntervalSince(start)
-                if let firstEntry = combinedEntries().last {
+                if let firstEntry = healthActiveEnergy.last {
                     let difference = end.timeIntervalSince(firstEntry.date)
                     if difference < rangeDifference {
                         return (start, end)
@@ -76,7 +89,7 @@ struct CaloriesView: View {
                 let start = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
                 let end = calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
                 let rangeDifference = end.timeIntervalSince(start)
-                if let firstEntry = combinedEntries().last {
+                if let firstEntry = healthActiveEnergy.last {
                     let difference = end.timeIntervalSince(firstEntry.date)
                     if difference < rangeDifference {
                         return (start, end)
@@ -90,23 +103,6 @@ struct CaloriesView: View {
             }
         }()
         return startDate...endDate
-    }
-    
-    private func combinedEntries() -> [(date: Date, calories: Double)] {
-        let activeEnergy = healthActiveEnergy
-        let restingEnergy = healthRestingEnergy
-        
-        var combinedEntries: [Date: Double] = [:]
-        
-        for entry in activeEnergy {
-            combinedEntries[entry.date, default: 0] += entry.activeEnergy
-        }
-        
-        for entry in restingEnergy {
-            combinedEntries[entry.date, default: 0] += entry.restingEnergy
-        }
-        
-        return combinedEntries.map { (date: $0.key, calories: $0.value) }.sorted { $0.date < $1.date }
     }
     private func graphableEntries() -> [(date: Date, calories: Double)] {
         let calendar = Calendar.current
@@ -126,7 +122,6 @@ struct CaloriesView: View {
         
         return averages.sorted { $0.date < $1.date }
     }
-    
     private func caloriesData() -> (average: String, calories: String, dateRange: String) {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -177,6 +172,29 @@ struct CaloriesView: View {
         }
         
         return (average, calories, dateRange)
+    }
+    private func annotationPosition() -> AnnotationPosition {
+        guard let selectedEntry else { return .top }
+        let calendar = Calendar.current
+        let start: Date
+        let end: Date
+        switch selectedCaloriesRange {
+        case .week:
+            start = calendar.date(byAdding: .day, value: 1, to: scrollPosition)!
+            end = calendar.date(byAdding: .day, value: 5, to: start)!
+        case .month:
+            start = calendar.date(byAdding: .day, value: 3, to: scrollPosition)!
+            end = calendar.date(byAdding: .day, value: 29, to: start)!
+        case .sixMonths:
+            return .top
+        }
+        if selectedEntry.date < start {
+            return .topTrailing
+        } else if selectedEntry.date > end {
+            return .topLeading
+        } else {
+            return .top
+        }
     }
     
     var body: some View {
@@ -242,7 +260,7 @@ struct CaloriesView: View {
                         )
                         .foregroundStyle(Color.primary)
                         .lineStyle(StrokeStyle(lineWidth: 2))
-                        .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                        .annotation(position: annotationPosition(), overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text("Calories")
                                     .font(.caption)
@@ -260,7 +278,7 @@ struct CaloriesView: View {
                         }
                     }
                 }
-                chartScrollableAxes(.horizontal)
+                .chartScrollableAxes(.horizontal)
                 .chartXVisibleDomain(length: domainLength())
                 .chartScrollTargetBehavior(.paging)
                 .chartScrollPosition(x: $scrollPosition)
