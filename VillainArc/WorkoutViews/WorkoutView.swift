@@ -190,18 +190,9 @@ struct WorkoutView: View {
                                         Button(action: {
                                             showSaveSheet = true
                                         }, label: {
-                                            Label("\(isEditing ? "Update" : "Save") Workout", systemImage: "checkmark")
+                                            Label(isEditing ? "Update" : "Save", systemImage: "checkmark")
                                         })
                                     }
-                                    Button(action: {
-                                        if !isEditing {
-                                            timer.endActivity()
-                                            endLiveActivity()
-                                        }
-                                        dismiss()
-                                    }, label: {
-                                        Label("Cancel \(isEditing ? "Edits" : "Workout")", systemImage: "xmark")
-                                    })
                                     if !exercises.isEmpty {
                                         Button(action: {
                                             withAnimation {
@@ -211,6 +202,15 @@ struct WorkoutView: View {
                                             Label("Edit Exercises", systemImage: "list.bullet")
                                         })
                                     }
+                                    Button(role: .destructive, action: {
+                                        if !isEditing {
+                                            timer.endActivity()
+                                            endLiveActivity()
+                                        }
+                                        dismiss()
+                                    }, label: {
+                                        Label("Cancel", systemImage: "xmark")
+                                    })
                                 } label: {
                                     Image(systemName: "chevron.down.circle")
                                         .font(.title)

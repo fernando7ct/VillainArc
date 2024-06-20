@@ -186,18 +186,18 @@ struct ExerciseView: View {
                         Button(action: {
                             setRestTimeSheet.toggle()
                         }, label: {
-                            Label("Set Rest Times", systemImage: "timer")
+                            Label("Rest Times", systemImage: "timer")
                         })
                     }
                     Button(action: {
                         setRepRangeSheet.toggle()
                     }, label: {
-                        Label("Set Rep Range", systemImage: "alternatingcurrent")
+                        Label("Rep Range", systemImage: "alternatingcurrent")
                     })
                     Button(action: {
                         showHistorySheet.toggle()
                     }, label: {
-                        Label("Exercise History", systemImage: "clock")
+                        Label("History", systemImage: "clock")
                     })
                 } label: {
                     Image(systemName: "chevron.down.circle")

@@ -170,9 +170,14 @@ struct WorkoutDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button(action: {
+                        workoutStarted.toggle()
+                    }, label: {
+                        Label("Use", systemImage: "figure.strengthtraining.traditional")
+                    })
+                    Button(action: {
                         editWorkout.toggle()
                     }, label: {
-                        Label("Edit \(workout.template ? "Template" : "Workout")", systemImage: "pencil")
+                        Label("Edit", systemImage: "pencil")
                     })
                     if !workout.template {
                         Button(action: {
@@ -182,16 +187,11 @@ struct WorkoutDetailView: View {
                             Label("Make into Template", systemImage: "doc.text")
                         })
                     }
-                    Button(action: {
-                        workoutStarted.toggle()
-                    }, label: {
-                        Label("Use \(workout.template ? "" : "as ")Template", systemImage: "doc.text")
-                    })
                     if deleteOn {
-                        Button(action: {
+                        Button(role: .destructive, action: {
                             showDeleteAlert = true
                         }, label: {
-                            Label("Delete \(workout.template ? "Template" : "Workout")", systemImage: "trash")
+                            Label("Delete", systemImage: "trash")
                         })
                     }
                 } label: {

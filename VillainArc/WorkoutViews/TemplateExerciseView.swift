@@ -150,7 +150,7 @@ struct TemplateExerciseView: View {
                     Button(action: {
                         setRepRangeSheet.toggle()
                     }, label: {
-                        Label("Set Rep Range", systemImage: "alternatingcurrent")
+                        Label("Rep Range", systemImage: "alternatingcurrent")
                     })
                 } label: {
                     Image(systemName: "chevron.down.circle")
