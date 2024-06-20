@@ -61,6 +61,18 @@ struct ExerciseHistoryView: View {
                                     })
                                 }
                                 .fontWeight(.semibold)
+                            }, footer: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        if !exercise.repRange.isEmpty {
+                                            Text("Rep Range: \(exercise.repRange)")
+                                        }
+                                        if !exercise.notes.isEmpty {
+                                            Text("Notes: \(exercise.notes)")
+                                        }
+                                    }
+                                    Spacer()
+                                }
                             })
                             .listRowBackground(BlurView())
                         }

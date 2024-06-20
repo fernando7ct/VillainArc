@@ -74,7 +74,7 @@ class HealthManager: ObservableObject {
         healthStore.execute(query4)
     }
     
-    func fetchAndUpdateAllData(context: ModelContext) async {
+    func fetchAndUpdateAllData(context: ModelContext) {
         let fetchDescriptor = FetchDescriptor<User>()
         let users = try! context.fetch(fetchDescriptor)
         let user = users.first!

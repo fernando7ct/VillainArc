@@ -129,6 +129,83 @@ class DataManager {
             }
         }
     }
+    func updateWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, isTemplate: Bool, workout: Workout?, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        guard let workout = workout else {
+            print("No previous workout passed.")
+            return
+        }
+        workout.title = title
+        workout.notes = notes
+        workout.startTime = startTime
+        workout.endTime = endTime
+        workout.template = isTemplate
+        for exercise in workout.exercises! {
+            context.delete(exercise)
+        }
+        workout.exercises = []
+        do {
+            try context.save()
+            print("Workout data updated, exercises cleared.")
+        } catch {
+            print("Failed to update workout data, and clearing exercises: \(error.localizedDescription)")
+        }
+        var workoutData: [String: Any] = [
+            "id": workout.id,
+            "title": workout.title,
+            "startTime": workout.startTime,
+            "endTime": workout.endTime,
+            "notes": workout.notes,
+            "template": workout.template,
+            "exercises": []
+        ]
+        for (exerciseIndex, exercise) in exercises.enumerated() {
+            let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: workout.endTime, order: exerciseIndex, workout: workout, sets: [])
+            context.insert(newExercise)
+            var exerciseData: [String: Any] = [
+                "id": newExercise.id,
+                "name": newExercise.name,
+                "category": newExercise.category,
+                "repRange": newExercise.repRange,
+                "notes": newExercise.notes,
+                "date": newExercise.date,
+                "order": newExercise.order,
+                "sets": []
+            ]
+            for (setIndex, set) in exercise.sets.enumerated() {
+                let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)
+                context.insert(newSet)
+                newExercise.sets!.append(newSet)
+                let setData: [String: Any] = [
+                    "id": newSet.id,
+                    "reps": newSet.reps,
+                    "weight": newSet.weight,
+                    "order": newSet.order,
+                    "restMinutes": newSet.restMinutes,
+                    "restSeconds": newSet.restSeconds
+                ]
+                exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
+            }
+            workout.exercises!.append(newExercise)
+            workoutData["exercises"] = (workoutData["exercises"] as? [[String: Any]] ?? []) + [exerciseData]
+        }
+        do {
+            try context.save()
+            print("Updated Workout in SwiftData")
+        } catch {
+            print("Failed to update workout: \(error.localizedDescription)")
+        }
+        db.collection("users").document(userID).collection("Workouts").document(workout.id).setData(workoutData) { error in
+            if let error = error {
+                print("Error saving workout to Firebase: \(error.localizedDescription)")
+            } else {
+                print("Saved Workout to Firebase")
+            }
+        }
+    }
     func saveWorkoutAsTemplate(workout: Workout, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")

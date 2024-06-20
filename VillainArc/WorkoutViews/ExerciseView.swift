@@ -3,6 +3,7 @@ import SwiftUI
 struct ExerciseView: View {
     @Binding var exercise: TempExercise
     @ObservedObject var timer: TimerDisplayViewModel
+    var isEditing: Bool
     @FocusState private var keyboardActive: Bool
     @FocusState private var notesFocused: Bool
     @State private var showHistorySheet = false
@@ -91,6 +92,9 @@ struct ExerciseView: View {
                                 .background(BlurView())
                                 .cornerRadius(12)
                                 .focused($keyboardActive)
+                                .onChange(of: exercise.sets[setIndex].reps) {
+                                    updateLiveActivity()
+                                }
                             TextField("", value: $exercise.sets[setIndex].weight, format: .number)
                                 .keyboardType(.decimalPad)
                                 .padding(.horizontal)
@@ -98,22 +102,27 @@ struct ExerciseView: View {
                                 .background(BlurView())
                                 .cornerRadius(12)
                                 .focused($keyboardActive)
-                            Button(action: {
-                                if !exercise.sets[setIndex].completed {
-                                    timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
+                                .onChange(of: exercise.sets[setIndex].weight) {
+                                    updateLiveActivity()
                                 }
-                                exercise.sets[setIndex].completed.toggle()
-                                updateLiveActivity()
-                            }, label: {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
-                                    .fontWeight(.semibold)
-                            })
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 9)
-                            .background(BlurView())
-                            .cornerRadius(12)
-                            .buttonStyle(BorderlessButtonStyle())
+                            if !isEditing {
+                                Button(action: {
+                                    if !exercise.sets[setIndex].completed {
+                                        timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
+                                    }
+                                    exercise.sets[setIndex].completed.toggle()
+                                    updateLiveActivity()
+                                }, label: {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
+                                        .fontWeight(.semibold)
+                                })
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 9)
+                                .background(BlurView())
+                                .cornerRadius(12)
+                                .buttonStyle(BorderlessButtonStyle())
+                            }
                         }
                         .font(.title)
                     }

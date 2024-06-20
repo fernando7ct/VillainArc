@@ -10,18 +10,31 @@ struct TemplateView: View {
     @State private var endTime = Date()
     @State private var notes = ""
     @State private var showExerciseSelection = false
-    @State private var isEditing = false
+    @State private var isEditingExercises = false
     @State private var isTemplate = true
     @State private var showSaveSheet = false
-    @State private var selectedExerciseNotes: TempExercise?
-    @State private var selectedExerciseTimer: TempExercise?
+    @State private var existingWorkout: Workout?
+    @State private var isEditing: Bool = false
+    
+    init(existingWorkout: Workout? = nil) {
+        self._existingWorkout = State(initialValue: existingWorkout)
+        if let workout = existingWorkout {
+            self._title = State(initialValue: workout.title)
+            self._notes = State(initialValue: workout.notes)
+            self._isTemplate = State(initialValue: workout.template)
+            self._startTime = State(initialValue: workout.startTime)
+            self._endTime = State(initialValue: workout.endTime)
+            self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+            self._isEditing = State(initialValue: true)
+        }
+    }
     
     private func deleteExercise(at offsets: IndexSet) {
         withAnimation {
             exercises.remove(atOffsets: offsets)
             if exercises.isEmpty {
-                if isEditing {
-                    isEditing.toggle()
+                if isEditingExercises {
+                    isEditingExercises.toggle()
                 }
             }
         }
@@ -37,7 +50,11 @@ struct TemplateView: View {
         }
     }
     private func saveWorkout(title: String) {
-        DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
+        if !isEditing {
+            DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
+        } else {
+            DataManager.shared.updateWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, workout: existingWorkout, context: context)
+        }
         dismiss()
     }
     
@@ -57,24 +74,24 @@ struct TemplateView: View {
                                     .foregroundStyle(Color.secondary)
                             }
                             Spacer()
-                            if !isEditing {
+                            if !isEditingExercises {
                                 Menu {
                                     if !exercises.isEmpty {
                                         Button(action: {
                                             showSaveSheet = true
                                         }, label: {
-                                            Label("Save Template", systemImage: "checkmark")
+                                            Label("\(isEditing ? "Update" : "Save") Template", systemImage: "checkmark")
                                         })
                                     }
                                     Button(action: {
                                         dismiss()
                                     }, label: {
-                                        Label("Cancel Template", systemImage: "xmark")
+                                        Label("Cancel \(isEditing ? "Edits" : "Template")", systemImage: "xmark")
                                     })
                                     if !exercises.isEmpty {
                                         Button(action: {
                                             withAnimation {
-                                                isEditing.toggle()
+                                                isEditingExercises.toggle()
                                             }
                                         }, label: {
                                             Label("Edit Exercises", systemImage: "list.bullet")
@@ -88,7 +105,7 @@ struct TemplateView: View {
                             } else {
                                 Button(action: {
                                     withAnimation {
-                                        isEditing.toggle()
+                                        isEditingExercises.toggle()
                                     }
                                 }, label: {
                                     Text("Done")
@@ -98,7 +115,7 @@ struct TemplateView: View {
                             }
                         }
                         .sheet(isPresented: $showSaveSheet) {
-                            SaveWorkoutSheet(title: title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: $isTemplate, onSave: { editableTitle in
+                            SaveWorkoutSheet(title: title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: $isTemplate, isEditing: $isEditing, onSave: { editableTitle in
                                 saveWorkout(title: editableTitle)
                             })
                             .interactiveDismissDisabled()
@@ -106,7 +123,7 @@ struct TemplateView: View {
                     }
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                    if !isEditing {
+                    if !isEditingExercises {
                         Section {
                             ZStack(alignment: .leading) {
                                 TextEditor(text: $notes)
@@ -157,7 +174,7 @@ struct TemplateView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    if !isEditing {
+                    if !isEditingExercises {
                         Section {
                             Button(action: {
                                 showExerciseSelection = true
@@ -182,7 +199,7 @@ struct TemplateView: View {
                     }
                 }
                 .listStyle(.plain)
-                .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
+                .environment(\.editMode, isEditingExercises ? .constant(.active) : .constant(.inactive))
                 VStack(alignment: .trailing) {
                     Spacer()
                     HStack(alignment: .bottom) {

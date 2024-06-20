@@ -39,7 +39,7 @@ struct WeightGraphView: View {
               let maxWeight = weightEntries.map({ $0.weight }).max() else {
             return 0...100
         }
-        return (minWeight < 10 ? 0 : minWeight - 10)...(maxWeight + 10)
+        return (minWeight < 5 ? 0 : minWeight - 5)...(maxWeight + 5)
     }
     
     private func xAxisRange() -> ClosedRange<Date> {

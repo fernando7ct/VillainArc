@@ -12,11 +12,12 @@ struct WorkoutView: View {
     @State private var endTime = Date()
     @State private var notes = ""
     @State private var showExerciseSelection = false
-    @State private var isEditing = false
+    @State private var isEditingExercises = false
     @State private var isTemplate = false
     @State private var showSaveSheet = false
     @StateObject private var timer = TimerDisplayViewModel()
     @State private var activityStarted = false
+    @State private var isEditing = false
     var existingWorkout: Workout?
     
     @State private var activity: Activity<WorkoutAttributes>?
@@ -32,18 +33,20 @@ struct WorkoutView: View {
         }
     }
     private func updateLiveActivity() {
-        let data = currentActiveSet()
-        let updatedContentState = WorkoutAttributes.ContentState(
-            exerciesName: currentActiveExercise(),
-            setNumber: data.0,
-            setReps: data.1,
-            setWeight: data.2,
-            date: startTime,
-            isEmpty: exercises.isEmpty
-        )
-        let updatedContent = ActivityContent(state: updatedContentState, staleDate: nil)
-        Task {
-            await activity?.update(updatedContent)
+        if !isEditing {
+            let data = currentActiveSet()
+            let updatedContentState = WorkoutAttributes.ContentState(
+                exerciesName: currentActiveExercise(),
+                setNumber: data.0,
+                setReps: data.1,
+                setWeight: data.2,
+                date: startTime,
+                isEmpty: exercises.isEmpty
+            )
+            let updatedContent = ActivityContent(state: updatedContentState, staleDate: nil)
+            Task {
+                await activity?.update(updatedContent)
+            }
         }
     }
     private func currentActiveExercise() -> String {
@@ -67,19 +70,31 @@ struct WorkoutView: View {
             await activity?.end(dismissalPolicy: .immediate)
         }
     }
-    init(existingWorkout: Workout? = nil) {
+    init(existingWorkout: Workout? = nil, isEditing: Bool? = nil) {
         self.existingWorkout = existingWorkout
-        if let workout = existingWorkout {
-            self._title = State(initialValue: workout.title)
-            self._notes = State(initialValue: workout.notes)
-            self._isTemplate = State(initialValue: workout.template)
-            
-            if workout.template {
-                self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
-                    return TempExercise(name: exercise.name, category: exercise.category, repRange: exercise.repRange, notes: exercise.notes, sets: [])
-                })
-            } else {
+        if isEditing != nil {
+            if let workout = existingWorkout {
+                self._title = State(initialValue: workout.title)
+                self._notes = State(initialValue: workout.notes)
+                self._isTemplate = State(initialValue: workout.template)
+                self._startTime = State(initialValue: workout.startTime)
+                self._endTime = State(initialValue: workout.endTime)
                 self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+                self._isEditing = State(initialValue: true)
+            }
+        } else {
+            if let workout = existingWorkout {
+                self._title = State(initialValue: workout.title)
+                self._notes = State(initialValue: workout.notes)
+                self._isTemplate = State(initialValue: workout.template)
+                
+                if workout.template {
+                    self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
+                        return TempExercise(name: exercise.name, category: exercise.category, repRange: exercise.repRange, notes: exercise.notes, sets: [])
+                    })
+                } else {
+                    self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+                }
             }
         }
     }
@@ -101,8 +116,8 @@ struct WorkoutView: View {
             exercises.remove(atOffsets: offsets)
             updateLiveActivity()
             if exercises.isEmpty {
-                if isEditing {
-                    isEditing.toggle()
+                if isEditingExercises {
+                    isEditingExercises.toggle()
                 }
             }
         }
@@ -123,10 +138,21 @@ struct WorkoutView: View {
         updateLiveActivity()
     }
     private func saveWorkout(title: String) {
-        DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
-        timer.endActivity()
-        endLiveActivity()
+        if !isEditing {
+            DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
+            timer.endActivity()
+            endLiveActivity()
+        } else {
+            DataManager.shared.updateWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, workout: existingWorkout, context: context)
+        }
         dismiss()
+    }
+    private func totalWorkoutTime(startTime: Date, endTime: Date) -> String {
+        let timeInterval = endTime.timeIntervalSince(startTime)
+        let hours = Int(timeInterval) / 3600
+        let minutes = (Int(timeInterval) % 3600) / 60
+        let seconds = Int(timeInterval) % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
     var body: some View {
@@ -143,35 +169,43 @@ struct WorkoutView: View {
                                 Text("\(startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.secondary)
-                                HStack(spacing: 0) {
-                                    Text("Total Time: ")
-                                    Text(startTime, style: .timer)
+                                if !isEditing {
+                                    HStack(spacing: 0) {
+                                        Text("Total Time: ")
+                                        Text(startTime, style: .timer)
+                                    }
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.secondary)
+                                } else {
+                                    Text("Total Time: \(totalWorkoutTime(startTime: startTime, endTime: endTime))")
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.secondary)
                                 }
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
                             }
                             Spacer()
                             TimerDisplayView(viewModel: timer)
-                            if !isEditing {
+                            if !isEditingExercises {
                                 Menu {
                                     if !exercises.isEmpty {
                                         Button(action: {
                                             showSaveSheet = true
                                         }, label: {
-                                            Label("Save Workout", systemImage: "checkmark")
+                                            Label("\(isEditing ? "Update" : "Save") Workout", systemImage: "checkmark")
                                         })
                                     }
                                     Button(action: {
-                                        timer.endActivity()
-                                        endLiveActivity()
+                                        if !isEditing {
+                                            timer.endActivity()
+                                            endLiveActivity()
+                                        }
                                         dismiss()
                                     }, label: {
-                                        Label("Cancel Workout", systemImage: "xmark")
+                                        Label("Cancel \(isEditing ? "Edits" : "Workout")", systemImage: "xmark")
                                     })
                                     if !exercises.isEmpty {
                                         Button(action: {
                                             withAnimation {
-                                                isEditing.toggle()
+                                                isEditingExercises.toggle()
                                             }
                                         }, label: {
                                             Label("Edit Exercises", systemImage: "list.bullet")
@@ -185,7 +219,7 @@ struct WorkoutView: View {
                             } else {
                                 Button(action: {
                                     withAnimation {
-                                        isEditing.toggle()
+                                        isEditingExercises.toggle()
                                     }
                                 }, label: {
                                     Text("Done")
@@ -202,6 +236,7 @@ struct WorkoutView: View {
                                 startTime: $startTime,
                                 endTime: $endTime,
                                 isTemplate: $isTemplate,
+                                isEditing: $isEditing,
                                 onSave: { editableTitle in
                                     saveWorkout(title: editableTitle)
                                 }
@@ -211,7 +246,7 @@ struct WorkoutView: View {
                     }
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                    if !isEditing {
+                    if !isEditingExercises {
                         Section {
                             ZStack(alignment: .leading) {
                                 TextEditor(text: $notes)
@@ -233,7 +268,7 @@ struct WorkoutView: View {
                     }
                     Section {
                         ForEach(exercises.indices, id: \.self) { index in
-                            NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, updateLiveActivity: updateLiveActivity)) {
+                            NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, isEditing: isEditing, updateLiveActivity: updateLiveActivity)) {
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text(exercises[index].name)
@@ -267,7 +302,7 @@ struct WorkoutView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    if !isEditing {
+                    if !isEditingExercises {
                         Section {
                             Button(action: {
                                 showExerciseSelection = true
@@ -292,7 +327,7 @@ struct WorkoutView: View {
                     }
                 }
                 .listStyle(.plain)
-                .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
+                .environment(\.editMode, isEditingExercises ? .constant(.active) : .constant(.inactive))
                 .onAppear {
                     if isTemplate {
                         let recentExercises = existingWorkout?.exercises!.sorted(by: { $0.order < $1.order }).compactMap { exercise in
@@ -304,7 +339,7 @@ struct WorkoutView: View {
                         self.exercises = recentExercises ?? []
                         isTemplate = false
                     }
-                    if !activityStarted {
+                    if !activityStarted && !isEditing {
                         startLiveActivity()
                         activityStarted.toggle()
                     }

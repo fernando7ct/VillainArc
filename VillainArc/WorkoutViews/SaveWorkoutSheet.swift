@@ -9,6 +9,7 @@ struct SaveWorkoutSheet: View {
     @Binding var endTime: Date
     @Binding var notes: String
     @Binding var isTemplate: Bool
+    @Binding var isEditing: Bool
     @State private var editableTitle: String
     @State private var originalStartTime: Date
     @State private var originalEndTime: Date
@@ -16,13 +17,14 @@ struct SaveWorkoutSheet: View {
     @State private var originalIsTemplate: Bool
     var onSave: (String) -> Void
     
-    init(title: String, exercises: Binding<[TempExercise]>, notes: Binding<String>, startTime: Binding<Date>, endTime: Binding<Date>, isTemplate: Binding<Bool>, onSave: @escaping (String) -> Void) {
+    init(title: String, exercises: Binding<[TempExercise]>, notes: Binding<String>, startTime: Binding<Date>, endTime: Binding<Date>, isTemplate: Binding<Bool>, isEditing: Binding<Bool>, onSave: @escaping (String) -> Void) {
         self._editableTitle = State(initialValue: title)
         self._exercises = exercises
         self._notes = notes
         self._startTime = startTime
         self._endTime = endTime
         self._isTemplate = isTemplate
+        self._isEditing = isEditing
         self._originalStartTime = State(initialValue: startTime.wrappedValue)
         self._originalEndTime = State(initialValue: endTime.wrappedValue)
         self._originalNotes = State(initialValue: notes.wrappedValue)
@@ -111,11 +113,13 @@ struct SaveWorkoutSheet: View {
                 }
                 .padding()
             }
-            .navigationTitle(originalIsTemplate ? "Save Template" : "Save Workout")
+            .navigationTitle("\(isEditing ? "Update" : "Save") \(originalIsTemplate ? "Template" : "Workout")")
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                endTime = Date()
+                if !isEditing {
+                    endTime = Date()
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -136,7 +140,7 @@ struct SaveWorkoutSheet: View {
                         onSave(editableTitle)
                         dismiss()
                     }, label: {
-                        Text("Save")
+                        Text(isEditing ? "Update" : "Save")
                             .fontWeight(.semibold)
                             .foregroundStyle(.green)
                     })

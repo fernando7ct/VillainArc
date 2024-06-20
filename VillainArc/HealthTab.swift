@@ -15,8 +15,8 @@ struct HealthTab: View {
                         StepsSectionView(todaysSteps: healthManager.todaysSteps, todaysDistance: healthManager.todaysWalkingRunningDistance)
                         CaloriesSectionView(activeCalories: healthManager.todaysActiveCalories, restingCalories: healthManager.todaysRestingCalories)
                     }
-                    .task(priority: .high) {
-                        await healthManager.fetchAndUpdateAllData(context: context)
+                    .onAppear {
+                        healthManager.fetchAndUpdateAllData(context: context)
                     }
                     .navigationTitle("Health")
                     .toolbarBackground(.ultraThinMaterial, for: .navigationBar)

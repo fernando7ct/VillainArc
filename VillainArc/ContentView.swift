@@ -1,27 +1,44 @@
 import SwiftUI
 
+enum Tab: String {
+    case home = "Home"
+    case health = "Health"
+    case weight = "Weight"
+    
+    var systemImage: String {
+        switch self {
+        case .home:
+            return "house"
+        case .health:
+            return "heart.text.square.fill"
+        case .weight:
+            return "scalemass.fill"
+        }
+    }
+}
+
 struct ContentView: View {
     @AppStorage("isSignedIn") var isSignedIn = false
-    @State private var selection = 1
-    
+    @State private var activeTab: Tab = .home
+
     var body: some View {
         if isSignedIn {
-            TabView(selection: $selection) {
+            TabView(selection: $activeTab) {
                 HealthTab()
                     .tabItem {
-                        Label("Health", systemImage: "heart.text.square.fill")
+                        Label(Tab.health.rawValue, systemImage: Tab.health.systemImage)
                     }
-                    .tag(0)
+                    .tag(Tab.health)
                 HomeTab()
                     .tabItem {
-                        Label("Home", systemImage: "house")
+                        Label(Tab.home.rawValue, systemImage: Tab.home.systemImage)
                     }
-                    .tag(1)
+                    .tag(Tab.home)
                 WeightTab()
                     .tabItem {
-                        Label("Weight", systemImage: "scalemass.fill")
+                        Label(Tab.weight.rawValue, systemImage: Tab.weight.systemImage)
                     }
-                    .tag(2)
+                    .tag(Tab.weight)
             }
             .tint(Color.primary)
         } else {

@@ -11,7 +11,7 @@ class WorkoutExercise: Identifiable {
     var date: Date = Date()
     var order: Int = 0
     var workout: Workout?
-    @Relationship(deleteRule: .cascade, inverse: \ExerciseSet.exercise)
+    @Relationship(deleteRule: .cascade)
     var sets: [ExerciseSet]?
     
     init(id: String, name: String, category: String, repRange: String, notes: String, date: Date, order: Int, workout: Workout, sets: [ExerciseSet]) {

@@ -4,7 +4,8 @@ import SwiftData
 struct WorkoutDetailView: View {
     @State var workout: Workout
     @State var deleteOn: Bool
-    @State private var workoutStarted: Bool = false
+    @State private var workoutStarted = false
+    @State private var editWorkout = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @State private var showDeleteAlert = false
@@ -33,23 +34,24 @@ struct WorkoutDetailView: View {
             BackgroundView()
             if !workout.template {
                 List {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text(workout.title)
-                                    .font(.title)
-                                    .fontWeight(.semibold)
-                                Text("\(workout.template ? "Created: " : "" )\(workout.startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
+                    HStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(workout.title)
+                                .lineLimit(1)
+                                .font(.title)
+                                .fontWeight(.semibold)
+                            Text("\(workout.template ? "Created: " : "" )\(workout.startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
+                                .font(.subheadline)
+                                .foregroundStyle(Color.secondary)
+                            if !workout.template {
+                                Text("Total Time: \(totalWorkoutTime(startTime: workout.startTime, endTime: workout.endTime))")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.secondary)
-                                if !workout.template {
-                                    Text("Total Time: \(totalWorkoutTime(startTime: workout.startTime, endTime: workout.endTime))")
-                                        .font(.subheadline)
-                                        .foregroundStyle(Color.secondary)
-                                }
                             }
-                            Spacer()
                         }
-                        .listRowBackground(BlurView())
+                        Spacer()
+                    }
+                    .listRowBackground(BlurView())
                     if !workout.notes.isEmpty {
                         Section(content: {
                             Text(workout.notes)
@@ -99,6 +101,7 @@ struct WorkoutDetailView: View {
                                 Text(workout.title)
                                     .font(.title)
                                     .fontWeight(.semibold)
+                                    .lineLimit(1)
                                 Text("\(workout.template ? "Created: " : "" )\(workout.startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
                                     .font(.subheadline)
                                     .foregroundStyle(Color.secondary)
@@ -166,6 +169,11 @@ struct WorkoutDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    Button(action: {
+                        editWorkout.toggle()
+                    }, label: {
+                        Label("Edit \(workout.template ? "Template" : "Workout")", systemImage: "pencil")
+                    })
                     if !workout.template {
                         Button(action: {
                             saveWorkoutAsTemplate()
@@ -192,6 +200,13 @@ struct WorkoutDetailView: View {
                 }
                 .fullScreenCover(isPresented: $workoutStarted) {
                     WorkoutView(existingWorkout: workout)
+                }
+                .fullScreenCover(isPresented: $editWorkout) {
+                    if workout.template {
+                        TemplateView(existingWorkout: workout)
+                    } else {
+                        WorkoutView(existingWorkout: workout, isEditing: true)
+                    }
                 }
             }
         }

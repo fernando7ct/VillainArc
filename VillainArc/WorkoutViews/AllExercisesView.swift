@@ -61,6 +61,7 @@ struct ExerciseRow: View {
         VStack(alignment: .leading) {
             Text(item.name)
                 .fontWeight(.semibold)
+                .lineLimit(1)
             Text(item.category)
                 .font(.subheadline)
                 .foregroundStyle(Color.secondary)

@@ -9,7 +9,7 @@ class Workout: Identifiable {
     var endTime: Date = Date()
     var notes: String = ""
     var template: Bool = false
-    @Relationship(deleteRule: .cascade, inverse: \WorkoutExercise.workout)
+    @Relationship(deleteRule: .cascade)
     var exercises: [WorkoutExercise]?
     
     init(id: String, title: String, startTime: Date, endTime: Date, notes: String, template: Bool, exercises: [WorkoutExercise]) {
