@@ -4,6 +4,7 @@ enum Tab: String {
     case home = "Home"
     case health = "Health"
     case weight = "Weight"
+    case nutrition = "Nutrition"
     
     var systemImage: String {
         switch self {
@@ -13,6 +14,8 @@ enum Tab: String {
             return "heart.text.square.fill"
         case .weight:
             return "scalemass.fill"
+        case .nutrition:
+            return "leaf.fill"
         }
     }
 }
@@ -24,6 +27,11 @@ struct ContentView: View {
     var body: some View {
         if isSignedIn {
             TabView(selection: $activeTab) {
+                NutritionTab()
+                    .tabItem {
+                        Label(Tab.nutrition.rawValue, systemImage: Tab.nutrition.systemImage)
+                    }
+                    .tag(Tab.nutrition)
                 HealthTab()
                     .tabItem {
                         Label(Tab.health.rawValue, systemImage: Tab.health.systemImage)

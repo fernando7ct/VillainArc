@@ -16,9 +16,11 @@ struct HealthTab: View {
                         CaloriesSectionView(activeCalories: healthManager.todaysActiveCalories, restingCalories: healthManager.todaysRestingCalories)
                     }
                     .onAppear {
-                        healthManager.fetchAndUpdateAllData(context: context)
+                        Task {
+                            await healthManager.fetchAndUpdateAllData(context: context)
+                        }
                     }
-                    .navigationTitle("Health")
+                    .navigationTitle(Tab.health.rawValue)
                     .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                     .toolbarBackground(.ultraThinMaterial, for: .tabBar)
                 } else {

@@ -74,7 +74,7 @@ class HealthManager: ObservableObject {
         healthStore.execute(query4)
     }
     
-    func fetchAndUpdateAllData(context: ModelContext) {
+    func fetchAndUpdateAllData(context: ModelContext) async {
         let fetchDescriptor = FetchDescriptor<User>()
         let users = try! context.fetch(fetchDescriptor)
         let user = users.first!
@@ -113,6 +113,8 @@ class HealthManager: ObservableObject {
         }
         let startDate4 = secondToLast4 ?? userStartDate
         fetchAndSaveWalkingRunningDistance(context: context, startDate: startDate4, endDate: endDate)
+        
+        try? await Task.sleep(nanoseconds: 1_000_000_000)
         
         fetchTodaySteps(context: context) { steps in
             DispatchQueue.main.async {

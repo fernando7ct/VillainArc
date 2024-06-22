@@ -17,7 +17,7 @@ struct HomeTab: View {
                     }
                 }
             }
-            .navigationTitle("Home")
+            .navigationTitle(Tab.home.rawValue)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         }

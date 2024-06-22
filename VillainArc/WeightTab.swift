@@ -23,7 +23,7 @@ struct WeightTab: View {
                 }
                 .scrollDisabled(true)
             }
-            .navigationTitle("Weight")
+            .navigationTitle(Tab.weight.rawValue)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: {
