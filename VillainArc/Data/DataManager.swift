@@ -6,6 +6,7 @@ import FirebaseStorage
 import SwiftUI
 
 class DataManager {
+    @AppStorage("isSignedIn") var isSignedIn = false
     static let shared = DataManager()
     private let db = Firestore.firestore()
     private let storageRef = Storage.storage().reference()
@@ -421,29 +422,69 @@ class DataManager {
             }
         }
     }
-    func syncData(context: ModelContext, userName: String?, completion: @escaping (Bool) -> Void) {
-        completion(true)
+    func checkUserDataComplete(completion: @escaping (Bool) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
-            print("No user is signed in.")
             completion(false)
             return
         }
-        db.collection("users").document(userID).getDocument { [self] document, error in
+        db.collection("users").document(userID).getDocument { document, error in
             if let document = document, document.exists {
-                self.downloadUserData(userID: userID, context: context, completion: completion)
+                if let data = document.data(),
+                   let _ = data["name"] as? String,
+                   let _ = data["dateJoined"] as? Timestamp,
+                   let _ = data["birthday"] as? Timestamp,
+                   let _ = data["heightFeet"] as? Int,
+                   let _ = data["heightInches"] as? Int {
+                    completion(true)
+                } else {
+                    completion(false)
+                }
             } else {
-                self.createUser(userID: userID, userName: userName, context: context, completion: completion)
+                completion(false)
             }
         }
     }
-    private func createUser(userID: String, userName: String?, context: ModelContext, completion: @escaping (Bool) -> Void) {
-        let newUserName = userName ?? "User"
-        let newUser = User(id: userID, name: newUserName, dateJoined: Date())
+    func fetchUserDateJoined(userID: String, completion: @escaping (Date?) -> Void) {
+        db.collection("users").document(userID).getDocument { document, error in
+            if let document = document, document.exists {
+                if let data = document.data(),
+                   let dateJoined = data["dateJoined"] as? Timestamp {
+                    completion(dateJoined.dateValue())
+                } else {
+                    completion(nil)
+                }
+            } else {
+                completion(nil)
+            }
+        }
+    }
+    func deleteDataAndSignOut(context: ModelContext) {
+        do {
+            try context.delete(model: WeightEntry.self)
+            try context.delete(model: User.self)
+            try context.delete(model: Workout.self)
+            try context.delete(model: WorkoutExercise.self)
+            try context.delete(model: ExerciseSet.self)
+            try context.delete(model: HealthSteps.self)
+            try context.delete(model: HealthActiveEnergy.self)
+            try context.delete(model: HealthRestingEnergy.self)
+            try context.delete(model: HealthWalkingRunningDistance.self)
+            try Auth.auth().signOut()
+            isSignedIn = false
+        } catch {
+            print("Error deleting data and/or signing user out: \(error.localizedDescription)")
+        }
+    }
+    func createUser(userID: String, userName: String, dateJoined: Date, birthday: Date, heightFeet: Int, heightInches: Int, context: ModelContext, completion: @escaping (Bool) -> Void) {
+        let newUser = User(id: userID, name: userName, dateJoined: dateJoined, birthday: birthday, heightFeet: heightFeet, heightInches: heightInches)
         context.insert(newUser)
         let userData: [String: Any] = [
-            "id": userID,
-            "name": newUserName,
-            "dateJoined": newUser.dateJoined
+            "id": newUser.id,
+            "name": newUser.name,
+            "dateJoined": newUser.dateJoined,
+            "birthday": newUser.birthday,
+            "heightFeet": newUser.heightFeet,
+            "heightInches": newUser.heightInches
         ]
         db.collection("users").document(userID).setData(userData) { error in
             if let error = error {
@@ -451,15 +492,21 @@ class DataManager {
                 completion(false)
             } else {
                 print("User created successfully")
+                self.downloadWeightEntries(userID: userID, context: context, completion: completion)
+                self.downloadWorkouts(userID: userID, context: context, completion: completion)
+                self.downloadHealthSteps(userID: userID, context: context, completion: completion)
+                self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
+                self.downloadHealthRestingEnergy(userID: userID, context: context, completion: completion)
+                self.downloadHealthWalkingRunningDistance(userID: userID, context: context, completion: completion)
                 completion(true)
             }
         }
     }
-    private func downloadUserData(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
+    func downloadUserData(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).getDocument { document, error in
             if let document = document, document.exists {
-                if let data = document.data(), let name = data["name"] as? String, let dateJoined = data["dateJoined"] as? Timestamp {
-                    let user = User(id: userID, name: name, dateJoined: dateJoined.dateValue())
+                if let data = document.data(), let name = data["name"] as? String, let dateJoined = data["dateJoined"] as? Timestamp, let birthday = data["birthday"] as? Timestamp, let heightFeet = data["heightFeet"] as? Int, let heightInches = data["heightInches"] as? Int {
+                    let user = User(id: userID, name: name, dateJoined: dateJoined.dateValue(), birthday: birthday.dateValue(), heightFeet: heightFeet, heightInches: heightInches)
                     context.insert(user)
                     self.downloadWeightEntries(userID: userID, context: context, completion: completion)
                     self.downloadWorkouts(userID: userID, context: context, completion: completion)

@@ -195,7 +195,7 @@ struct AddWeightEntryView: View {
                     Button(action: {
                         addWeightEntry()
                     }, label: {
-                        Text("Done")
+                        Text("Save")
                             .fontWeight(.semibold)
                             .foregroundStyle(.green)
                     })

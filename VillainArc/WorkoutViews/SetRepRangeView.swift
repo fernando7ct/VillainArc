@@ -6,14 +6,19 @@ struct SetRepRangeView: View {
     @State private var rangeStart: Int = 0
     @State private var rangeEnd: Int = 0
     @State private var originalRange: String = ""
+    @State private var failure: Bool = false
 
     func setProperties() {
         originalRange = exercise.repRange
         if !exercise.repRange.isEmpty {
-            let parts = exercise.repRange.split(separator: "-")
-            if parts.count == 2 {
-                rangeStart = Int(String(parts[0]))!
-                rangeEnd = Int(String(parts[1]))!
+            if exercise.repRange == "Until Failure" {
+                failure = true
+            } else {
+                let parts = exercise.repRange.split(separator: "-")
+                if parts.count == 2 {
+                    rangeStart = Int(String(parts[0]))!
+                    rangeEnd = Int(String(parts[1]))!
+                }
             }
         }
     }
@@ -22,28 +27,37 @@ struct SetRepRangeView: View {
         NavigationView {
             ZStack {
                 BackgroundView()
-                VStack {
-                    HStack {
-                        TextField("", value: $rangeStart, format: .number)
-                            .keyboardType(.numberPad)
-                            .padding(.horizontal)
-                            .padding(.vertical, 7)
-                            .background(BlurView())
-                            .cornerRadius(12)
-                            .font(.title2)
-                        Text("-")
-                            .font(.title)
-                        TextField("", value: $rangeEnd, format: .number)
-                            .keyboardType(.numberPad)
-                            .padding(.horizontal)
-                            .padding(.vertical, 7)
-                            .background(BlurView())
-                            .cornerRadius(12)
-                            .font(.title2)
+                VStack(spacing: 10) {
+                    Toggle("Until Failure", isOn: $failure)
+                        .padding(.horizontal)
+                        .padding(.vertical, 7)
+                        .background(BlurView())
+                        .cornerRadius(12)
+                        .font(.title2)
+                    
+                    if !failure {
+                        HStack {
+                            TextField("", value: $rangeStart, format: .number)
+                                .keyboardType(.numberPad)
+                                .padding(.horizontal)
+                                .padding(.vertical, 7)
+                                .background(BlurView())
+                                .cornerRadius(12)
+                                .font(.title2)
+                            Text("-")
+                                .font(.title)
+                            TextField("", value: $rangeEnd, format: .number)
+                                .keyboardType(.numberPad)
+                                .padding(.horizontal)
+                                .padding(.vertical, 7)
+                                .background(BlurView())
+                                .cornerRadius(12)
+                                .font(.title2)
+                        }
                     }
-                    .padding()
                     Spacer()
                 }
+                .padding(.horizontal)
             }
             .onAppear {
                 setProperties()
@@ -67,10 +81,14 @@ struct SetRepRangeView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action:  {
-                        if rangeStart == 0 && rangeEnd == 0 {
-                            exercise.repRange = ""
+                        if failure {
+                            exercise.repRange = "Until Failure"
                         } else {
-                            exercise.repRange = "\(rangeStart)-\(rangeEnd)"
+                            if rangeStart == 0 && rangeEnd == 0 {
+                                exercise.repRange = ""
+                            } else {
+                                exercise.repRange = "\(rangeStart)-\(rangeEnd)"
+                            }
                         }
                         dismiss()
                     }, label: {

@@ -3,8 +3,11 @@ import SwiftUI
 struct NutritionTab: View {
     var body: some View {
         NavigationView {
-            ScrollView {
-                
+            ZStack {
+                BackgroundView()
+                ScrollView {
+                    
+                }
             }
             .navigationTitle(Tab.nutrition.rawValue)
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
