@@ -9,13 +9,15 @@ class User {
     var birthday: Date = Date()
     var heightFeet: Int = 0
     var heightInches: Int = 0
+    var sex: String = ""
     
-    init(id: String, name: String, dateJoined: Date, birthday: Date, heightFeet: Int, heightInches: Int) {
+    init(id: String, name: String, dateJoined: Date, birthday: Date, heightFeet: Int, heightInches: Int, sex: String) {
         self.id = id
         self.name = name
         self.dateJoined = dateJoined
         self.birthday = birthday
         self.heightFeet = heightFeet
         self.heightInches = heightInches
+        self.sex = sex
     }
 }

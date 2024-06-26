@@ -29,3 +29,4 @@ func topSet(for exerciseInfo: ExerciseInfo) -> String {
     }
     return "Top Set: \(topSet.reps)x\(formattedDouble(topSet.weight)) lbs"
 }
+

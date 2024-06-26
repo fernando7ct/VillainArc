@@ -219,7 +219,6 @@ struct CaloriesView: View {
                         scrollPosition = calendar.date(byAdding: .month, value: -5, to: calendar.date(from: calendar.dateComponents([.year, .month], from: today))!)!
                     }
                 }
-                .padding(.top)
                 HStack {
                     VStack(alignment: .leading) {
                         let data = caloriesData()
@@ -240,7 +239,6 @@ struct CaloriesView: View {
                             .foregroundStyle(.secondary)
                             .font(.headline)
                     }
-                    
                     Spacer()
                 }
                 .fontWeight(.medium)

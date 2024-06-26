@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct HealthTab: View {
     @AppStorage("healthAccess") var healthAccess = false

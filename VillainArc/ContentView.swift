@@ -28,11 +28,11 @@ struct ContentView: View {
     var body: some View {
         if isSignedIn {
             TabView(selection: $activeTab) {
-//                NutritionTab()
-//                    .tabItem {
-//                        Label(Tab.nutrition.rawValue, systemImage: Tab.nutrition.systemImage)
-//                    }
-//                    .tag(Tab.nutrition)
+                NutritionTab()
+                    .tabItem {
+                        Label(Tab.nutrition.rawValue, systemImage: Tab.nutrition.systemImage)
+                    }
+                    .tag(Tab.nutrition)
                 HealthTab()
                     .tabItem {
                         Label(Tab.health.rawValue, systemImage: Tab.health.systemImage)

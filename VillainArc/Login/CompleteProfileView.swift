@@ -9,22 +9,23 @@ struct CompleteProfileView: View {
     @State private var heightFeet: Int = 0
     @State private var heightInches: Int = 0
     @State private var dateJoined: Date
+    @State private var sex: String = "Not selected"
     @State private var isSaving = false
     @State private var showingDatePicker = false
-
+    
     init(userID: String, userName: String, dateJoined: Date) {
         self.userID = userID
         _name = State(initialValue: userName)
         self.dateJoined = dateJoined
     }
-
+    
     private var dateFormatter: DateFormatter {
         let f = DateFormatter()
         f.dateStyle = .long
         f.timeStyle = .none
         return f
     }
-
+    
     private func gestureTap() {
         if showingDatePicker {
             showingDatePicker.toggle()
@@ -85,6 +86,15 @@ struct CompleteProfileView: View {
                             }
                             .listRowSeparator(.hidden)
                             .listRowBackground(BlurView())
+                            Section {
+                                Picker("Sex", selection: $sex) {
+                                    Text("Not selected").tag("Not selected")
+                                    Text("Male").tag("Male")
+                                    Text("Female").tag("Female")
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                                .listRowBackground(BlurView())
+                            }
                         }
                         .navigationTitle("Complete Profile")
                         .scrollDisabled(true)
@@ -99,8 +109,8 @@ struct CompleteProfileView: View {
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.green)
                                 })
-                                .disabled(heightFeet == 0 || heightInches == 0 || name.isEmpty)
-                                .opacity(heightFeet == 0 || heightInches == 0 || name.isEmpty ? 0.5 : 1)
+                                .disabled(heightFeet == 0 || heightInches == 0 || name.isEmpty || sex == "Not selected")
+                                .opacity(heightFeet == 0 || heightInches == 0 || name.isEmpty || sex == "Not selected" ? 0.5 : 1)
                             }
                         }
                         if showingDatePicker {
@@ -119,10 +129,10 @@ struct CompleteProfileView: View {
             }
         }
     }
-
+    
     private func completeProfile() {
         isSaving = true
-        DataManager.shared.createUser(userID: userID, userName: name, dateJoined: dateJoined, birthday: birthday, heightFeet: heightFeet, heightInches: heightInches, context: context) { success in
+        DataManager.shared.createUser(userID: userID, userName: name, dateJoined: dateJoined, birthday: birthday, heightFeet: heightFeet, heightInches: heightInches, sex: sex, context: context) { success in
             if success {
                 isSaving = false
                 isSignedIn = true

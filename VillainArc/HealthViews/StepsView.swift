@@ -233,11 +233,9 @@ struct StepsView: View {
                             .foregroundStyle(.secondary)
                             .font(.headline)
                     }
-                    
                     Spacer()
                 }
                 .fontWeight(.medium)
-                .padding(.bottom)
                 Chart(graphableEntries(), id: \.date) { healthStep in
                     PointMark(x: .value("Date", healthStep.date), y: .value("Steps", healthStep.steps))
                         .foregroundStyle(Color.primary)
