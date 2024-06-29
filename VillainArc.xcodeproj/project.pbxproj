@@ -52,6 +52,12 @@
 		FD9EB5E02C2B82AC000267F2 /* NutritionEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5D12C27D648000267F2 /* NutritionEntry.swift */; };
 		FD9EB5E12C2B82AF000267F2 /* NutritionFood.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5D32C27D799000267F2 /* NutritionFood.swift */; };
 		FD9EB5E32C2BB2A5000267F2 /* NutritionEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5E22C2BB2A5000267F2 /* NutritionEntryView.swift */; };
+		FD9EB5E92C2BD45F000267F2 /* AddFoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5E82C2BD45F000267F2 /* AddFoodView.swift */; };
+		FD9EB5EC2C2D0F0A000267F2 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = FD9EB5EB2C2D0F0A000267F2 /* CodeScanner */; };
+		FD9EB5EE2C2D1FCB000267F2 /* CreateFoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5ED2C2D1FCB000267F2 /* CreateFoodView.swift */; };
+		FD9EB5F02C2D4430000267F2 /* FoodToEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5EF2C2D4430000267F2 /* FoodToEntryView.swift */; };
+		FD9EB5F22C2E5AA5000267F2 /* AddFirebaseFoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5F12C2E5AA5000267F2 /* AddFirebaseFoodView.swift */; };
+		FD9EB5F42C2E6D6E000267F2 /* EditEntryFoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5F32C2E6D6E000267F2 /* EditEntryFoodView.swift */; };
 		FDAC23232C11530F007B53B7 /* ExercisesSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC23222C11530F007B53B7 /* ExercisesSectionView.swift */; };
 		FDAC23252C1154BD007B53B7 /* AllExercisesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC23242C1154BD007B53B7 /* AllExercisesView.swift */; };
 		FDAC23272C116AD6007B53B7 /* TemplateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC23262C116AD6007B53B7 /* TemplateExerciseView.swift */; };
@@ -148,6 +154,11 @@
 		FD9EB5DB2C2B80E2000267F2 /* HealthDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDataManager.swift; sourceTree = "<group>"; };
 		FD9EB5DD2C2B81E8000267F2 /* NutritionDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionDataManager.swift; sourceTree = "<group>"; };
 		FD9EB5E22C2BB2A5000267F2 /* NutritionEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionEntryView.swift; sourceTree = "<group>"; };
+		FD9EB5E82C2BD45F000267F2 /* AddFoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFoodView.swift; sourceTree = "<group>"; };
+		FD9EB5ED2C2D1FCB000267F2 /* CreateFoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFoodView.swift; sourceTree = "<group>"; };
+		FD9EB5EF2C2D4430000267F2 /* FoodToEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodToEntryView.swift; sourceTree = "<group>"; };
+		FD9EB5F12C2E5AA5000267F2 /* AddFirebaseFoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFirebaseFoodView.swift; sourceTree = "<group>"; };
+		FD9EB5F32C2E6D6E000267F2 /* EditEntryFoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditEntryFoodView.swift; sourceTree = "<group>"; };
 		FDAC23042C0EB5B7007B53B7 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		FDAC23222C11530F007B53B7 /* ExercisesSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesSectionView.swift; sourceTree = "<group>"; };
 		FDAC23242C1154BD007B53B7 /* AllExercisesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllExercisesView.swift; sourceTree = "<group>"; };
@@ -185,6 +196,7 @@
 				FD7C6F332C0EB2A6001453F2 /* FirebaseFirestore in Frameworks */,
 				FD7714C02C12CF3700FF12AF /* FirebaseStorage in Frameworks */,
 				FD7714C62C14062400FF12AF /* HealthKit.framework in Frameworks */,
+				FD9EB5EC2C2D0F0A000267F2 /* CodeScanner in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,10 +248,10 @@
 				FD7C6F072C0E914C001453F2 /* Info.plist */,
 				FD2E77942BF57CF800245E06 /* VillainArcApp.swift */,
 				FD2E77962BF57CF800245E06 /* ContentView.swift */,
-				FD9EB5D52C27DCD8000267F2 /* NutritionSetupView.swift */,
-				FD9EB5E22C2BB2A5000267F2 /* NutritionEntryView.swift */,
+				FD9EB5D72C2A6EDE000267F2 /* LoginViews */,
 				FD9EB5D82C2A6EED000267F2 /* Tabs */,
-				FD9EB5D72C2A6EDE000267F2 /* Login */,
+				FD9EB5E72C2BBDDA000267F2 /* HomeViews */,
+				FD9EB5E62C2BBD77000267F2 /* NutritionViews */,
 				FDD4FB712C16A6170028BADB /* HealthViews */,
 				FDB39EA82C0A4378008929DF /* WorkoutViews */,
 				FD2201C22BFF03F600487151 /* WeightViews */,
@@ -311,13 +323,13 @@
 			path = Nutrition;
 			sourceTree = "<group>";
 		};
-		FD9EB5D72C2A6EDE000267F2 /* Login */ = {
+		FD9EB5D72C2A6EDE000267F2 /* LoginViews */ = {
 			isa = PBXGroup;
 			children = (
 				FD2E77AD2BF6D03C00245E06 /* LogInView.swift */,
 				FD9EB5CC2C27A84C000267F2 /* CompleteProfileView.swift */,
 			);
-			path = Login;
+			path = LoginViews;
 			sourceTree = "<group>";
 		};
 		FD9EB5D82C2A6EED000267F2 /* Tabs */ = {
@@ -329,6 +341,33 @@
 				FD9EB5C02C262254000267F2 /* NutritionTab.swift */,
 			);
 			path = Tabs;
+			sourceTree = "<group>";
+		};
+		FD9EB5E62C2BBD77000267F2 /* NutritionViews */ = {
+			isa = PBXGroup;
+			children = (
+				FD9EB5D52C27DCD8000267F2 /* NutritionSetupView.swift */,
+				FD9EB5E22C2BB2A5000267F2 /* NutritionEntryView.swift */,
+				FD9EB5E82C2BD45F000267F2 /* AddFoodView.swift */,
+				FD9EB5F32C2E6D6E000267F2 /* EditEntryFoodView.swift */,
+				FD9EB5EF2C2D4430000267F2 /* FoodToEntryView.swift */,
+				FD9EB5ED2C2D1FCB000267F2 /* CreateFoodView.swift */,
+				FD9EB5F12C2E5AA5000267F2 /* AddFirebaseFoodView.swift */,
+			);
+			path = NutritionViews;
+			sourceTree = "<group>";
+		};
+		FD9EB5E72C2BBDDA000267F2 /* HomeViews */ = {
+			isa = PBXGroup;
+			children = (
+				FD7C6EF72C0BFA92001453F2 /* TemplateSectionView.swift */,
+				FD7C6EF52C0BFA82001453F2 /* WorkoutSectionView.swift */,
+				FDAC23222C11530F007B53B7 /* ExercisesSectionView.swift */,
+				FD7C6EF92C0BFC9B001453F2 /* AllWorkoutsView.swift */,
+				FD7C6EFB2C0BFCAD001453F2 /* AllTemplatesView.swift */,
+				FDAC23242C1154BD007B53B7 /* AllExercisesView.swift */,
+			);
+			path = HomeViews;
 			sourceTree = "<group>";
 		};
 		FDAC22FA2C0EB57E007B53B7 /* Frameworks */ = {
@@ -344,12 +383,6 @@
 		FDB39EA82C0A4378008929DF /* WorkoutViews */ = {
 			isa = PBXGroup;
 			children = (
-				FD7C6EF52C0BFA82001453F2 /* WorkoutSectionView.swift */,
-				FD7C6EF72C0BFA92001453F2 /* TemplateSectionView.swift */,
-				FDAC23222C11530F007B53B7 /* ExercisesSectionView.swift */,
-				FD7C6EF92C0BFC9B001453F2 /* AllWorkoutsView.swift */,
-				FD7C6EFB2C0BFCAD001453F2 /* AllTemplatesView.swift */,
-				FDAC23242C1154BD007B53B7 /* AllExercisesView.swift */,
 				FD2201C92BFF1AB600487151 /* WorkoutView.swift */,
 				FDB39EAD2C0A95D8008929DF /* TemplateView.swift */,
 				FD2201CB2BFF304C00487151 /* ExerciseView.swift */,
@@ -410,6 +443,7 @@
 				FD7C6F302C0EB2A6001453F2 /* FirebaseAuth */,
 				FD7C6F322C0EB2A6001453F2 /* FirebaseFirestore */,
 				FD7714BF2C12CF3700FF12AF /* FirebaseStorage */,
+				FD9EB5EB2C2D0F0A000267F2 /* CodeScanner */,
 			);
 			productName = VillainArc;
 			productReference = FD2E77912BF57CF800245E06 /* VillainArc.app */;
@@ -461,6 +495,7 @@
 			mainGroup = FD2E77882BF57CF800245E06;
 			packageReferences = (
 				FD2E77B22BF6D12C00245E06 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				FD9EB5EA2C2D0F0A000267F2 /* XCRemoteSwiftPackageReference "CodeScanner" */,
 			);
 			productRefGroup = FD2E77922BF57CF800245E06 /* Products */;
 			projectDirPath = "";
@@ -509,8 +544,10 @@
 				FD2201C12BFF033E00487151 /* HomeTab.swift in Sources */,
 				FD9EB5DC2C2B80E2000267F2 /* HealthDataManager.swift in Sources */,
 				FD2E77AA2BF587E800245E06 /* Other.swift in Sources */,
+				FD9EB5E92C2BD45F000267F2 /* AddFoodView.swift in Sources */,
 				FD9EB5E32C2BB2A5000267F2 /* NutritionEntryView.swift in Sources */,
 				FD7C6EF42C0BB6B0001453F2 /* BackgroundView.swift in Sources */,
+				FD9EB5F42C2E6D6E000267F2 /* EditEntryFoodView.swift in Sources */,
 				FDD4FB652C155D850028BADB /* StepsSectionView.swift in Sources */,
 				FDAC23232C11530F007B53B7 /* ExercisesSectionView.swift in Sources */,
 				FD7714C82C14F38E00FF12AF /* HealthTab.swift in Sources */,
@@ -528,6 +565,7 @@
 				FD2E77A82BF581F200245E06 /* AddWeightEntryView.swift in Sources */,
 				FD2201C82BFF084700487151 /* ExerciseSet.swift in Sources */,
 				FD2201C62BFF066A00487151 /* WorkoutExercise.swift in Sources */,
+				FD9EB5EE2C2D1FCB000267F2 /* CreateFoodView.swift in Sources */,
 				FD7C6F062C0E874D001453F2 /* SetRestTimeView.swift in Sources */,
 				FD2E77AC2BF6AA5500245E06 /* DataManager.swift in Sources */,
 				FDD4FB692C1588230028BADB /* HealthActiveEnergy.swift in Sources */,
@@ -545,8 +583,10 @@
 				FDD4FB6B2C1611780028BADB /* HealthRestingEnergy.swift in Sources */,
 				FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */,
 				FDD4FB6F2C16A1B30028BADB /* CaloriesView.swift in Sources */,
+				FD9EB5F02C2D4430000267F2 /* FoodToEntryView.swift in Sources */,
 				FD2E77B82BF6D37200245E06 /* User.swift in Sources */,
 				FDB39EAE2C0A95D8008929DF /* TemplateView.swift in Sources */,
+				FD9EB5F22C2E5AA5000267F2 /* AddFirebaseFoodView.swift in Sources */,
 				FD9EB5DE2C2B81E8000267F2 /* NutritionDataManager.swift in Sources */,
 				FD2E77A42BF57D6600245E06 /* WeightEntry.swift in Sources */,
 				FDD4FBE22C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */,
@@ -713,6 +753,7 @@
 				INFOPLIST_FILE = VillainArc/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Villain Arc";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to Camera to scan food barcodes.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to some health data to fully understand you.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app will likely never update any on-device health data.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
@@ -720,7 +761,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -754,6 +795,7 @@
 				INFOPLIST_FILE = VillainArc/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Villain Arc";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to Camera to scan food barcodes.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to some health data to fully understand you.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app will likely never update any on-device health data.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
@@ -761,7 +803,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -884,6 +926,14 @@
 				minimumVersion = 10.26.0;
 			};
 		};
+		FD9EB5EA2C2D0F0A000267F2 /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/twostraws/CodeScanner";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -901,6 +951,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = FD2E77B22BF6D12C00245E06 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		FD9EB5EB2C2D0F0A000267F2 /* CodeScanner */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FD9EB5EA2C2D0F0A000267F2 /* XCRemoteSwiftPackageReference "CodeScanner" */;
+			productName = CodeScanner;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

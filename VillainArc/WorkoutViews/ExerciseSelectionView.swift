@@ -129,6 +129,7 @@ struct ExerciseSelectionView: View {
                         .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
                     }
                     .searchable(text: $searchText)
+                    .searchPresentationToolbarBehavior(.avoidHidingContent)
                     .listStyle(.plain)
                 }
                 .navigationTitle("Exercises")

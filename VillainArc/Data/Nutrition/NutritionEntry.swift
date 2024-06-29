@@ -15,6 +15,7 @@ class NutritionEntry {
     var caloriesConsumed: Double = 0
     var mealCategories: [String] = []
     var notes: String = ""
+    @Relationship(deleteRule: .cascade)
     var foods: [NutritionFood]?
     
     init(id: String, date: Date, proteinGoal: Double, carbsGoal: Double, fatGoal: Double, caloriesGoal: Double, proteinConsumed: Double, carbsConsumed: Double, fatConsumed: Double, caloriesConsumed: Double, mealCategories: [String], notes: String, foods: [NutritionFood]) {

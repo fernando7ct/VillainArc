@@ -54,21 +54,12 @@ class DataManager {
                         return
                     }
                     weightEntryData["photoURL"] = photoURL.absoluteString
-                    self.db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).setData(weightEntryData) { error in
-                        if let error = error {
-                            print("Error saving weight entry to Firebase: \(error.localizedDescription)")
-                        }
-                    }
+                    self.db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).setData(weightEntryData)
                 }
             }
         } else {
-            db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).setData(weightEntryData) { error in
-                if let error = error {
-                    print("Error saving/updating Weight Entry to Firebase: \(error.localizedDescription)")
-                } else {
-                    print(update ? "Weight Entry updated in Firebase": "Weight Entry saved to Firebase")
-                }
-            }
+            db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).setData(weightEntryData)
+            print(update ? "Weight Entry updated in Firebase": "Weight Entry saved to Firebase")
         }
     }
     func saveWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, isTemplate: Bool, context: ModelContext) {
@@ -78,6 +69,7 @@ class DataManager {
         }
         let newWorkout = Workout(id: UUID().uuidString, title: title, startTime: startTime, endTime: endTime, notes: notes, template: isTemplate, exercises: [])
         context.insert(newWorkout)
+        print("Workout saved in SwiftData")
         var workoutData: [String: Any] = [
             "id": newWorkout.id,
             "title": newWorkout.title,
@@ -119,17 +111,12 @@ class DataManager {
         }
         do {
             try context.save()
-            print("Saved Workout to SwiftData")
+            print("Workout saved to SwiftData")
         } catch {
             print("Failed to save workout: \(error.localizedDescription)")
         }
-        db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData) { error in
-            if let error = error {
-                print("Error saving workout to Firebase: \(error.localizedDescription)")
-            } else {
-                print("Saved Workout to Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
+        print("Workout saved to Firebase")
     }
     func updateWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, isTemplate: Bool, workout: Workout?, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -200,13 +187,8 @@ class DataManager {
         } catch {
             print("Failed to update workout: \(error.localizedDescription)")
         }
-        db.collection("users").document(userID).collection("Workouts").document(workout.id).setData(workoutData) { error in
-            if let error = error {
-                print("Error saving workout to Firebase: \(error.localizedDescription)")
-            } else {
-                print("Saved Workout to Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("Workouts").document(workout.id).setData(workoutData)
+        print("Workout saved to Firebase")
     }
     func saveWorkoutAsTemplate(workout: Workout, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -260,13 +242,8 @@ class DataManager {
         } catch {
             print("Failed to save workout: \(error.localizedDescription)")
         }
-        db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData) { error in
-            if let error = error {
-                print("Error saving workout to Firebase: \(error.localizedDescription)")
-            } else {
-                print("Saved Workout to Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
+        print("Workout saved to Firebase")
     }
     func deleteWorkout(workout: Workout, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -275,13 +252,8 @@ class DataManager {
         }
         context.delete(workout)
         print("Workout deleted from SwiftData")
-        db.collection("users").document(userID).collection("Workouts").document(workout.id).delete { error in
-            if let error = error {
-                print("Error deleting Workout from Firebase: \(error.localizedDescription)")
-            } else {
-                print("Workout deleted from Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("Workouts").document(workout.id).delete()
+        print("Workout deleted from Firebase")
     }
     func deleteWeightEntry(weightEntry: WeightEntry, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -289,7 +261,7 @@ class DataManager {
             return
         }
         context.delete(weightEntry)
-        print("Weight Entry delete from SwiftData")
+        print("Weight Entry deleted from SwiftData")
         if weightEntry.photoData != nil {
             let storagePath = "images/\(userID)/\(weightEntry.id).jpg"
             let imageRef = storageRef.child(storagePath)
@@ -299,13 +271,8 @@ class DataManager {
                 }
             }
         }
-        db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).delete { error in
-            if let error = error {
-                print("Error deleting Weight Entry from Firebase: \(error.localizedDescription)")
-            } else {
-                print("Weight Entry deleted from Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).delete()
+        print("Weight Entry deleted from Firebase")
     }
     func checkUserDataComplete(completion: @escaping (Bool) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -390,6 +357,7 @@ class DataManager {
                 self.downloadHealthWalkingRunningDistance(userID: userID, context: context, completion: completion)
                 self.downloadNutritionHub(userID: userID, context: context, completion: completion)
                 self.downloadNutritionEntries(userID: userID, context: context, completion: completion)
+                self.downloadNutritionFoods(userID: userID, context: context, completion: completion)
                 completion(true)
             }
         }
@@ -408,6 +376,7 @@ class DataManager {
                     self.downloadHealthWalkingRunningDistance(userID: userID, context: context, completion: completion)
                     self.downloadNutritionHub(userID: userID, context: context, completion: completion)
                     self.downloadNutritionEntries(userID: userID, context: context, completion: completion)
+                    self.downloadNutritionFoods(userID: userID, context: context, completion: completion)
                     print("User data successfully downloaded")
                 }
             } else {

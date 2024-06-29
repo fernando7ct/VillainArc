@@ -27,13 +27,8 @@ extension DataManager {
             "date": healthSteps.date,
             "steps": healthSteps.steps
         ]
-        db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData) { error in
-            if let error = error {
-                print("Error saving/updating Health Steps to Firebase: \(error.localizedDescription)")
-            } else {
-                print(update ? "Health Steps updated in Firebase" : "Health Steps saved to Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData)
+        print(update ? "Health Steps updated in Firebase" : "Health Steps saved to Firebase")
     }
     func saveHealthActiveEnergy(activeEnergy: HealthActiveEnergy, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -56,13 +51,8 @@ extension DataManager {
             "date": activeEnergy.date,
             "activeEnergy": activeEnergy.activeEnergy
         ]
-        db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).setData(healthActiveEnergy) { error in
-            if let error = error {
-                print("Error saving/updating Health Active Energy to Firebase: \(error.localizedDescription)")
-            } else {
-                print(update ? "Health Active Energy updated in Firebase" : "Health Active Energy saved to Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).setData(healthActiveEnergy)
+        print(update ? "Health Active Energy updated in Firebase" : "Health Active Energy saved to Firebase")
     }
     func saveHealthRestingEnergy(restingEnergy: HealthRestingEnergy, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -85,13 +75,8 @@ extension DataManager {
             "date": restingEnergy.date,
             "restingEnergy": restingEnergy.restingEnergy
         ]
-        db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).setData(healthRestingEnergy) { error in
-            if let error = error {
-                print("Error saving/updating Health Resting Energy to Firebase: \(error.localizedDescription)")
-            } else {
-                print(update ? "Health Resting Energy updated in Firebase" : "Health Resting Energy saved to Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).setData(healthRestingEnergy)
+        print(update ? "Health Resting Energy updated in Firebase" : "Health Resting Energy saved to Firebase")
     }
     func saveHealthWalkingRunningDistance(healthDistance: HealthWalkingRunningDistance, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -114,13 +99,8 @@ extension DataManager {
             "date": healthDistance.date,
             "distance": healthDistance.distance
         ]
-        db.collection("users").document(userID).collection("HealthWalkingRunningDistance").document(healthDistance.id).setData(healthDistanceData) { error in
-            if let error = error {
-                print("Error saving/updating Health Walking Running Distance to Firebase: \(error.localizedDescription)")
-            } else {
-                print(update ? "Health Walking Running Distance updated in Firebase" : "Health Walking Running Distance saved to Firebase")
-            }
-        }
+        db.collection("users").document(userID).collection("HealthWalkingRunningDistance").document(healthDistance.id).setData(healthDistanceData)
+        print(update ? "Health Walking Running Distance updated in Firebase" : "Health Walking Running Distance saved to Firebase")
     }
     func downloadHealthSteps(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).collection("HealthSteps").getDocuments { snapshot, error in

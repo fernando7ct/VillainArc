@@ -18,7 +18,7 @@ struct NutritionSetupView: View {
     @State private var heightFeet: Int = 0
     @State private var heightInches: Int = 0
     @State private var sex: String = ""
-    @State private var mealCategories: [String] = ["Breakfast", "Lunch", "Diner", "Snacks"]
+    @State private var mealCategories: [String] = ["Breakfast", "Lunch", "Dinner", "Snacks"]
     
     private func getUserData() {
         let userDescriptor = FetchDescriptor<User>()
