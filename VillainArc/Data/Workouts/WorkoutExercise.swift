@@ -79,3 +79,17 @@ struct ExerciseInfo {
     var count: Int
     var sets: [ExerciseSet]
 }
+extension WorkoutExercise {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "name": self.name,
+            "category": self.category,
+            "repRange": self.repRange,
+            "notes": self.notes,
+            "date": self.date,
+            "order": self.order,
+            "sets": self.sets?.map { $0.toDictionary() } ?? []
+        ]
+    }
+}

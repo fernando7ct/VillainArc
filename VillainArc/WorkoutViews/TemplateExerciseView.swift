@@ -10,6 +10,7 @@ struct TemplateExerciseView: View {
         withAnimation {
             exercise.sets.remove(atOffsets: offsets)
         }
+        HapticManager.instance.impact(style: .light)
     }
     var body: some View {
         ZStack {
@@ -107,6 +108,7 @@ struct TemplateExerciseView: View {
                                 exercise.sets.append(TempSet(reps: lastSet.reps, weight: lastSet.weight, restMinutes: lastSet.restMinutes, restSeconds: lastSet.restSeconds, completed: false))
                             }
                         }
+                        HapticManager.instance.impact(style: .light)
                     }, label: {
                         HStack {
                             Label("Add Set", systemImage: "plus")

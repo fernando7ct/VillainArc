@@ -22,11 +22,7 @@ extension DataManager {
             context.insert(healthSteps)
             print("Health Steps saved to SwiftData")
         }
-        let healthStepsData: [String: Any] = [
-            "id": healthSteps.id,
-            "date": healthSteps.date,
-            "steps": healthSteps.steps
-        ]
+        let healthStepsData = healthSteps.toDictionary()
         db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData)
         print(update ? "Health Steps updated in Firebase" : "Health Steps saved to Firebase")
     }
@@ -46,11 +42,7 @@ extension DataManager {
             context.insert(activeEnergy)
             print("Health Active Energy saved to SwiftData")
         }
-        let healthActiveEnergy: [String: Any] = [
-            "id": activeEnergy.id,
-            "date": activeEnergy.date,
-            "activeEnergy": activeEnergy.activeEnergy
-        ]
+        let healthActiveEnergy = activeEnergy.toDictionary()
         db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).setData(healthActiveEnergy)
         print(update ? "Health Active Energy updated in Firebase" : "Health Active Energy saved to Firebase")
     }
@@ -70,11 +62,7 @@ extension DataManager {
             context.insert(restingEnergy)
             print("Health Resting Energy saved to SwiftData")
         }
-        let healthRestingEnergy: [String: Any] = [
-            "id": restingEnergy.id,
-            "date": restingEnergy.date,
-            "restingEnergy": restingEnergy.restingEnergy
-        ]
+        let healthRestingEnergy = restingEnergy.toDictionary()
         db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).setData(healthRestingEnergy)
         print(update ? "Health Resting Energy updated in Firebase" : "Health Resting Energy saved to Firebase")
     }
@@ -94,11 +82,7 @@ extension DataManager {
             context.insert(healthDistance)
             print("Health Walking Running Distance saved to SwiftData")
         }
-        let healthDistanceData: [String: Any] = [
-            "id": healthDistance.id,
-            "date": healthDistance.date,
-            "distance": healthDistance.distance
-        ]
+        let healthDistanceData = healthDistance.toDictionary()
         db.collection("users").document(userID).collection("HealthWalkingRunningDistance").document(healthDistance.id).setData(healthDistanceData)
         print(update ? "Health Walking Running Distance updated in Firebase" : "Health Walking Running Distance saved to Firebase")
     }

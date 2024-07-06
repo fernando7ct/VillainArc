@@ -7,6 +7,9 @@ struct EditEntryFoodView: View {
     var entry: NutritionEntry
     @State private var servingsCount: Double = 1
     @State private var totalServings: Double
+    @State private var totalServings2: Double
+    @State private var servingSizeSelected: Int = 1
+    @State private var showingServingSize2 = false
     @State private var pickerDisplay = "Servings Count"
     
     init(food: NutritionFood, entry: NutritionEntry) {
@@ -14,6 +17,7 @@ struct EditEntryFoodView: View {
         self.entry = entry
         self._servingsCount = State(initialValue: food.servingsCount)
         self._totalServings = State(initialValue: food.servingsCount * food.servingSizeDigit)
+        self._totalServings2 = State(initialValue: food.servingsCount * food.servingSizeDigit2)
     }
     
     private func saveFood() {
@@ -47,15 +51,43 @@ struct EditEntryFoodView: View {
                             .foregroundStyle(Color.secondary)
                             .fontWeight(.semibold)
                         HStack {
-                            TextField("Total Servings", value: $totalServings, format: .number)
-                                .keyboardType(.decimalPad)
-                                .onChange(of: totalServings) {
-                                    servingsCount = totalServings / food.servingSizeDigit
-                                }
+                            if servingSizeSelected == 1 {
+                                TextField("Total Servings", value: $totalServings, format: .number)
+                                    .keyboardType(.decimalPad)
+                                    .onChange(of: totalServings) {
+                                        servingsCount = totalServings / food.servingSizeDigit
+                                        totalServings2 = servingsCount * food.servingSizeDigit2
+                                    }
+                            } else {
+                                TextField("Total Servings", value: $totalServings2, format: .number)
+                                    .keyboardType(.decimalPad)
+                                    .onChange(of: totalServings2) {
+                                        servingsCount = totalServings2 / food.servingSizeDigit2
+                                        totalServings = servingsCount * food.servingSizeDigit
+                                    }
+                            }
                             Spacer()
-                            Text(food.servingSizeUnit)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
+                            if servingSizeSelected == 1 {
+                                Text(food.servingSizeUnit)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(Color.secondary)
+                                    .onTapGesture {
+                                        if !food.servingSizeUnit2.isEmpty {
+                                            withAnimation {
+                                                servingSizeSelected = 2
+                                            }
+                                        }
+                                    }
+                            } else {
+                                Text(food.servingSizeUnit2)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(Color.secondary)
+                                    .onTapGesture {
+                                        withAnimation {
+                                            servingSizeSelected = 1
+                                        }
+                                    }
+                            }
                         }
                     }
                 }
@@ -77,9 +109,32 @@ struct EditEntryFoodView: View {
                     }
                     .fontWeight(.semibold)
                     HStack {
-                        Text("\(formattedDouble(food.servingSizeDigit)) \(food.servingSizeUnit)")
+                        if !showingServingSize2 {
+                            Text("\(formattedDouble(food.servingSizeDigit)) \(food.servingSizeUnit)")
+                                .onTapGesture {
+                                    if food.servingSizeDigit2 != 0 && food.servingSizeUnit2 != "" {
+                                        withAnimation {
+                                            showingServingSize2.toggle()
+                                        }
+                                    }
+                                }
+                        } else {
+                            Text("\(formattedDouble(food.servingSizeDigit2)) \(food.servingSizeUnit2)")
+                                .onTapGesture {
+                                    withAnimation {
+                                        showingServingSize2.toggle()
+                                    }
+                                }
+                        }
                         Spacer()
-                        Text("Serving Size")
+                        Text("Serving Size\(food.servingSizeDigit2 != 0 && food.servingSizeUnit2 != "" ? "(s)" : "")")
+                            .foregroundStyle(Color.secondary)
+                    }
+                    .fontWeight(.semibold)
+                    HStack {
+                        Text(formattedDouble(food.servingsPerContainer))
+                        Spacer()
+                        Text("Servings Per Container")
                             .foregroundStyle(Color.secondary)
                     }
                     .fontWeight(.semibold)

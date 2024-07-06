@@ -64,3 +64,15 @@ struct TempSet: Identifiable {
         self.completed = false
     }
 }
+extension ExerciseSet {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "reps": self.reps,
+            "weight": self.weight,
+            "order": self.order,
+            "restMinutes": self.restMinutes,
+            "restSeconds": self.restSeconds
+        ]
+    }
+}

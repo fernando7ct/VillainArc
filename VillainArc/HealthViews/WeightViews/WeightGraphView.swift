@@ -12,9 +12,9 @@ struct WeightGraphView: View {
     @Query(sort: \WeightEntry.date, order: .reverse) private var weightEntries: [WeightEntry]
     @State private var selectedWeightRange: GraphRanges = .week
     @State private var selectedDate: Date?
-    @State private var selectedEntry: (date: Date, weight: Double)? = nil
+    @State private var selectedEntry: WeightEntry? = nil
     @State private var scrollPosition = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
-    @State private var scrollDatePosition: Date = Date()
+    @State private var scrollDatePosition: Date = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
     
     private func domainLength() -> Int {
         let calendar = Calendar.current
@@ -96,28 +96,6 @@ struct WeightGraphView: View {
             }
         }()
         return startDate...endDate
-    }
-    private func graphableEntries() -> [(date: Date, weight: Double)] {
-        let calendar = Calendar.current
-        let entries = weightEntries
-        var averages: [(date: Date, weight: Double)] = []
-        if selectedWeightRange == .sixMonths {
-            let groupedByWeek = Dictionary(grouping: entries, by: { calendar.dateInterval(of: .weekOfYear, for: $0.date)!.start })
-            for (startOfWeek, entries) in groupedByWeek {
-                let totalWeight = entries.reduce(0) { $0 + $1.weight }
-                let averageWeight = totalWeight / Double(entries.count)
-                averages.append((date: startOfWeek, weight: averageWeight))
-            }
-        } else {
-            let groupedByDay = Dictionary(grouping: entries, by: { calendar.startOfDay(for: $0.date) })
-            for (date, entries) in groupedByDay {
-                let totalWeight = entries.reduce(0) { $0 + $1.weight }
-                let averageWeight = totalWeight / Double(entries.count)
-                let startOfDay = calendar.startOfDay(for: date)
-                averages.append((date: startOfDay, weight: averageWeight))
-            }
-        }
-        return averages.sorted { $0.date < $1.date }
     }
     private func weightData() -> (average: String, weight: String, dateRange: String) {
         let calendar = Calendar.current
@@ -239,9 +217,14 @@ struct WeightGraphView: View {
             }
             .fontWeight(.medium)
             .padding(.bottom)
-            Chart(graphableEntries(), id: \.date) { weightEntry in
-                PointMark(x: .value("Date", weightEntry.date), y: .value("Weight", weightEntry.weight))
-                    .foregroundStyle(Color.primary)
+            Chart(weightEntries, id: \.date) { weightEntry in
+                if weightEntries.count == 1 {
+                    PointMark(x: .value("Date", weightEntry.date), y: .value("Weight", weightEntry.weight))
+                        .foregroundStyle(Color.primary)
+                }
+                AreaMark(x: .value("Date", weightEntry.date), yStart: .value("Weight", yAxisRange().lowerBound), yEnd: .value("Weight", weightEntry.weight))
+                    .foregroundStyle(Color.primary.opacity(0.4))
+                    .interpolationMethod(.monotone)
                 LineMark(
                     x: .value("Date", weightEntry.date),
                     y: .value("Weight", weightEntry.weight)
@@ -250,20 +233,27 @@ struct WeightGraphView: View {
                 .interpolationMethod(.monotone)
                 .lineStyle(StrokeStyle(lineWidth: 1.5))
                 if let selectedEntry {
+                    PointMark(x: .value("Date", selectedEntry.date), y: .value("Weight", selectedEntry.weight))
+                        .foregroundStyle(Color.primary)
                     RuleMark(
                         x: .value("Date", selectedEntry.date)
                     )
                     .foregroundStyle(Color.primary)
                     .lineStyle(StrokeStyle(lineWidth: 2))
                     .annotation(position: annotationPosition(), overflowResolution: .init(x: .fit(to: .plot), y: .fit(to: .chart))) {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text("Weight")
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("\(selectedEntry.date.formatted(.dateTime.month().day().year()))")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text("\(formattedDouble(selectedEntry.weight)) lbs")
-                                .font(.title3)
-                                .bold()
+                            HStack(alignment: .bottom, spacing: 3) {
+                                Text("\(formattedDouble(selectedEntry.weight))")
+                                    .font(.title3)
+                                Text("lbs")
+                                    .foregroundStyle(Color.secondary)
+                                    .padding(.bottom, 1)
+                            }
                         }
+                        .fontWeight(.semibold)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background {
@@ -286,29 +276,15 @@ struct WeightGraphView: View {
             .onChange(of: selectedDate) { _, newValue in
                 if let newValue {
                     let calendar = Calendar.current
-                    let entries = graphableEntries()
+                    let entries = weightEntries
 
-                    switch selectedWeightRange {
-                    case .week, .month:
-                        let dayComponent = calendar.component(.day, from: newValue)
-                        let monthComponent = calendar.component(.month, from: newValue)
-                        if let currentEntry = entries.first(where: { item in
-                            calendar.component(.day, from: item.date) == dayComponent &&
-                            calendar.component(.month, from: item.date) == monthComponent
-                        }) {
-                            selectedEntry = currentEntry
-                        } else {
-                            selectedEntry = nil
-                        }
-                    case .sixMonths:
-                        let weekOfYearComponent = calendar.component(.weekOfYear, from: newValue)
-                        if let currentEntry = entries.first(where: { item in
-                            calendar.component(.weekOfYear, from: item.date) == weekOfYearComponent
-                        }) {
-                            selectedEntry = currentEntry
-                        } else {
-                            selectedEntry = nil
-                        }
+                    let dayComponent = calendar.component(.day, from: newValue)
+                    let monthComponent = calendar.component(.month, from: newValue)
+                    if let currentEntry = entries.first(where: { item in
+                        calendar.component(.day, from: item.date) == dayComponent &&
+                        calendar.component(.month, from: item.date) == monthComponent
+                    }) {
+                        selectedEntry = currentEntry
                     }
                 } else {
                     selectedEntry = nil

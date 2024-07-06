@@ -90,6 +90,7 @@ struct SetRepRangeView: View {
                                 exercise.repRange = "\(rangeStart)-\(rangeEnd)"
                             }
                         }
+                        HapticManager.instance.impact(style: .light)
                         dismiss()
                     }, label: {
                         Text("Save")

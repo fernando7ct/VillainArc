@@ -3,7 +3,6 @@ import SwiftUI
 enum Tab: String {
     case home = "Home"
     case health = "Health"
-    case weight = "Weight"
     case nutrition = "Nutrition"
     
     var systemImage: String {
@@ -12,8 +11,6 @@ enum Tab: String {
             return "house"
         case .health:
             return "heart.text.square.fill"
-        case .weight:
-            return "scalemass.fill"
         case .nutrition:
             return "leaf.fill"
         }
@@ -33,21 +30,16 @@ struct ContentView: View {
                         Label(Tab.nutrition.rawValue, systemImage: Tab.nutrition.systemImage)
                     }
                     .tag(Tab.nutrition)
-                HealthTab()
-                    .tabItem {
-                        Label(Tab.health.rawValue, systemImage: Tab.health.systemImage)
-                    }
-                    .tag(Tab.health)
                 HomeTab()
                     .tabItem {
                         Label(Tab.home.rawValue, systemImage: Tab.home.systemImage)
                     }
                     .tag(Tab.home)
-                WeightTab()
+                HealthTab()
                     .tabItem {
-                        Label(Tab.weight.rawValue, systemImage: Tab.weight.systemImage)
+                        Label(Tab.health.rawValue, systemImage: Tab.health.systemImage)
                     }
-                    .tag(Tab.weight)
+                    .tag(Tab.health)
             }
             .tint(Color.primary)
             .onAppear {

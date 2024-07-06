@@ -115,6 +115,7 @@ struct WorkoutView: View {
         withAnimation {
             exercises.remove(atOffsets: offsets)
             updateLiveActivity()
+            HapticManager.instance.impact(style: .light)
             if exercises.isEmpty {
                 if isEditingExercises {
                     isEditingExercises.toggle()
@@ -136,6 +137,7 @@ struct WorkoutView: View {
             exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
         updateLiveActivity()
+        HapticManager.instance.impact(style: .medium)
     }
     private func saveWorkout(title: String) {
         if !isEditing {
@@ -145,6 +147,7 @@ struct WorkoutView: View {
         } else {
             DataManager.shared.updateWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, workout: existingWorkout, context: context)
         }
+        HapticManager.instance.notification(type: .success)
         dismiss()
     }
     private func totalWorkoutTime(startTime: Date, endTime: Date) -> String {

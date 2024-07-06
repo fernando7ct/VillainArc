@@ -21,3 +21,16 @@ class User {
         self.sex = sex
     }
 }
+extension User {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "name": self.name,
+            "dateJoined": self.dateJoined,
+            "birthday": self.birthday,
+            "heightFeet": self.heightFeet,
+            "heightInches": self.heightInches,
+            "sex": self.sex
+        ]
+    }
+}

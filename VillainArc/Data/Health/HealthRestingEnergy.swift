@@ -13,3 +13,12 @@ class HealthRestingEnergy: Identifiable {
         self.restingEnergy = restingEnergy
     }
 }
+extension HealthRestingEnergy {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "date": self.date,
+            "activeEnergy": self.restingEnergy
+        ]
+    }
+}

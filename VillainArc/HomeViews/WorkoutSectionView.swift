@@ -16,8 +16,10 @@ struct WorkoutSectionView: View {
                 Spacer()
                 Button(action: {
                     workoutStarted.toggle()
+                    HapticManager.instance.impact(style: .heavy)
                 }, label: {
                     Label("New Workout", systemImage: "plus")
+                        .fontWeight(.medium)
                 })
                 .fullScreenCover(isPresented: $workoutStarted) {
                     WorkoutView()

@@ -16,8 +16,10 @@ struct TemplateSectionView: View {
                 Spacer()
                 Button(action: {
                     creatingTemplate.toggle()
+                    HapticManager.instance.impact(style: .heavy)
                 }, label: {
                     Label("New Template", systemImage: "plus")
+                        .fontWeight(.medium)
                 })
                 .fullScreenCover(isPresented: $creatingTemplate) {
                     TemplateView()

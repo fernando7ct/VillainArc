@@ -5,10 +5,10 @@ import SwiftData
 struct StepsView: View {
     @Query(sort: \HealthSteps.date, order: .reverse) private var healthSteps: [HealthSteps]
     @State private var selectedStepRange: GraphRanges = .week
-    @State private var selectedEntry: (date: Date, steps: Double)? = nil
+    @State private var selectedEntry: HealthSteps? = nil
     @State private var selectedDate: Date?
     @State private var scrollPosition = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
-    @State private var scrollDatePosition: Date = Date()
+    @State private var scrollDatePosition: Date = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
     
     private func domainLength() -> Int {
         let calendar = Calendar.current
@@ -34,7 +34,6 @@ struct StepsView: View {
         }
         return 0...(maxSteps + 1000)
     }
-    
     private func xAxisRange() -> ClosedRange<Date> {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -90,32 +89,6 @@ struct StepsView: View {
         }()
         return startDate...endDate
     }
-    
-    private func graphableEntries() -> [(date: Date, steps: Double)] {
-        let calendar = Calendar.current
-        let entries = healthSteps
-        var averages: [(date: Date, steps: Double)] = []
-        
-        if selectedStepRange == .sixMonths {
-            let groupedByWeek = Dictionary(grouping: entries, by: { calendar.dateInterval(of: .weekOfYear, for: $0.date)!.start })
-            for (startOfWeek, entries) in groupedByWeek {
-                let totalSteps = entries.reduce(0) { $0 + $1.steps }
-                let averageWeight = totalSteps / Double(entries.count)
-                averages.append((date: startOfWeek, steps: averageWeight))
-            }
-        } else {
-            let groupedByDay = Dictionary(grouping: entries, by: { calendar.startOfDay(for: $0.date) })
-            for (date, entries) in groupedByDay {
-                let totalSteps = entries.reduce(0) { $0 + $1.steps }
-                let averageWeight = totalSteps / Double(entries.count)
-                let startOfDay = calendar.startOfDay(for: date)
-                averages.append((date: startOfDay, steps: averageWeight))
-            }
-        }
-        
-        return averages.sorted { $0.date < $1.date }
-    }
-    
     private func stepsData() -> (average: String, steps: String, dateRange: String) {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -177,8 +150,8 @@ struct StepsView: View {
             start = calendar.date(byAdding: .day, value: 1, to: scrollPosition)!
             end = calendar.date(byAdding: .day, value: 5, to: start)!
         case .month:
-            start = calendar.date(byAdding: .day, value: 3, to: scrollPosition)!
-            end = calendar.date(byAdding: .day, value: 29, to: start)!
+            start = calendar.date(byAdding: .day, value: 5, to: scrollPosition)!
+            end = calendar.date(byAdding: .day, value: 26, to: start)!
         case .sixMonths:
             return .top
         }
@@ -236,9 +209,14 @@ struct StepsView: View {
                     Spacer()
                 }
                 .fontWeight(.medium)
-                Chart(graphableEntries(), id: \.date) { healthStep in
-                    PointMark(x: .value("Date", healthStep.date), y: .value("Steps", healthStep.steps))
-                        .foregroundStyle(Color.primary)
+                Chart(healthSteps, id: \.date) { healthStep in
+                    if healthSteps.count == 1 {
+                        PointMark(x: .value("Date", healthStep.date), y: .value("Steps", healthStep.steps))
+                            .foregroundStyle(Color.primary)
+                    }
+                    AreaMark(x: .value("Date", healthStep.date), yStart: .value("Steps", yAxisRange().lowerBound), yEnd: .value("Steps", healthStep.steps))
+                        .foregroundStyle(Color.primary.opacity(0.4))
+                        .interpolationMethod(.monotone)
                     LineMark(
                         x: .value("Date", healthStep.date),
                         y: .value("Steps", healthStep.steps)
@@ -247,20 +225,27 @@ struct StepsView: View {
                     .interpolationMethod(.monotone)
                     .lineStyle(StrokeStyle(lineWidth: 1.5))
                     if let selectedEntry {
+                        PointMark(x: .value("Date", selectedEntry.date), y: .value("Steps", selectedEntry.steps))
+                            .foregroundStyle(Color.primary)
                         RuleMark(
                             x: .value("Date", selectedEntry.date)
                         )
                         .foregroundStyle(Color.primary)
                         .lineStyle(StrokeStyle(lineWidth: 2))
                         .annotation(position: annotationPosition(), overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text("Steps")
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("\(selectedEntry.date.formatted(.dateTime.month().day().year()))")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                Text("\(Int(selectedEntry.steps))")
-                                    .font(.title3)
-                                    .bold()
+                                HStack(alignment: .bottom, spacing: 3) {
+                                    Text("\(Int(selectedEntry.steps))")
+                                        .font(.title3)
+                                    Text("Steps")
+                                        .foregroundStyle(Color.secondary)
+                                        .padding(.bottom, 1)
+                                }
                             }
+                            .fontWeight(.semibold)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .background {
@@ -283,29 +268,15 @@ struct StepsView: View {
                 .onChange(of: selectedDate) { _, newValue in
                     if let newValue {
                         let calendar = Calendar.current
-                        let entries = graphableEntries()
+                        let entries = healthSteps
 
-                        switch selectedStepRange {
-                        case .week, .month:
-                            let dayComponent = calendar.component(.day, from: newValue)
-                            let monthComponent = calendar.component(.month, from: newValue)
-                            if let currentEntry = entries.first(where: { item in
-                                calendar.component(.day, from: item.date) == dayComponent &&
-                                calendar.component(.month, from: item.date) == monthComponent
-                            }) {
-                                selectedEntry = currentEntry
-                            } else {
-                                selectedEntry = nil
-                            }
-                        case .sixMonths:
-                            let weekOfYearComponent = calendar.component(.weekOfYear, from: newValue)
-                            if let currentEntry = entries.first(where: { item in
-                                calendar.component(.weekOfYear, from: item.date) == weekOfYearComponent
-                            }) {
-                                selectedEntry = currentEntry
-                            } else {
-                                selectedEntry = nil
-                            }
+                        let dayComponent = calendar.component(.day, from: newValue)
+                        let monthComponent = calendar.component(.month, from: newValue)
+                        if let currentEntry = entries.first(where: { item in
+                            calendar.component(.day, from: item.date) == dayComponent &&
+                            calendar.component(.month, from: item.date) == monthComponent
+                        }) {
+                            selectedEntry = currentEntry
                         }
                     } else {
                         selectedEntry = nil

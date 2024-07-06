@@ -15,10 +15,17 @@ struct ExerciseView: View {
         withAnimation {
             exercise.sets.remove(atOffsets: offsets)
         }
+        HapticManager.instance.impact(style: .light)
         updateLiveActivity()
     }
-    private func populateSets(from historySets: [TempSet]) {
+    private func populateSets(from historySets: [TempSet], notes: String?, repRange: String?) {
         exercise.sets = historySets
+        if let notes = notes {
+            exercise.notes = notes
+        }
+        if let repRange = repRange {
+            exercise.repRange = repRange
+        }
         updateLiveActivity()
     }
     
@@ -109,6 +116,7 @@ struct ExerciseView: View {
                                 Button(action: {
                                     if !exercise.sets[setIndex].completed {
                                         timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
+                                        HapticManager.instance.impact(style: .light)
                                     }
                                     exercise.sets[setIndex].completed.toggle()
                                     updateLiveActivity()
@@ -142,6 +150,7 @@ struct ExerciseView: View {
                             }
                             updateLiveActivity()
                         }
+                        HapticManager.instance.impact(style: .light)
                     }, label: {
                         HStack {
                             Label("Add Set", systemImage: "plus")

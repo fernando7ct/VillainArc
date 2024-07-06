@@ -15,6 +15,7 @@ struct AllWorkoutsView: View {
                 let workoutToDelete = workouts[index]
                 DataManager.shared.deleteWorkout(workout: workoutToDelete, context: context)
             }
+            HapticManager.instance.impact(style: .light)
         }
     }
     private func deleteAllWorkouts() {

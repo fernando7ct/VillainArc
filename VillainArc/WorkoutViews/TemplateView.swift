@@ -32,6 +32,7 @@ struct TemplateView: View {
     private func deleteExercise(at offsets: IndexSet) {
         withAnimation {
             exercises.remove(atOffsets: offsets)
+            HapticManager.instance.impact(style: .light)
             if exercises.isEmpty {
                 if isEditingExercises {
                     isEditingExercises.toggle()
@@ -48,6 +49,7 @@ struct TemplateView: View {
         for exercise in selectedExercises {
             exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
+        HapticManager.instance.impact(style: .light)
     }
     private func saveWorkout(title: String) {
         if !isEditing {
@@ -55,6 +57,7 @@ struct TemplateView: View {
         } else {
             DataManager.shared.updateWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, workout: existingWorkout, context: context)
         }
+        HapticManager.instance.notification(type: .success)
         dismiss()
     }
     

@@ -9,7 +9,7 @@ struct CaloriesView: View {
     @State private var selectedEntry: (date: Date, calories: Double)? = nil
     @State private var selectedDate: Date?
     @State private var scrollPosition = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
-    @State private var scrollDatePosition: Date = Date()
+    @State private var scrollDatePosition: Date = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
     
     private func combinedEntries() -> [(date: Date, calories: Double)] {
         let activeEnergy = healthActiveEnergy
@@ -104,24 +104,6 @@ struct CaloriesView: View {
         }()
         return startDate...endDate
     }
-    private func graphableEntries() -> [(date: Date, calories: Double)] {
-        let calendar = Calendar.current
-        let entries = combinedEntries()
-        var averages: [(date: Date, calories: Double)] = []
-        
-        if selectedCaloriesRange == .sixMonths {
-            let groupedByWeek = Dictionary(grouping: entries, by: { calendar.dateInterval(of: .weekOfYear, for: $0.date)!.start })
-            for (startOfWeek, entries) in groupedByWeek {
-                let totalCalories = entries.reduce(0) { $0 + $1.calories }
-                let average = totalCalories / Double(entries.count)
-                averages.append((date: startOfWeek, calories: average))
-            }
-        } else {
-            averages = entries
-        }
-        
-        return averages.sorted { $0.date < $1.date }
-    }
     private func caloriesData() -> (average: String, calories: String, dateRange: String) {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -183,8 +165,8 @@ struct CaloriesView: View {
             start = calendar.date(byAdding: .day, value: 1, to: scrollPosition)!
             end = calendar.date(byAdding: .day, value: 5, to: start)!
         case .month:
-            start = calendar.date(byAdding: .day, value: 3, to: scrollPosition)!
-            end = calendar.date(byAdding: .day, value: 29, to: start)!
+            start = calendar.date(byAdding: .day, value: 4, to: scrollPosition)!
+            end = calendar.date(byAdding: .day, value: 28, to: start)!
         case .sixMonths:
             return .top
         }
@@ -242,9 +224,14 @@ struct CaloriesView: View {
                     Spacer()
                 }
                 .fontWeight(.medium)
-                Chart(graphableEntries(), id: \.date) { entry in
-                    PointMark(x: .value("Date", entry.date), y: .value("Calories", entry.calories))
-                        .foregroundStyle(Color.primary)
+                Chart(combinedEntries(), id: \.date) { entry in
+                    if combinedEntries().count == 1 {
+                        PointMark(x: .value("Date", entry.date), y: .value("Calories", entry.calories))
+                            .foregroundStyle(Color.primary)
+                    }
+                    AreaMark(x: .value("Date", entry.date), yStart: .value("Calories", yAxisRange().lowerBound), yEnd: .value("Calories", entry.calories))
+                        .foregroundStyle(Color.primary.opacity(0.4))
+                        .interpolationMethod(.monotone)
                     LineMark(
                         x: .value("Date", entry.date),
                         y: .value("Calories", entry.calories)
@@ -253,20 +240,27 @@ struct CaloriesView: View {
                     .interpolationMethod(.monotone)
                     .lineStyle(StrokeStyle(lineWidth: 1.5))
                     if let selectedEntry {
+                        PointMark(x: .value("Date", selectedEntry.date), y: .value("Calories", selectedEntry.calories))
+                            .foregroundStyle(Color.primary)
                         RuleMark(
                             x: .value("Date", selectedEntry.date)
                         )
                         .foregroundStyle(Color.primary)
                         .lineStyle(StrokeStyle(lineWidth: 2))
                         .annotation(position: annotationPosition(), overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text("Calories")
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("\(selectedEntry.date.formatted(.dateTime.month().day().year()))")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                Text("\(Int(selectedEntry.calories))")
-                                    .font(.title3)
-                                    .bold()
+                                HStack(alignment: .bottom, spacing: 3) {
+                                    Text("\(Int(selectedEntry.calories))")
+                                        .font(.title3)
+                                    Text("Cals")
+                                        .foregroundStyle(Color.secondary)
+                                        .padding(.bottom, 1)
+                                }
                             }
+                            .fontWeight(.semibold)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .background {
@@ -289,29 +283,15 @@ struct CaloriesView: View {
                 .onChange(of: selectedDate) { _, newValue in
                     if let newValue {
                         let calendar = Calendar.current
-                        let entries = graphableEntries()
+                        let entries = combinedEntries()
 
-                        switch selectedCaloriesRange {
-                        case .week, .month:
-                            let dayComponent = calendar.component(.day, from: newValue)
-                            let monthComponent = calendar.component(.month, from: newValue)
-                            if let currentEntry = entries.first(where: { item in
-                                calendar.component(.day, from: item.date) == dayComponent &&
-                                calendar.component(.month, from: item.date) == monthComponent
-                            }) {
-                                selectedEntry = currentEntry
-                            } else {
-                                selectedEntry = nil
-                            }
-                        case .sixMonths:
-                            let weekOfYearComponent = calendar.component(.weekOfYear, from: newValue)
-                            if let currentEntry = entries.first(where: { item in
-                                calendar.component(.weekOfYear, from: item.date) == weekOfYearComponent
-                            }) {
-                                selectedEntry = currentEntry
-                            } else {
-                                selectedEntry = nil
-                            }
+                        let dayComponent = calendar.component(.day, from: newValue)
+                        let monthComponent = calendar.component(.month, from: newValue)
+                        if let currentEntry = entries.first(where: { item in
+                            calendar.component(.day, from: item.date) == dayComponent &&
+                            calendar.component(.month, from: item.date) == monthComponent
+                        }) {
+                            selectedEntry = currentEntry
                         }
                     } else {
                         selectedEntry = nil

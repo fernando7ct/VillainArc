@@ -10,11 +10,11 @@ struct SetRestTimeView: View {
                 List {
                     HStack {
                         Text("Set")
-                            .offset(x: 5)
+                            .padding(.trailing)
                         Text("Minutes")
-                            .offset(x: 30)
+                        Spacer()
                         Text("Seconds")
-                            .offset(x: 135)
+                        Spacer()
                     }
                     .fontWeight(.semibold)
                     .listRowBackground(Color.clear)

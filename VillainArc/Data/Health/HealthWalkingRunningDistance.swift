@@ -13,3 +13,12 @@ class HealthWalkingRunningDistance: Identifiable {
         self.distance = distance
     }
 }
+extension HealthWalkingRunningDistance {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "date": self.date,
+            "activeEnergy": self.distance
+        ]
+    }
+}

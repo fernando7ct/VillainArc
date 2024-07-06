@@ -29,3 +29,20 @@ class NutritionHub {
         self.mealCategories = mealCategories
     }
 }
+extension NutritionHub {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "goal": self.goal,
+            "proteinGoal": self.proteinGoal,
+            "carbsGoal": self.carbsGoal,
+            "fatGoal": self.fatGoal,
+            "caloriesGoal": self.caloriesGoal,
+            "proteinPercentage": self.proteinPercentage,
+            "carbsPercentage": self.carbsPercentage,
+            "fatPercentage": self.fatPercentage,
+            "activityLevel": self.activityLevel,
+            "mealCategories": self.mealCategories
+        ]
+    }
+}

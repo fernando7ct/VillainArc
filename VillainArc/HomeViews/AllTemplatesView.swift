@@ -15,6 +15,7 @@ struct AllTemplatesView: View {
                 let templateToDelete = templates[index]
                 DataManager.shared.deleteWorkout(workout: templateToDelete, context: context)
             }
+            HapticManager.instance.impact(style: .light)
         }
     }
     

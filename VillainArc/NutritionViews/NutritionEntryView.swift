@@ -64,12 +64,47 @@ struct NutritionEntryView: View {
 }
 
 struct NutritionEntryDataView: View {
+    enum DisplayedMacros: String {
+        case cals = "cals"
+        case protein = "protein"
+        case carbs = "carbs"
+        case fat = "fat"
+    }
     var entry: NutritionEntry
+    @State private var selectedMacro: DisplayedMacros = .cals
     
-    private func totalCalories(for category: String) -> Double {
-        entry.foods?
-            .filter { $0.mealCategory == category }
-            .reduce(0) { $0 + ($1.calories * $1.servingsCount) } ?? 0
+    private func totalMacro(for category: String) -> Double {
+        switch selectedMacro {
+        case .cals:
+            entry.foods?
+                .filter { $0.mealCategory == category }
+                .reduce(0) { $0 + ($1.calories * $1.servingsCount) } ?? 0
+        case .protein:
+            entry.foods?
+                .filter { $0.mealCategory == category }
+                .reduce(0) { $0 + ($1.protein * $1.servingsCount) } ?? 0
+        case .carbs:
+            entry.foods?
+                .filter { $0.mealCategory == category }
+                .reduce(0) { $0 + ($1.carbs * $1.servingsCount) } ?? 0
+        case .fat:
+            entry.foods?
+                .filter { $0.mealCategory == category }
+                .reduce(0) { $0 + ($1.fat * $1.servingsCount) } ?? 0
+        }
+    }
+    
+    private func macroDouble(for food: NutritionFood) -> Double {
+        switch selectedMacro {
+        case .cals:
+            food.calories
+        case .protein:
+            food.protein
+        case .carbs:
+            food.carbs
+        case .fat:
+            food.fat
+        }
     }
     
     var body: some View {
@@ -82,34 +117,66 @@ struct NutritionEntryDataView: View {
             }
             .fontWeight(.semibold)
             .customStyle()
+            .onTapGesture {
+                withAnimation {
+                    selectedMacro = .cals
+                }
+            }
             HStack {
                 VStack(alignment: .center, spacing: 0) {
                     Text("Protein")
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(selectedMacro == .protein ? Color.green : Color.secondary)
                     Text("\(Int(entry.proteinConsumed)) / \(Int(entry.proteinGoal)) g")
                 }
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(.thickMaterial, in: .rect(cornerRadius: 12))
+                .onTapGesture {
+                    withAnimation {
+                        if selectedMacro != .protein {
+                            selectedMacro = .protein
+                        } else {
+                            selectedMacro = .cals
+                        }
+                    }
+                }
                 VStack(alignment: .center, spacing: 0) {
                     Text("Carbs")
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(selectedMacro == .carbs ? Color.green : Color.secondary)
                     Text("\(Int(entry.carbsConsumed)) / \(Int(entry.proteinGoal)) g")
                 }
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(.thickMaterial, in: .rect(cornerRadius: 12))
+                .onTapGesture {
+                    withAnimation {
+                        if selectedMacro != .carbs {
+                            selectedMacro = .carbs
+                        } else {
+                            selectedMacro = .cals
+                        }
+                    }
+                }
                 VStack(alignment: .center, spacing: 0) {
                     Text("Fat")
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(selectedMacro == .fat ? Color.green : Color.secondary)
                     Text("\(Int(entry.fatConsumed)) / \(Int(entry.fatGoal)) g")
                 }
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(.thickMaterial, in: .rect(cornerRadius: 12))
+                .onTapGesture {
+                    withAnimation {
+                        if selectedMacro != .fat {
+                            selectedMacro = .fat
+                        } else {
+                            selectedMacro = .cals
+                        }
+                    }
+                }
             }
             .padding(.horizontal)
             ForEach(entry.mealCategories, id: \.self) { category in
@@ -118,8 +185,8 @@ struct NutritionEntryDataView: View {
                         Text(category)
                             .font(.title3)
                         Spacer()
-                        Text("\(formattedDouble(totalCalories(for: category))) cals")
-                            .foregroundStyle(Color.secondary)
+                        Text("\(formattedDouble(totalMacro(for: category))) \(selectedMacro == .cals ? "cals" : "g")")
+                            .foregroundStyle(selectedMacro == .cals ? Color.secondary : Color.green)
                             .font(.subheadline)
                     }
                     .fontWeight(.semibold)
@@ -138,7 +205,7 @@ struct NutritionEntryDataView: View {
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 0) {
-                                    Text("\(formattedDouble(food.calories * food.servingsCount)) cals")
+                                    Text("\(formattedDouble(macroDouble(for: food) * food.servingsCount)) \(selectedMacro == .cals ? "cals" : "g")")
                                     Text("\(formattedDouble(food.servingSizeDigit * food.servingsCount)) \(food.servingSizeUnit)")
                                 }
                                 .foregroundStyle(Color.secondary)

@@ -34,3 +34,41 @@ class NutritionEntry {
         self.foods = foods
     }
 }
+extension NutritionEntry {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "date": self.date,
+            "proteinGoal": self.proteinGoal,
+            "carbsGoal": self.carbsGoal,
+            "fatGoal": self.fatGoal,
+            "caloriesGoal": self.caloriesGoal,
+            "proteinConsumed": self.proteinConsumed,
+            "carbsConsumed": self.carbsConsumed,
+            "fatConsumed": self.fatConsumed,
+            "caloriesConsumed": self.caloriesConsumed,
+            "mealCategories": self.mealCategories,
+            "notes": self.notes,
+            "foods": self.foods?.map { food in
+                return [
+                    "id": food.id,
+                    "name": food.name,
+                    "brand": food.brand,
+                    "barcode": food.barcode,
+                    "servingSizeDigit": food.servingSizeDigit,
+                    "servingSizeUnit": food.servingSizeUnit,
+                    "servingSizeDigit2": food.servingSizeDigit2,
+                    "servingSizeUnit2": food.servingSizeUnit2,
+                    "servingsCount": food.servingsCount,
+                    "servingsPerContainer": food.servingsPerContainer,
+                    "date": food.date,
+                    "mealCategory": food.mealCategory,
+                    "protein": food.protein,
+                    "carbs": food.carbs,
+                    "fat": food.fat,
+                    "calories": food.calories
+                ]
+            } ?? []
+        ]
+    }
+}

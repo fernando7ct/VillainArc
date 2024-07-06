@@ -6,7 +6,7 @@ struct ExerciseHistoryView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @State private var exercises: [WorkoutExercise] = []
-    var onSelectHistory: (([TempSet]) -> Void)?
+    var onSelectHistory: (([TempSet], String?, String?) -> Void)?
     
     private func fetchExerciseHistory() {
         let fetchDescriptor = FetchDescriptor<WorkoutExercise>(
@@ -16,7 +16,7 @@ struct ExerciseHistoryView: View {
         do {
             exercises = try context.fetch(fetchDescriptor)
         } catch {
-            
+            // Handle error
         }
     }
     private func convertToTempSets(sets: [ExerciseSet]) -> [TempSet] {
@@ -24,6 +24,7 @@ struct ExerciseHistoryView: View {
             TempSet(from: set)
         }
     }
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -50,15 +51,60 @@ struct ExerciseHistoryView: View {
                                     Text("\(exercise.date.formatted(.dateTime.month().day().year()))")
                                         .foregroundStyle(Color.primary)
                                     Spacer()
-                                    Button(action: {
-                                        let tempSets = convertToTempSets(sets: exercise.sets!)
-                                        onSelectHistory?(tempSets)
-                                        dismiss()
-                                    }, label: {
-                                        Text("Use Sets")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.blue)
-                                    })
+                                    if !exercise.notes.isEmpty || !exercise.repRange.isEmpty {
+                                        Menu {
+                                            Button(action: {
+                                                let tempSets = convertToTempSets(sets: exercise.sets!)
+                                                onSelectHistory?(tempSets, nil, nil)
+                                                dismiss()
+                                            }, label: {
+                                                Text("Copy Sets Only")
+                                            })
+                                            if !exercise.notes.isEmpty {
+                                                Button(action: {
+                                                    let tempSets = convertToTempSets(sets: exercise.sets!)
+                                                    onSelectHistory?(tempSets, exercise.notes, nil)
+                                                    dismiss()
+                                                }, label: {
+                                                    Text("Copy Sets & Notes")
+                                                })
+                                            }
+                                            if !exercise.repRange.isEmpty {
+                                                Button(action: {
+                                                    let tempSets = convertToTempSets(sets: exercise.sets!)
+                                                    onSelectHistory?(tempSets, nil, exercise.repRange)
+                                                    dismiss()
+                                                }, label: {
+                                                    Text("Copy Sets & Rep Range")
+                                                })
+                                            }
+                                            if !exercise.notes.isEmpty && !exercise.repRange.isEmpty {
+                                                Button(action: {
+                                                    let tempSets = convertToTempSets(sets: exercise.sets!)
+                                                    onSelectHistory?(tempSets, exercise.notes, exercise.repRange)
+                                                    dismiss()
+                                                }, label: {
+                                                    Text("Copy All")
+                                                })
+                                            }
+                                        } label: {
+                                            Text("Copy Sets")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.blue)
+                                        }
+                                        .textCase(.none)
+                                    } else {
+                                        Button(action: {
+                                            let tempSets = convertToTempSets(sets: exercise.sets!)
+                                            onSelectHistory?(tempSets, nil, nil)
+                                            dismiss()
+                                        }, label: {
+                                            Text("Copy Sets")
+                                                .font(.subheadline)
+                                                .foregroundStyle(.blue)
+                                        })
+                                        .textCase(.none)
+                                    }
                                 }
                                 .fontWeight(.semibold)
                             }, footer: {

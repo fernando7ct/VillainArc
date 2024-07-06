@@ -13,3 +13,12 @@ class HealthSteps: Identifiable {
         self.steps = steps
     }
 }
+extension HealthSteps {
+    func toDictionary() -> [String : Any] {
+        return [
+            "id": self.id,
+            "date": self.date,
+            "steps": self.steps
+        ]
+    }
+}

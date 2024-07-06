@@ -20,12 +20,14 @@ struct WorkoutDetailView: View {
     private func deleteWorkout() {
         withAnimation {
             DataManager.shared.deleteWorkout(workout: workout, context: context)
+            HapticManager.instance.notification(type: .success)
             dismiss()
         }
     }
     private func saveWorkoutAsTemplate() {
         withAnimation {
             DataManager.shared.saveWorkoutAsTemplate(workout: workout, context: context)
+            HapticManager.instance.notification(type: .success)
         }
     }
     
@@ -171,11 +173,13 @@ struct WorkoutDetailView: View {
                 Menu {
                     Button(action: {
                         workoutStarted.toggle()
+                        HapticManager.instance.notification(type: .success)
                     }, label: {
                         Label("Use", systemImage: "figure.strengthtraining.traditional")
                     })
                     Button(action: {
                         editWorkout.toggle()
+                        HapticManager.instance.impact(style: .medium)
                     }, label: {
                         Label("Edit", systemImage: "pencil")
                     })

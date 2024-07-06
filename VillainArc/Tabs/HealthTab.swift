@@ -4,6 +4,7 @@ struct HealthTab: View {
     @AppStorage("healthAccess") var healthAccess = false
     @Environment(\.modelContext) private var context
     @StateObject var healthManager = HealthManager.shared
+    @State private var scrollPosition = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
     
     var body: some View {
         NavigationView {
@@ -11,6 +12,7 @@ struct HealthTab: View {
                 BackgroundView()
                 if healthAccess {
                     ScrollView {
+                        WeightSectionView()
                         StepsSectionView(todaysSteps: healthManager.todaysSteps, todaysDistance: healthManager.todaysWalkingRunningDistance)
                         CaloriesSectionView(activeCalories: healthManager.todaysActiveCalories, restingCalories: healthManager.todaysRestingCalories)
                     }

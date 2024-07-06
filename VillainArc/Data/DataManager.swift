@@ -69,45 +69,15 @@ class DataManager {
         }
         let newWorkout = Workout(id: UUID().uuidString, title: title, startTime: startTime, endTime: endTime, notes: notes, template: isTemplate, exercises: [])
         context.insert(newWorkout)
-        print("Workout saved in SwiftData")
-        var workoutData: [String: Any] = [
-            "id": newWorkout.id,
-            "title": newWorkout.title,
-            "startTime": newWorkout.startTime,
-            "endTime": newWorkout.endTime,
-            "notes": newWorkout.notes,
-            "template": newWorkout.template,
-            "exercises": []
-        ]
         for (exerciseIndex, exercise) in exercises.enumerated() {
             let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: Date(), order: exerciseIndex, workout: newWorkout, sets: [])
             context.insert(newExercise)
-            var exerciseData: [String: Any] = [
-                "id": newExercise.id,
-                "name": newExercise.name,
-                "category": newExercise.category,
-                "repRange": newExercise.repRange,
-                "notes": newExercise.notes,
-                "date": newExercise.date,
-                "order": newExercise.order,
-                "sets": []
-            ]
             for (setIndex, set) in exercise.sets.enumerated() {
                 let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)
                 context.insert(newSet)
-                newExercise.sets!.append(newSet)
-                let setData: [String: Any] = [
-                    "id": newSet.id,
-                    "reps": newSet.reps,
-                    "weight": newSet.weight,
-                    "order": newSet.order,
-                    "restMinutes": newSet.restMinutes,
-                    "restSeconds": newSet.restSeconds
-                ]
-                exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
+                newExercise.sets?.append(newSet)
             }
-            newWorkout.exercises!.append(newExercise)
-            workoutData["exercises"] = (workoutData["exercises"] as? [[String: Any]] ?? []) + [exerciseData]
+            newWorkout.exercises?.append(newExercise)
         }
         do {
             try context.save()
@@ -115,9 +85,11 @@ class DataManager {
         } catch {
             print("Failed to save workout: \(error.localizedDescription)")
         }
+        let workoutData = newWorkout.toDictionary()
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
         print("Workout saved to Firebase")
     }
+
     func updateWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, isTemplate: Bool, workout: Workout?, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
@@ -142,44 +114,15 @@ class DataManager {
         } catch {
             print("Failed to update workout data, and clearing exercises: \(error.localizedDescription)")
         }
-        var workoutData: [String: Any] = [
-            "id": workout.id,
-            "title": workout.title,
-            "startTime": workout.startTime,
-            "endTime": workout.endTime,
-            "notes": workout.notes,
-            "template": workout.template,
-            "exercises": []
-        ]
         for (exerciseIndex, exercise) in exercises.enumerated() {
             let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: workout.endTime, order: exerciseIndex, workout: workout, sets: [])
             context.insert(newExercise)
-            var exerciseData: [String: Any] = [
-                "id": newExercise.id,
-                "name": newExercise.name,
-                "category": newExercise.category,
-                "repRange": newExercise.repRange,
-                "notes": newExercise.notes,
-                "date": newExercise.date,
-                "order": newExercise.order,
-                "sets": []
-            ]
             for (setIndex, set) in exercise.sets.enumerated() {
                 let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)
                 context.insert(newSet)
                 newExercise.sets!.append(newSet)
-                let setData: [String: Any] = [
-                    "id": newSet.id,
-                    "reps": newSet.reps,
-                    "weight": newSet.weight,
-                    "order": newSet.order,
-                    "restMinutes": newSet.restMinutes,
-                    "restSeconds": newSet.restSeconds
-                ]
-                exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
             }
             workout.exercises!.append(newExercise)
-            workoutData["exercises"] = (workoutData["exercises"] as? [[String: Any]] ?? []) + [exerciseData]
         }
         do {
             try context.save()
@@ -187,6 +130,7 @@ class DataManager {
         } catch {
             print("Failed to update workout: \(error.localizedDescription)")
         }
+        let workoutData = workout.toDictionary()
         db.collection("users").document(userID).collection("Workouts").document(workout.id).setData(workoutData)
         print("Workout saved to Firebase")
     }
@@ -197,44 +141,15 @@ class DataManager {
         }
         let newWorkout = Workout(id: UUID().uuidString, title: workout.title, startTime: Date(), endTime: Date(), notes: workout.notes, template: true, exercises: [])
         context.insert(newWorkout)
-        var workoutData: [String: Any] = [
-            "id": newWorkout.id,
-            "title": newWorkout.title,
-            "startTime": newWorkout.startTime,
-            "endTime": newWorkout.endTime,
-            "notes": newWorkout.notes,
-            "template": newWorkout.template,
-            "exercises": []
-        ]
         for exercise in workout.exercises!.sorted(by: { $0.order < $1.order }) {
             let newExercise = WorkoutExercise(id: UUID().uuidString, exercise: exercise, date: Date(), workout: newWorkout, sets: [])
             context.insert(newExercise)
-            var exerciseData: [String: Any] = [
-                "id": newExercise.id,
-                "name": newExercise.name,
-                "category": newExercise.category,
-                "repRange": newExercise.repRange,
-                "notes": newExercise.notes,
-                "date": newExercise.date,
-                "order": newExercise.order,
-                "sets": []
-            ]
             for set in exercise.sets!.sorted(by: { $0.order < $1.order }) {
                 let newSet = ExerciseSet(id: UUID().uuidString, set: set, exercise: newExercise)
                 context.insert(newSet)
                 newExercise.sets!.append(newSet)
-                let setData: [String: Any] = [
-                    "id": newSet.id,
-                    "reps": newSet.reps,
-                    "weight": newSet.weight,
-                    "order": newSet.order,
-                    "restMinutes": newSet.restMinutes,
-                    "restSeconds": newSet.restSeconds
-                ]
-                exerciseData["sets"] = (exerciseData["sets"] as? [[String: Any]] ?? []) + [setData]
             }
             newWorkout.exercises!.append(newExercise)
-            workoutData["exercises"] = (workoutData["exercises"] as? [[String: Any]] ?? []) + [exerciseData]
         }
         do {
             try context.save()
@@ -242,6 +157,7 @@ class DataManager {
         } catch {
             print("Failed to save workout: \(error.localizedDescription)")
         }
+        let workoutData = workout.toDictionary()
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
         print("Workout saved to Firebase")
     }
@@ -334,15 +250,7 @@ class DataManager {
     func createUser(userID: String, userName: String, dateJoined: Date, birthday: Date, heightFeet: Int, heightInches: Int, sex: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         let newUser = User(id: userID, name: userName, dateJoined: dateJoined, birthday: birthday, heightFeet: heightFeet, heightInches: heightInches, sex: sex)
         context.insert(newUser)
-        let userData: [String: Any] = [
-            "id": newUser.id,
-            "name": newUser.name,
-            "dateJoined": newUser.dateJoined,
-            "birthday": newUser.birthday,
-            "heightFeet": newUser.heightFeet,
-            "heightInches": newUser.heightInches,
-            "sex": newUser.sex
-        ]
+        let userData = newUser.toDictionary()
         db.collection("users").document(userID).setData(userData) { error in
             if let error = error {
                 print("Error creating user: \(error.localizedDescription)")

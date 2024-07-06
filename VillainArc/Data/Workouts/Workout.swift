@@ -22,3 +22,16 @@ class Workout: Identifiable {
         self.exercises = exercises
     }
 }
+extension Workout {
+    func toDictionary() -> [String: Any] {
+        return [
+            "id": self.id,
+            "title": self.title,
+            "startTime": self.startTime,
+            "endTime": self.endTime,
+            "notes": self.notes,
+            "template": self.template,
+            "exercises": self.exercises?.map { $0.toDictionary() } ?? []
+        ]
+    }
+}
