@@ -32,7 +32,6 @@ struct ExerciseView: View {
     var body: some View {
         ZStack {
             BackgroundView()
-            
             List {
                 Section {
                     HStack {
@@ -42,11 +41,11 @@ struct ExerciseView: View {
                                 .fontWeight(.semibold)
                                 .lineLimit(1)
                             Text("Rep Range: \(exercise.repRange.isEmpty ? "Not Set" : exercise.repRange)")
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
+                                .textScale(.secondary)
+                                .foregroundStyle(.secondary)
                             Text(exercise.category)
-                                .font(.subheadline)
-                                .foregroundStyle(Color.secondary)
+                                .textScale(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         Spacer()
                         TimerDisplayView(viewModel: timer)
@@ -55,20 +54,10 @@ struct ExerciseView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
                 Section {
-                    ZStack(alignment: .leading) {
-                        TextEditor(text: $exercise.notes)
-                            .focused($notesFocused)
-                            .textEditorStyle(.plain)
-                            .autocorrectionDisabled()
-                        if !notesFocused && exercise.notes.isEmpty {
-                            Text("Notes...")
-                                .foregroundStyle(.secondary)
-                                .font(.subheadline)
-                                .onTapGesture {
-                                    notesFocused = true
-                                }
-                        }
-                    }
+                    TextField("Exercise Notes", text: $exercise.notes, axis: .vertical)
+                        .focused($notesFocused)
+                        .textEditorStyle(.plain)
+                        .autocorrectionDisabled()
                 }
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
@@ -76,7 +65,7 @@ struct ExerciseView: View {
                     if !exercise.sets.isEmpty {
                         HStack {
                             Text("Set")
-                                .padding(.trailing)
+                            Spacer()
                             Text("Reps")
                             Spacer()
                             Text("Weight")
@@ -92,12 +81,14 @@ struct ExerciseView: View {
                                 .padding(.vertical, 7)
                                 .background(BlurView())
                                 .cornerRadius(12)
+                                .strikethrough(exercise.sets[setIndex].completed)
                             TextField("", value: $exercise.sets[setIndex].reps, format: .number)
                                 .keyboardType(.numberPad)
                                 .padding(.horizontal)
                                 .padding(.vertical, 7)
                                 .background(BlurView())
                                 .cornerRadius(12)
+                                .strikethrough(exercise.sets[setIndex].completed)
                                 .focused($keyboardActive)
                                 .onChange(of: exercise.sets[setIndex].reps) {
                                     updateLiveActivity()
@@ -108,31 +99,29 @@ struct ExerciseView: View {
                                 .padding(.vertical, 7)
                                 .background(BlurView())
                                 .cornerRadius(12)
+                                .strikethrough(exercise.sets[setIndex].completed)
                                 .focused($keyboardActive)
                                 .onChange(of: exercise.sets[setIndex].weight) {
                                     updateLiveActivity()
                                 }
+                        }
+                        .font(.title2)
+                        .foregroundStyle(exercise.sets[setIndex].completed ? .secondary : .primary)
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             if !isEditing {
-                                Button(action: {
+                                Button {
                                     if !exercise.sets[setIndex].completed {
                                         timer.startRestTimer(minutes: exercise.sets[setIndex].restMinutes, seconds: exercise.sets[setIndex].restSeconds)
                                         HapticManager.instance.impact(style: .light)
                                     }
                                     exercise.sets[setIndex].completed.toggle()
                                     updateLiveActivity()
-                                }, label: {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(exercise.sets[setIndex].completed ? .green : .gray)
-                                        .fontWeight(.semibold)
-                                })
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 9)
-                                .background(BlurView())
-                                .cornerRadius(12)
-                                .buttonStyle(BorderlessButtonStyle())
+                                } label: {
+                                    Image(systemName: exercise.sets[setIndex].completed ? "xmark" : "checkmark")
+                                }
+                                .tint(exercise.sets[setIndex].completed ? .red : .green)
                             }
                         }
-                        .font(.title)
                     }
                     .onDelete(perform: deleteSet)
                 }
@@ -140,7 +129,7 @@ struct ExerciseView: View {
                 .listRowBackground(Color.clear)
                 
                 Section {
-                    Button(action: {
+                    Button {
                         withAnimation {
                             if exercise.sets.isEmpty {
                                 exercise.sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
@@ -151,14 +140,14 @@ struct ExerciseView: View {
                             updateLiveActivity()
                         }
                         HapticManager.instance.impact(style: .light)
-                    }, label: {
+                    } label: {
                         HStack {
                             Label("Add Set", systemImage: "plus")
                                 .fontWeight(.semibold)
                             Spacer()
                         }
                         .foregroundStyle(Color.primary)
-                    })
+                    }
                     .padding()
                     .background(BlurView())
                     .cornerRadius(12)
@@ -172,15 +161,15 @@ struct ExerciseView: View {
                 HStack(alignment: .bottom) {
                     Spacer()
                     if keyboardActive || notesFocused {
-                        Button(action: {
+                        Button {
                             hideKeyboard()
                             keyboardActive = false
                             notesFocused = false
-                        }, label: {
+                        } label: {
                             Image(systemName: "keyboard.chevron.compact.down")
                                 .foregroundStyle(Color.primary)
                                 .font(.title)
-                        })
+                        }
                         .buttonStyle(BorderedButtonStyle())
                     }
                 }
@@ -192,22 +181,22 @@ struct ExerciseView: View {
             ToolbarItem(placement: .topBarTrailing, content: {
                 Menu {
                     if !exercise.sets.isEmpty {
-                        Button(action: {
+                        Button {
                             setRestTimeSheet.toggle()
-                        }, label: {
+                        } label: {
                             Label("Rest Times", systemImage: "timer")
-                        })
+                        }
                     }
-                    Button(action: {
+                    Button {
                         setRepRangeSheet.toggle()
-                    }, label: {
+                    } label: {
                         Label("Rep Range", systemImage: "alternatingcurrent")
-                    })
-                    Button(action: {
+                    }
+                    Button {
                         showHistorySheet.toggle()
-                    }, label: {
+                    } label: {
                         Label("History", systemImage: "clock")
-                    })
+                    }
                 } label: {
                     Image(systemName: "chevron.down.circle")
                         .font(.title2)

@@ -7,7 +7,7 @@ struct StepsSectionView: View {
     
     var body: some View {
         HStack {
-            NavigationLink(destination: StepsView()) {
+            NavigationLink(value: 1) {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .bottom, spacing: 2) {
                         Text(formattedDouble(todaysDistance))

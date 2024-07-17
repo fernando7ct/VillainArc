@@ -106,21 +106,21 @@ struct ExerciseSelectionView: View {
                 BackgroundView()
                 VStack {
                     List(filteredExercises) { exercise in
-                        Button(action: {
+                        Button {
                             if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
                                 selectedExercises.remove(at: index)
                             } else {
                                 selectedExercises.append(exercise)
                             }
-                        }) {
+                        } label: {
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text(exercise.name)
-                                        .foregroundStyle(Color.primary)
+                                        .foregroundStyle(.primary)
                                         .font(.title3)
                                     Text(exercise.category)
-                                        .font(.subheadline)
-                                        .foregroundStyle(Color.secondary)
+                                        .textScale(.secondary)
+                                        .foregroundStyle(.secondary)
                                 }
                                 Spacer()
                             }
@@ -137,22 +137,22 @@ struct ExerciseSelectionView: View {
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
+                        Button {
                             dismiss()
-                        }, label: {
+                        } label: {
                             Text("Cancel")
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.red)
-                        })
+                        }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
+                        Button {
                             onAdd(selectedExercises)
                             dismiss()
-                        }, label: {
+                        } label: {
                             Text("Add (\(selectedExercises.count))")
                                 .fontWeight(.semibold)
-                        })
+                        }
                         .disabled(selectedExercises.count == 0)
                     }
                 }

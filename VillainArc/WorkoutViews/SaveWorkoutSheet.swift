@@ -4,31 +4,31 @@ struct SaveWorkoutSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @FocusState private var keyboardActive: Bool
+    @Binding var title: String
     @Binding var exercises: [TempExercise]
     @Binding var startTime: Date
     @Binding var endTime: Date
     @Binding var notes: String
-    @Binding var isTemplate: Bool
-    @Binding var isEditing: Bool
-    @State private var editableTitle: String
+    var isTemplate: Bool
+    var isEditing: Bool
+    @State private var originalTitle: String
     @State private var originalStartTime: Date
     @State private var originalEndTime: Date
     @State private var originalNotes: String
-    @State private var originalIsTemplate: Bool
-    var onSave: (String) -> Void
+    var onSave: () -> Void
     
-    init(title: String, exercises: Binding<[TempExercise]>, notes: Binding<String>, startTime: Binding<Date>, endTime: Binding<Date>, isTemplate: Binding<Bool>, isEditing: Binding<Bool>, onSave: @escaping (String) -> Void) {
-        self._editableTitle = State(initialValue: title)
+    init(title: Binding<String>, exercises: Binding<[TempExercise]>, notes: Binding<String>, startTime: Binding<Date>, endTime: Binding<Date>, isTemplate: Bool, isEditing: Bool, onSave: @escaping () -> Void) {
+        self._title = title
         self._exercises = exercises
         self._notes = notes
         self._startTime = startTime
         self._endTime = endTime
-        self._isTemplate = isTemplate
-        self._isEditing = isEditing
+        self.isTemplate = isTemplate
+        self.isEditing = isEditing
+        self._originalTitle = State(initialValue: title.wrappedValue)
         self._originalStartTime = State(initialValue: startTime.wrappedValue)
         self._originalEndTime = State(initialValue: endTime.wrappedValue)
         self._originalNotes = State(initialValue: notes.wrappedValue)
-        self._originalIsTemplate = State(initialValue: isTemplate.wrappedValue)
         self.onSave = onSave
     }
     
@@ -37,38 +37,38 @@ struct SaveWorkoutSheet: View {
             ZStack {
                 BackgroundView()
                 Form {
-                    Section(content: {
-                        TextField("Workout Title", text: $editableTitle)
+                    Section {
+                        TextField("Workout Title", text: $title)
                             .focused($keyboardActive)
                             .autocorrectionDisabled()
-                    }, header: {
+                    } header: {
                         Text("Title")
                             .foregroundStyle(Color.primary)
                             .fontWeight(.semibold)
-                    })
+                    }
                     .listRowBackground(BlurView())
-                    if !originalIsTemplate {
-                        Section(content: {
+                    if !isTemplate {
+                        Section {
                             DatePicker("Start Time", selection: $startTime, in: Date.distantPast...endTime, displayedComponents: [.date, .hourAndMinute])
                             DatePicker("End Time", selection: $endTime, in: startTime...Date() , displayedComponents: [.date, .hourAndMinute])
-                        }, header: {
+                        } header: {
                             Text("Time")
                                 .foregroundStyle(Color.primary)
                                 .fontWeight(.semibold)
-                        })
+                        }
                         .listRowBackground(BlurView())
                     }
-                    Section(content: {
+                    Section {
                         TextEditor(text: $notes)
                             .focused($keyboardActive)
                             .autocorrectionDisabled()
-                    }, header: {
+                    } header: {
                         Text("Notes")
                             .foregroundStyle(Color.primary)
                             .fontWeight(.semibold)
-                    })
+                    }
                     .listRowBackground(BlurView())
-                    Section(content: {
+                    Section {
                         ForEach(exercises) { exercise in
                             VStack(alignment: .leading) {
                                 Text(exercise.name)
@@ -86,11 +86,11 @@ struct SaveWorkoutSheet: View {
                             .font(.subheadline)
                             .foregroundStyle(Color.secondary)
                         }
-                    }, header: {
+                    } header: {
                         Text("Exercises")
                             .foregroundStyle(Color.primary)
                             .fontWeight(.semibold)
-                    })
+                    }
                     .listRowBackground(BlurView())
                 }
                 .scrollContentBackground(.hidden)
@@ -99,21 +99,21 @@ struct SaveWorkoutSheet: View {
                     HStack(alignment: .bottom) {
                         Spacer()
                         if keyboardActive {
-                            Button(action: {
+                            Button {
                                 hideKeyboard()
                                 keyboardActive = false
-                            }, label: {
+                            } label: {
                                 Image(systemName: "keyboard.chevron.compact.down")
                                     .foregroundStyle(Color.primary)
                                     .font(.title)
-                            })
+                            }
                             .buttonStyle(BorderedButtonStyle())
                         }
                     }
                 }
                 .padding()
             }
-            .navigationTitle("\(isEditing ? "Update" : "Save") \(originalIsTemplate ? "Template" : "Workout")")
+            .navigationTitle("\(isEditing ? "Update" : "Save") \(isTemplate ? "Template" : "Workout")")
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
@@ -123,27 +123,28 @@ struct SaveWorkoutSheet: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {
+                    Button {
                         startTime = originalStartTime
                         endTime = originalEndTime
                         notes = originalNotes
-                        isTemplate = originalIsTemplate
                         dismiss()
-                    }, label: {
+                    } label: {
                         Text("Cancel")
                             .fontWeight(.semibold)
                             .foregroundStyle(.red)
-                    })
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        onSave(editableTitle)
+                    Button {
+                        onSave()
                         dismiss()
-                    }, label: {
+                    } label: {
                         Text(isEditing ? "Update" : "Save")
                             .fontWeight(.semibold)
                             .foregroundStyle(.green)
-                    })
+                    }
+                    .disabled(title.isEmpty)
+                    .opacity(title.isEmpty ? 0.5 : 1)
                 }
             }
         }

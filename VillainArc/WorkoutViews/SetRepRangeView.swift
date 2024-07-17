@@ -70,17 +70,17 @@ struct SetRepRangeView: View {
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {
+                    Button {
                         exercise.repRange = originalRange
                         dismiss()
-                    }, label: {
+                    } label: {
                         Text("Cancel")
                             .foregroundStyle(.red)
                             .fontWeight(.semibold)
-                    })
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action:  {
+                    Button {
                         if failure {
                             exercise.repRange = "Until Failure"
                         } else {
@@ -92,11 +92,11 @@ struct SetRepRangeView: View {
                         }
                         HapticManager.instance.impact(style: .light)
                         dismiss()
-                    }, label: {
+                    } label: {
                         Text("Save")
                             .foregroundStyle(.green)
                             .fontWeight(.semibold)
-                    })
+                    }
                 }
             }
         }

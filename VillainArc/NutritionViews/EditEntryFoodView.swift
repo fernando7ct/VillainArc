@@ -207,13 +207,13 @@ struct EditEntryFoodView: View {
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
+                Button {
                     saveFood()
-                }, label: {
+                } label: {
                     Text("Save")
                         .fontWeight(.semibold)
                         .foregroundStyle(.green)
-                })
+                }
                 .disabled(servingsCount == 0)
                 .opacity(servingsCount == 0 ? 0.5 : 1)
             }

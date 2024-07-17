@@ -6,6 +6,7 @@ struct FoodToEntryView: View {
     var food: NutritionFood
     var entry: NutritionEntry
     var category: String
+    var isFirebaseFood: Bool
     @State private var servingsCount: Double = 1
     @State private var totalServings: Double
     @State private var totalServings2: Double
@@ -13,17 +14,22 @@ struct FoodToEntryView: View {
     @State private var servingSizeSelected: Int = 1
     @State private var showingServingSize2 = false
     
-    init(food: NutritionFood, entry: NutritionEntry, category: String) {
+    init(food: NutritionFood, entry: NutritionEntry, category: String, isFirebaseFood: Bool) {
         self.food = food
         self.entry = entry
         self.category = category
+        self.isFirebaseFood = isFirebaseFood
         self._servingsCount = State(initialValue: food.servingsCount)
         self._totalServings = State(initialValue: food.servingsCount * food.servingSizeDigit)
         self._totalServings2 = State(initialValue: food.servingsCount * food.servingSizeDigit2)
     }
     
     private func saveFood() {
-        DataManager.shared.addFoodToEntry(food: food, entry: entry, servingsCount: servingsCount, category: category, context: context)
+        if !isFirebaseFood {
+            DataManager.shared.addFoodToEntry(food: food, entry: entry, servingsCount: servingsCount, category: category, context: context)
+        } else {
+            DataManager.shared.addFirebaseFoodToEntry(food: food, entry: entry, servingsCount: servingsCount, category: category, context: context)
+        }
         dismiss()
     }
     
@@ -38,6 +44,7 @@ struct FoodToEntryView: View {
                                 .keyboardType(.decimalPad)
                                 .onChange(of: servingsCount) {
                                     totalServings = servingsCount * food.servingSizeDigit
+                                    totalServings2 = servingsCount * food.servingSizeDigit2
                                 }
                             Spacer()
                             Text("Number of Servings")
@@ -190,13 +197,13 @@ struct FoodToEntryView: View {
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
+                Button {
                     saveFood()
-                }, label: {
+                } label: {
                     Text("Save")
                         .fontWeight(.semibold)
                         .foregroundStyle(.green)
-                })
+                }
                 .disabled(servingsCount == 0)
                 .opacity(servingsCount == 0 ? 0.5 : 1)
             }

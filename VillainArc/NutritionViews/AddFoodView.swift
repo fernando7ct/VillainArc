@@ -17,6 +17,9 @@ struct AddFoodView: View {
     @State private var createFoodSheet = false
     @State private var createFoodSheet2 = false
     @State private var addFoodSheet = false
+    @State private var firebaseFoods: [NutritionFood] = []
+    @State private var searching = false
+    @State private var showingFirebaseFoods = false
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
         isShowingScanner = false
@@ -35,7 +38,7 @@ struct AddFoodView: View {
             scanResult = "Scanning Failed: \(error.localizedDescription)"
         }
     }
-    
+
     private func deleteFood(at offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -44,11 +47,11 @@ struct AddFoodView: View {
             }
         }
     }
-    
+
     private func tokenize(_ text: String) -> [String] {
         return text.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
     }
-    
+
     private func fuzzyMatch(_ text: String, with searchTokens: [String]) -> Bool {
         let tokens = tokenize(text)
         for searchToken in searchTokens {
@@ -58,7 +61,7 @@ struct AddFoodView: View {
         }
         return true
     }
-    
+
     private func levenshteinDistance(_ lhs: String, _ rhs: String) -> Int {
         let lhsCount = lhs.count
         let rhsCount = rhs.count
@@ -82,7 +85,15 @@ struct AddFoodView: View {
         }
         return matrix[lhsCount][rhsCount]
     }
-    
+
+    private func searchFirebaseFoods() {
+        searching = true
+        DataManager.shared.searchFoodsInFirebase(with: name) { foods in
+            self.firebaseFoods = foods
+            self.searching = false
+        }
+    }
+
     var filteredFoods: [NutritionFood] {
         let searchTokens = tokenize(name)
         
@@ -95,35 +106,104 @@ struct AddFoodView: View {
         }
     }
     
+    private func quickAddFood(food: NutritionFood) {
+        DataManager.shared.addFoodToEntry(food: food, entry: entry, servingsCount: food.servingsCount, category: category, context: context)
+    }
+
     var body: some View {
         ZStack {
             BackgroundView()
             List {
-                ForEach(filteredFoods) { food in
-                    NavigationLink(destination: FoodToEntryView(food: food, entry: entry, category: category), label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text(food.name)
-                                Text(food.brand)
+                if !showingFirebaseFoods {
+                    Section {
+                        ForEach(filteredFoods) { food in
+                            NavigationLink(value: FoodEntryCategoryFirebase(food: food, entry: entry, category: category, firebase: false)) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        Text(food.name)
+                                        Text(food.brand)
+                                            .foregroundStyle(Color.secondary)
+                                            .font(.subheadline)
+                                    }
+                                    Spacer()
+                                    VStack(alignment: .trailing, spacing: 0) {
+                                        Text("\(formattedDouble(food.calories * food.servingsCount)) cals")
+                                        Text("\(formattedDouble(food.servingSizeDigit * food.servingsCount)) \(food.servingSizeUnit)")
+                                    }
                                     .foregroundStyle(Color.secondary)
                                     .font(.subheadline)
+                                }
+                                .fontWeight(.semibold)
                             }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 0) {
-                                Text("\(formattedDouble(food.calories * food.servingsCount)) cals")
-                                Text("\(formattedDouble(food.servingSizeDigit * food.servingsCount)) \(food.servingSizeUnit)")
+                            .listRowBackground(BlurView())
+                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                Button {
+                                    quickAddFood(food: food)
+                                } label: {
+                                    Text("Add")
+                                        .fontWeight(.semibold)
+                                }
+                                .tint(Color.blue)
                             }
-                            .foregroundStyle(Color.secondary)
-                            .font(.subheadline)
+                            .contextMenu {
+                                Button {
+                                    quickAddFood(food: food)
+                                } label: {
+                                    Label("Quick Add", systemImage: "plus")
+                                }
+                                Button(role: .destructive) {
+                                    if let index = filteredFoods.firstIndex(where: { $0.id == food.id }) {
+                                        deleteFood(at: IndexSet(integer: index))
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
-                        .fontWeight(.semibold)
-                    })
-                    .listRowBackground(BlurView())
+                        .onDelete(perform: deleteFood)
+                    }
+                } else {
+                    Section {
+                        if searching {
+                            ProgressView()
+                        } else {
+                            ForEach(firebaseFoods) { food in
+                                NavigationLink(value: FoodEntryCategoryFirebase(food: food, entry: entry, category: category, firebase: true)) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            Text(food.name)
+                                            Text(food.brand)
+                                                .foregroundStyle(Color.secondary)
+                                                .font(.subheadline)
+                                        }
+                                        Spacer()
+                                        VStack(alignment: .trailing, spacing: 0) {
+                                            Text("\(formattedDouble(food.calories)) cals")
+                                            Text("\(formattedDouble(food.servingSizeDigit)) \(food.servingSizeUnit)")
+                                        }
+                                        .foregroundStyle(Color.secondary)
+                                        .font(.subheadline)
+                                    }
+                                    .fontWeight(.semibold)
+                                }
+                                .listRowBackground(BlurView())
+                            }
+                        }
+                    }
                 }
-                .onDelete(perform: deleteFood)
             }
             .scrollContentBackground(.hidden)
             .searchable(text: $name)
+            .onSubmit(of: .search) {
+                showingFirebaseFoods = true
+                searchFirebaseFoods()
+            }
+            .onChange(of: name) {
+                if name.isEmpty {
+                    showingFirebaseFoods = false
+                    firebaseFoods.removeAll()
+                }
+            }
             .searchPresentationToolbarBehavior(.avoidHidingContent)
             .sheet(isPresented: $isShowingScanner) {
                 CodeScannerView(codeTypes: [.ean13], completion: handleScan)

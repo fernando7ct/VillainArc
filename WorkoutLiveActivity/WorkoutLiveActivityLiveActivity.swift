@@ -11,21 +11,36 @@ struct WorkoutLiveActivityLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WorkoutAttributes.self) { context in
             VStack(alignment: .leading) {
-                Text(context.attributes.workoutTitle)
-                    .fontWeight(.semibold)
-                HStack(spacing: 0) {
-                    Text("Total Time: ")
-                    Text(context.state.date, style: .timer)
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(context.state.workoutTitle)
+                            .fontWeight(.semibold)
+                        HStack(spacing: 0) {
+                            Text("Total Time: ")
+                            Text(context.state.date, style: .timer)
+                        }
+                        .textScale(.secondary)
+                        .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if let endDate = context.state.endDate, Date() < endDate {
+                        VStack(alignment: .center) {
+                            Text("Rest Time")
+                                .textScale(.secondary)
+                                .foregroundStyle(.secondary)
+                            Text(endDate, style: .timer)
+                                .fontWeight(.semibold)
+                                .frame(width: 40)
+                        }
+                    }
                 }
-                .font(.subheadline)
-                .foregroundStyle(Color.secondary)
                 .padding(.bottom)
                 if context.state.isEmpty {
                     Text("No Exercises Added")
                         .fontWeight(.semibold)
                 } else {
-                    if !context.state.exerciesName.isEmpty {
-                        Text(context.state.exerciesName)
+                    if !context.state.exerciseName.isEmpty {
+                        Text(context.state.exerciseName)
                             .fontWeight(.semibold)
                         HStack {
                             Text("Set: \(context.state.setNumber)")
@@ -34,28 +49,22 @@ struct WorkoutLiveActivityLiveActivity: Widget {
                             Spacer()
                             Text("Weight: \(formattedWeight(context.state.setWeight)) lbs")
                         }
-                        .foregroundStyle(Color.secondary)
+                        .foregroundStyle(.secondary)
                     } else {
                         Text("All Exercises Done")
                             .fontWeight(.semibold)
                     }
                 }
             }
+            .foregroundStyle(.white)
             .padding()
+            .activityBackgroundTint(Color.black.opacity(0.5))
         } dynamicIsland: { context in
             DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-                    
-                }
-                DynamicIslandExpandedRegion(.trailing) {
-                }
-                DynamicIslandExpandedRegion(.bottom) {
-                }
-            } compactLeading: {
-            
-            } compactTrailing: {
-            } minimal: {
-            }
+                DynamicIslandExpandedRegion(.leading) {}
+                DynamicIslandExpandedRegion(.trailing) {}
+                DynamicIslandExpandedRegion(.bottom) {}
+            } compactLeading: {} compactTrailing: {} minimal: {}
         }
     }
 }

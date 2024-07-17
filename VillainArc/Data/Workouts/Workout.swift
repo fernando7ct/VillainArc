@@ -9,8 +9,7 @@ class Workout: Identifiable {
     var endTime: Date = Date()
     var notes: String = ""
     var template: Bool = false
-    @Relationship(deleteRule: .cascade)
-    var exercises: [WorkoutExercise]?
+    @Relationship(deleteRule: .cascade) var exercises: [WorkoutExercise] = []
     
     init(id: String, title: String, startTime: Date, endTime: Date, notes: String, template: Bool, exercises: [WorkoutExercise]) {
         self.id = id
@@ -31,7 +30,7 @@ extension Workout {
             "endTime": self.endTime,
             "notes": self.notes,
             "template": self.template,
-            "exercises": self.exercises?.map { $0.toDictionary() } ?? []
+            "exercises": self.exercises.map { $0.toDictionary() }
         ]
     }
 }

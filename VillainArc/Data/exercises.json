@@ -21,7 +21,7 @@
     { "name": "Floor Press", "category": "Chest" },
     { "name": "Incline Bench Press", "category": "Chest" },
     { "name": "Incline Dumbbell Press", "category": "Chest" },
-    { "name": "Incline Machine Press", "category": "Chest" },
+    { "name": "Incline Machine Chest Press", "category": "Chest" },
     { "name": "Incline Push-Up", "category": "Chest" },
     { "name": "Kettlebell Floor Press", "category": "Chest" },
     { "name": "Kneeling Incline Push-Up", "category": "Chest" },
@@ -178,6 +178,8 @@
     { "name": "Block Snatch", "category": "Back" },
     { "name": "Cable Close Grip Seated Row", "category": "Back" },
     { "name": "Cable EZ-Bar Seated Row", "category": "Back" },
+    { "name": "Cable Pullover with Bar", "category": "Back" },
+    { "name": "Cable Pullover with Rope", "category": "Back" },
     { "name": "Cable Shrugs", "category": "Back" },
     { "name": "Cable Wide Grip Seated Row", "category": "Back" },
     { "name": "Chin-Up", "category": "Back" },
@@ -265,6 +267,7 @@
     { "name": "Barbell Wrist Curl", "category": "Forearms" },
     { "name": "Barbell Wrist Curl Behind the Back", "category": "Forearms" },
     { "name": "Bar Hang", "category": "Forearms" },
+    { "name": "Cable Reverse Curl", "category": "Forearms" },
     { "name": "Cable Wrist Curl", "category": "Forearms" },
     { "name": "Dumbbell Wrist Curl", "category": "Forearms" },
     { "name": "Farmers Walk", "category": "Forearms" },
@@ -277,6 +280,7 @@
     { "name": "Barbell Wrist Extension", "category": "Forearms" },
     { "name": "Dumbbell Wrist Extension", "category": "Forearms" },
     { "name": "Reverse Curl", "category": "Forearms" },
+    { "name": "Reverse EZ-Bar Curls", "category": "Forearms" },
     { "name": "Wrist Roller", "category": "Forearms" },
     { "name": "Finger Curls", "category": "Forearms" }
 ]

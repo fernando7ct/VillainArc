@@ -102,13 +102,13 @@ struct CompleteProfileView: View {
                         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                         .toolbar {
                             ToolbarItem(placement: .topBarTrailing) {
-                                Button(action: {
+                                Button {
                                     completeProfile()
-                                }, label: {
+                                } label: {
                                     Text("Save")
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.green)
-                                })
+                                }
                                 .disabled(heightFeet == 0 || heightInches == 0 || name.isEmpty || sex == "Not selected")
                                 .opacity(heightFeet == 0 || heightInches == 0 || name.isEmpty || sex == "Not selected" ? 0.5 : 1)
                             }

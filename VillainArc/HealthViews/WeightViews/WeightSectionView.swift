@@ -31,7 +31,7 @@ struct WeightSectionView: View {
     
     var body: some View {
         HStack {
-            NavigationLink(destination: WeightView()) {
+            NavigationLink(value: 0) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(latestDate())
                         .font(.subheadline)

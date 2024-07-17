@@ -137,12 +137,12 @@ struct AddWeightEntryView: View {
                                         Text("Image uploaded")
                                             .foregroundStyle(.blue)
                                         Spacer()
-                                        Button(action: {
+                                        Button {
                                             removePhotoData()
-                                        }, label: {
+                                        } label: {
                                             Image(systemName: "trash")
                                                 .foregroundStyle(.red)
-                                        })
+                                        }
                                         .buttonStyle(BorderlessButtonStyle())
                                     }
                                     .onTapGesture {
@@ -192,13 +192,13 @@ struct AddWeightEntryView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
+                    Button {
                         addWeightEntry()
-                    }, label: {
+                    } label: {
                         Text("Save")
                             .fontWeight(.semibold)
                             .foregroundStyle(.green)
-                    })
+                    }
                     .disabled(Double(weight) == 0 || weight.isEmpty || weight == "." || uploadingImage)
                     .opacity(Double(weight) == 0 || weight.isEmpty || weight == "." || uploadingImage ? 0.5 : 1)
                 }

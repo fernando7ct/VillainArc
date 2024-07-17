@@ -11,20 +11,18 @@ struct TemplateView: View {
     @State private var notes = ""
     @State private var showExerciseSelection = false
     @State private var isEditingExercises = false
-    @State private var isTemplate = true
     @State private var showSaveSheet = false
     @State private var existingWorkout: Workout?
-    @State private var isEditing: Bool = false
+    @State private var isEditing = false
     
     init(existingWorkout: Workout? = nil) {
         self._existingWorkout = State(initialValue: existingWorkout)
         if let workout = existingWorkout {
             self._title = State(initialValue: workout.title)
             self._notes = State(initialValue: workout.notes)
-            self._isTemplate = State(initialValue: workout.template)
             self._startTime = State(initialValue: workout.startTime)
             self._endTime = State(initialValue: workout.endTime)
-            self._exercises = State(initialValue: workout.exercises!.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
+            self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
             self._isEditing = State(initialValue: true)
         }
     }
@@ -47,15 +45,15 @@ struct TemplateView: View {
     }
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
-            exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
+            exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
         HapticManager.instance.impact(style: .light)
     }
-    private func saveWorkout(title: String) {
+    private func saveWorkout() {
         if !isEditing {
-            DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
+            DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: true, context: context)
         } else {
-            DataManager.shared.updateWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, workout: existingWorkout, context: context)
+            DataManager.shared.updateWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, workout: existingWorkout, context: context)
         }
         HapticManager.instance.notification(type: .success)
         dismiss()
@@ -69,8 +67,9 @@ struct TemplateView: View {
                     Section {
                         HStack {
                             VStack(alignment: .leading, spacing: 0) {
-                                Text(title)
+                                TextField("Title", text: $title)
                                     .font(.title)
+                                    .textFieldStyle(.plain)
                                     .fontWeight(.semibold)
                                 Text("\(startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
                                     .font(.subheadline)
@@ -80,47 +79,46 @@ struct TemplateView: View {
                             if !isEditingExercises {
                                 Menu {
                                     if !exercises.isEmpty {
-                                        Button(action: {
+                                        Button {
                                             showSaveSheet = true
-                                        }, label: {
+                                        } label: {
                                             Label(isEditing ? "Update" : "Save", systemImage: "checkmark")
-                                        })
+                                        }
                                     }
                                     if !exercises.isEmpty {
-                                        Button(action: {
+                                        Button {
                                             withAnimation {
                                                 isEditingExercises.toggle()
                                             }
-                                        }, label: {
+                                        } label: {
                                             Label("Edit Exercises", systemImage: "list.bullet")
-                                        })
+                                        }
                                     }
-                                    Button(role: .destructive, action: {
+                                    Button(role: .destructive) {
                                         dismiss()
-                                    }, label: {
+                                    } label: {
                                         Label("Cancel", systemImage: "xmark")
-                                    })
+                                    }
                                 } label: {
                                     Image(systemName: "chevron.down.circle")
                                         .font(.title)
                                         .foregroundStyle(Color.primary)
                                 }
                             } else {
-                                Button(action: {
+                                Button {
                                     withAnimation {
                                         isEditingExercises.toggle()
                                     }
-                                }, label: {
+                                } label: {
                                     Text("Done")
                                         .fontWeight(.semibold)
                                         .font(.title2)
-                                })
+                                }
                             }
                         }
                         .sheet(isPresented: $showSaveSheet) {
-                            SaveWorkoutSheet(title: title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: $isTemplate, isEditing: $isEditing, onSave: { editableTitle in
-                                saveWorkout(title: editableTitle)
-                            })
+                            SaveWorkoutSheet(title: $title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: true, isEditing: isEditing, onSave:
+                                saveWorkout)
                             .interactiveDismissDisabled()
                         }
                     }
@@ -128,20 +126,10 @@ struct TemplateView: View {
                     .listRowSeparator(.hidden)
                     if !isEditingExercises {
                         Section {
-                            ZStack(alignment: .leading) {
-                                TextEditor(text: $notes)
+                                TextField("Template Notes", text: $notes, axis: .vertical)
                                     .focused($notesFocused)
                                     .textEditorStyle(.plain)
                                     .autocorrectionDisabled()
-                                if !notesFocused && notes.isEmpty {
-                                    Text("Notes...")
-                                        .foregroundStyle(.secondary)
-                                        .font(.subheadline)
-                                        .onTapGesture {
-                                            notesFocused = true
-                                        }
-                                }
-                            }
                         }
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
@@ -149,27 +137,7 @@ struct TemplateView: View {
                     Section {
                         ForEach(exercises.indices, id: \.self) { index in
                             NavigationLink(destination: TemplateExerciseView(exercise: $exercises[index])) {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(exercises[index].name)
-                                            .font(.title2)
-                                            .fontWeight(.semibold)
-                                            .foregroundStyle(Color.primary)
-                                        if !exercises[index].repRange.isEmpty {
-                                            Text("Rep Range: \(exercises[index].repRange)")
-                                        }
-                                        if !exercises[index].notes.isEmpty {
-                                            Text("Notes: \(exercises[index].notes.trimmingCharacters(in: .whitespacesAndNewlines))")
-                                                .multilineTextAlignment(.leading)
-                                                .lineLimit(2)
-                                        }
-                                        Text(exercises[index].category)
-                                        Text("\(exercises[index].sets.count) \(exercises[index].sets.count == 1 ? "set" : "sets")")
-                                    }
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.secondary)
-                                    Spacer()
-                                }
+                                WorkoutExerciseRowView(exercise: exercises[index])
                             }
                         }
                         .onDelete(perform: deleteExercise)
@@ -179,16 +147,16 @@ struct TemplateView: View {
                     .listRowBackground(Color.clear)
                     if !isEditingExercises {
                         Section {
-                            Button(action: {
+                            Button {
                                 showExerciseSelection = true
-                            }, label: {
+                            } label: {
                                 HStack {
                                     Label("Add Exercise", systemImage: "plus")
                                         .fontWeight(.semibold)
                                     Spacer()
                                 }
                                 .foregroundStyle(Color.primary)
-                            })
+                            }
                             .padding()
                             .background(BlurView())
                             .cornerRadius(12)
@@ -208,14 +176,14 @@ struct TemplateView: View {
                     HStack(alignment: .bottom) {
                         Spacer()
                         if notesFocused {
-                            Button(action: {
+                            Button {
                                 hideKeyboard()
                                 notesFocused = false
-                            }, label: {
+                            } label: {
                                 Image(systemName: "keyboard.chevron.compact.down")
                                     .foregroundStyle(Color.primary)
                                     .font(.title)
-                            })
+                            }
                             .buttonStyle(BorderedButtonStyle())
                         }
                     }

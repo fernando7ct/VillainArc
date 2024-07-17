@@ -1,55 +1,100 @@
-//
-//  WorkoutLiveActivity.swift
-//  WorkoutLiveActivity
-//
-//  Created by Fernando Caudillo Tafoya on 6/10/24.
-//
-
 import WidgetKit
 import SwiftUI
+import SwiftData
 
 struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), emoji: "😀")
+    @MainActor func placeholder(in context: Context) -> SimpleEntry {
+        SimpleEntry(date: Date(), entry: getNutritionEntry())
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), emoji: "😀")
+    @MainActor func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
+        let entry = SimpleEntry(date: Date(), entry: getNutritionEntry())
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
-
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, emoji: "😀")
-            entries.append(entry)
-        }
-
-        let timeline = Timeline(entries: entries, policy: .atEnd)
+    @MainActor func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+        let timeline = Timeline(entries: [SimpleEntry(date: .now, entry: getNutritionEntry())], policy: .after(.now.advanced(by: 60 * 5)))
         completion(timeline)
+    }
+    
+    @MainActor
+    private func getNutritionEntry() -> NutritionEntry? {
+        guard let modelContainer = try? ModelContainer(for: NutritionEntry.self) else {
+            return nil
+        }
+        let descriptor = FetchDescriptor<NutritionEntry>(sortBy: [SortDescriptor(\NutritionEntry.date, order: .reverse)])
+        let entries = try? modelContainer.mainContext.fetch(descriptor)
+        
+        return entries?.first
     }
 }
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
-    let emoji: String
+    let entry: NutritionEntry?
 }
 
-struct WorkoutLiveActivityEntryView : View {
+struct WorkoutLiveActivityEntryView: View {
+    var entry: Provider.Entry
+    
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        switch family {
+        case .systemMedium:
+            MediumWidgetView(entry: entry)
+        default:
+            Text("Villain Arc")
+                .fontWeight(.semibold)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+struct MediumWidgetView: View {
     var entry: Provider.Entry
 
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
-
-            Text("Emoji:")
-            Text(entry.emoji)
+        VStack(alignment: .leading, spacing: 5) {
+            if let entry = entry.entry {
+                Text("\(entry.date.formatted(.dateTime.month(.wide).day().weekday(.wide)))")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 5) {
+                    WidgetTile(macroName: "Calories", consumed: entry.caloriesConsumed, goal: entry.caloriesGoal, cals: true)
+                    WidgetTile(macroName: "Protein", consumed: entry.proteinConsumed, goal: entry.proteinGoal, cals: false)
+                }
+                HStack(spacing: 5) {
+                    WidgetTile(macroName: "Carbs", consumed: entry.carbsConsumed, goal: entry.carbsGoal, cals: false)
+                    WidgetTile(macroName: "Fat", consumed: entry.fatConsumed, goal: entry.fatGoal, cals: false)
+                }
+            } else {
+                Text("Villain Arc")
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+struct WidgetTile: View {
+    @State var macroName: String
+    @State var consumed: Double
+    @State var goal: Double
+    @State var cals: Bool
+    
+    var body: some View {
+        VStack {
+            Text(macroName)
+                .foregroundStyle(.secondary)
+                .textScale(.secondary)
+            Text("\(Int(consumed)) / \(Int(goal)) \(cals ? "" : "g")")
+                .fontWeight(.semibold)
+        }
+        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial, in: .rect(cornerRadius: 8))
     }
 }
 
@@ -58,23 +103,18 @@ struct WorkoutLiveActivity: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            if #available(iOS 17.0, *) {
-                WorkoutLiveActivityEntryView(entry: entry)
-                    .containerBackground(.fill.tertiary, for: .widget)
-            } else {
-                WorkoutLiveActivityEntryView(entry: entry)
-                    .padding()
-                    .background()
-            }
+            WorkoutLiveActivityEntryView(entry: entry)
+                .containerBackground(.ultraThinMaterial, for: .widget)
         }
-        .configurationDisplayName("My Widget")
-        .description("This is an example widget.")
+        .configurationDisplayName("Villain Arc")
+        .description("View your macros for today.")
+        .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
 
 #Preview(as: .systemSmall) {
     WorkoutLiveActivity()
 } timeline: {
-    SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
+    SimpleEntry(date: .now, entry: nil)
+    SimpleEntry(date: .now, entry: nil)
 }

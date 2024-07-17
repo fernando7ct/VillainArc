@@ -5,6 +5,7 @@ struct NutritionEntryView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \NutritionEntry.date, animation: .smooth) private var entries: [NutritionEntry]
     @State private var date = Calendar.current.startOfDay(for: Date())
+    @Binding var path: NavigationPath
     
     private var firstDate: Date? {
         entries.map { $0.date }.sorted().first
@@ -32,7 +33,7 @@ struct NutritionEntryView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack(path: $path) {
             ZStack {
                 BackgroundView()
                 TabView(selection: $date) {
@@ -46,54 +47,106 @@ struct NutritionEntryView: View {
             .navigationTitle("\(date.formatted(.dateTime.month().day().year()))")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(action: { changeDate(by: -1) }) {
+                    Button {
+                        changeDate(by: -1)
+                    } label: {
                         Image(systemName: "chevron.left")
                     }
                     .disabled(date == firstDate)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { changeDate(by: 1) }) {
+                    Button { 
+                        changeDate(by: 1)
+                    } label: {
                         Image(systemName: "chevron.right")
                     }
                     .disabled(date == lastDate)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: FoodCategory.self) { value in
+                AddFoodView(entry: value.entry, category: value.category)
+            }
+            .navigationDestination(for: FoodEntry.self) { value in
+                EditEntryFoodView(food: value.food, entry: value.entry)
+            }
+            .navigationDestination(for: FoodEntryCategoryFirebase.self) { value in
+                FoodToEntryView(food: value.food, entry: value.entry, category: value.category, isFirebaseFood: value.firebase)
+            }
         }
     }
 }
 
+struct FoodCategory: Hashable {
+    var entry: NutritionEntry
+    var category: String
+    
+    init(entry: NutritionEntry, category: String) {
+        self.entry = entry
+        self.category = category
+    }
+}
+struct FoodEntry: Hashable {
+    var food: NutritionFood
+    var entry: NutritionEntry
+    
+    init(food: NutritionFood, entry: NutritionEntry) {
+        self.food = food
+        self.entry = entry
+    }
+}
+struct FoodEntryCategoryFirebase: Hashable {
+    var food: NutritionFood
+    var entry: NutritionEntry
+    var category: String
+    var firebase: Bool
+    
+    init(food: NutritionFood, entry: NutritionEntry, category: String, firebase: Bool) {
+        self.food = food
+        self.entry = entry
+        self.category = category
+        self.firebase = firebase
+    }
+}
+
 struct NutritionEntryDataView: View {
+    @Environment(\.modelContext) private var context
+    @State private var showNotes = false
+    @State private var updateMealNames = false
+    @State private var updateGoals = false
+    
     enum DisplayedMacros: String {
         case cals = "cals"
         case protein = "protein"
         case carbs = "carbs"
         case fat = "fat"
     }
-    var entry: NutritionEntry
+    @Bindable var entry: NutritionEntry
     @State private var selectedMacro: DisplayedMacros = .cals
     
     private func totalMacro(for category: String) -> Double {
         switch selectedMacro {
         case .cals:
-            entry.foods?
+            entry.foods
                 .filter { $0.mealCategory == category }
-                .reduce(0) { $0 + ($1.calories * $1.servingsCount) } ?? 0
+                .reduce(0) { $0 + ($1.calories * $1.servingsCount) }
         case .protein:
-            entry.foods?
+            entry.foods
                 .filter { $0.mealCategory == category }
-                .reduce(0) { $0 + ($1.protein * $1.servingsCount) } ?? 0
+                .reduce(0) { $0 + ($1.protein * $1.servingsCount) }
         case .carbs:
-            entry.foods?
+            entry.foods
                 .filter { $0.mealCategory == category }
-                .reduce(0) { $0 + ($1.carbs * $1.servingsCount) } ?? 0
+                .reduce(0) { $0 + ($1.carbs * $1.servingsCount) }
         case .fat:
-            entry.foods?
+            entry.foods
                 .filter { $0.mealCategory == category }
-                .reduce(0) { $0 + ($1.fat * $1.servingsCount) } ?? 0
+                .reduce(0) { $0 + ($1.fat * $1.servingsCount) }
         }
     }
-    
+    private func updateEntryNotes() {
+        DataManager.shared.updateNutritionEntryNotes(entry: entry)
+    }
     private func macroDouble(for food: NutritionFood) -> Double {
         switch selectedMacro {
         case .cals:
@@ -180,59 +233,127 @@ struct NutritionEntryDataView: View {
             }
             .padding(.horizontal)
             ForEach(entry.mealCategories, id: \.self) { category in
-                VStack(spacing: 0) {
-                    HStack {
-                        Text(category)
-                            .font(.title3)
-                        Spacer()
-                        Text("\(formattedDouble(totalMacro(for: category))) \(selectedMacro == .cals ? "cals" : "g")")
-                            .foregroundStyle(selectedMacro == .cals ? Color.secondary : Color.green)
-                            .font(.subheadline)
-                    }
-                    .fontWeight(.semibold)
-                    .padding(.horizontal)
-                    .padding(.bottom, 3)
-                    ForEach(entry.foods!.filter { $0.mealCategory == category }.sorted { $0.date < $1.date }) { food in
-                        NavigationLink(destination: {
-                            EditEntryFoodView(food: food, entry: entry)
-                        }, label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text(food.name)
-                                    Text(food.brand)
-                                        .foregroundStyle(Color.secondary)
-                                        .font(.subheadline)
-                                }
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 0) {
-                                    Text("\(formattedDouble(macroDouble(for: food) * food.servingsCount)) \(selectedMacro == .cals ? "cals" : "g")")
-                                    Text("\(formattedDouble(food.servingSizeDigit * food.servingsCount)) \(food.servingSizeUnit)")
-                                }
-                                .foregroundStyle(Color.secondary)
+                if !category.isEmpty {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text(category)
+                                .font(.title3)
+                            Spacer()
+                            Text("\(formattedDouble(totalMacro(for: category))) \(selectedMacro == .cals ? "cals" : "g")")
+                                .foregroundStyle(selectedMacro == .cals ? Color.secondary : Color.green)
                                 .font(.subheadline)
+                        }
+                        .fontWeight(.semibold)
+                        .padding(.horizontal)
+                        .padding(.bottom, 3)
+                        ForEach(entry.foods.filter { $0.mealCategory == category }.sorted { $0.date < $1.date }) { food in
+                            NavigationLink(value: FoodEntry(food: food, entry: entry)) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        Text(food.name)
+                                            .lineLimit(1)
+                                        Text(food.brand)
+                                            .foregroundStyle(Color.secondary)
+                                            .font(.subheadline)
+                                    }
+                                    Spacer()
+                                    VStack(alignment: .trailing, spacing: 0) {
+                                        Text("\(formattedDouble(macroDouble(for: food) * food.servingsCount)) \(selectedMacro == .cals ? "cals" : "g")")
+                                        Text("\(formattedDouble(food.servingSizeDigit * food.servingsCount)) \(food.servingSizeUnit)")
+                                    }
+                                    .foregroundStyle(Color.secondary)
+                                    .font(.subheadline)
+                                }
+                                .fontWeight(.semibold)
                             }
-                            .fontWeight(.semibold)
-                        })
+                            .customStyle()
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    withAnimation {
+                                        DataManager.shared.deleteEntryFood(entry: entry, food: food, context: context)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                
+                            }
+                        }
+                        NavigationLink(value: FoodCategory(entry: entry, category: category)) {
+                            HStack {
+                                Label("Add Food", systemImage: "plus")
+                                    .fontWeight(.semibold)
+                                Spacer()
+                            }
+                        }
                         .customStyle()
                     }
-                    NavigationLink(destination: {
-                        AddFoodView(entry: entry, category: category)
-                    }, label: {
-                        HStack {
-                            Label("Add Food", systemImage: "plus")
-                                .fontWeight(.semibold)
-                            Spacer()
-                        }
-                    })
-                    .customStyle()
+                    .padding(.vertical, 10)
                 }
-                .padding(.vertical, 10)
+            }
+            Button {
+                showNotes.toggle()
+            } label: {
+                HStack {
+                    Text("Notes: \(entry.notes.isEmpty ? "Click to Add" : entry.notes)")
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .customStyle()
+            }
+            if Calendar.current.startOfDay(for: Date()) == entry.date {
+                HStack {
+                    Button {
+                        updateGoals.toggle()
+                    } label: {
+                        Text("Update Goals")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(.thickMaterial, in: .rect(cornerRadius: 12))
+                    }
+                    Button {
+                        updateMealNames.toggle()
+                    } label: {
+                        Text("Change Meal Names")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(.thickMaterial, in: .rect(cornerRadius: 12))
+                        
+                    }
+                }
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
             }
         }
+        .sheet(isPresented: $showNotes, onDismiss: updateEntryNotes) {
+            NavigationView {
+                ZStack {
+                    BackgroundView()
+                    Form {
+                        TextField("Notes", text: $entry.notes, axis: .vertical)
+                            .listRowBackground(BlurView())
+                    }
+                    .scrollContentBackground(.hidden)
+                }
+                .navigationTitle("Notes")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                .onTapGesture {
+                    hideKeyboard()
+                }
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
         .scrollContentBackground(.hidden)
+        .sheet(isPresented: $updateMealNames) {
+            UpdateMealNamesView(entry: entry)
+        }
+        .sheet(isPresented: $updateGoals) {
+            NutritionSetupView(nutritionEntry: entry)
+        }
     }
-}
-
-#Preview {
-    NutritionEntryView()
 }

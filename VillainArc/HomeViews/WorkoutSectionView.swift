@@ -5,7 +5,16 @@ struct WorkoutSectionView: View {
     @Query(filter: #Predicate<Workout> { workout in
         !workout.template
     }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var workouts: [Workout]
+    @Environment(\.modelContext) private var context
     @State private var workoutStarted = false
+    @State private var existingWorkout: Workout? = nil
+    
+    private func deleteWorkout(_ workout: Workout) {
+        withAnimation {
+            DataManager.shared.deleteWorkout(workout: workout, context: context)
+            HapticManager.instance.notification(type: .success)
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -38,13 +47,35 @@ struct WorkoutSectionView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 0) {
                         ForEach(workouts.prefix(3)) { workout in
-                            WorkoutHomeRow(workout: workout, deleteOn: true)
+                            WorkoutHomeRow(workout: workout)
+                                .contextMenu {
+                                    Button {
+                                        existingWorkout = workout
+                                    } label: {
+                                        Label("Use", systemImage: "figure.strengthtraining.traditional")
+                                    }
+                                    Button(role: .destructive) {
+                                        deleteWorkout(workout)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .scrollTransition { content, phase in
+                                    content
+                                        .opacity(phase.isIdentity ? 1.0 : 0.1)
+                                        .scaleEffect(phase.isIdentity ? 1.0 : 0.5)
+                                }
                         }
                     }
+                    .scrollTargetLayout()
+                }
+                .scrollTargetBehavior(.viewAligned)
+                .fullScreenCover(item: $existingWorkout) { workout in
+                    WorkoutView(existingWorkout: workout)
                 }
             }
             if workouts.count > 2 {
-                NavigationLink(destination: AllWorkoutsView()) {
+                NavigationLink(value: 1) {
                     HStack {
                         Text("All Workouts")
                             .fontWeight(.semibold)
@@ -64,10 +95,9 @@ struct WorkoutSectionView: View {
 
 struct WorkoutHomeRow: View {
     @State var workout: Workout
-    @State var deleteOn: Bool
     
     var body: some View {
-        NavigationLink(destination: WorkoutDetailView(workout: workout, deleteOn: deleteOn)) {
+        NavigationLink(value: workout) {
             HStack {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
@@ -89,9 +119,9 @@ struct WorkoutHomeRow: View {
                     Spacer()
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: 0) {
-                            ForEach(workout.exercises!.sorted(by: { $0.order < $1.order}).prefix(5)) { exercise in
+                            ForEach(workout.exercises.sorted(by: { $0.order < $1.order}).prefix(5)) { exercise in
                                 HStack(spacing: 1) {
-                                    Text("\(exercise.sets!.count)x")
+                                    Text("\(exercise.sets.count)x")
                                         .foregroundStyle(Color.primary)
                                     Text(exercise.name)
                                         .foregroundStyle(Color.secondary)
@@ -103,8 +133,8 @@ struct WorkoutHomeRow: View {
                                 .padding(.vertical, 1)
                             }
                         }
-                        if workout.exercises!.count > 5 {
-                            let remaining = workout.exercises!.count - 5
+                        if workout.exercises.count > 5 {
+                            let remaining = workout.exercises.count - 5
                             HStack(spacing: 2) {
                                 Image(systemName: "plus")
                                     .font(.subheadline)

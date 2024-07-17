@@ -8,6 +8,7 @@ struct AllTemplatesView: View {
     }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var templates: [Workout]
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
+    @State private var existingWorkout: Workout? = nil
     
     private func deleteTemplate(at offsets: IndexSet) {
         withAnimation {
@@ -31,24 +32,24 @@ struct AllTemplatesView: View {
         ZStack {
             BackgroundView()
             List {
-                ForEach(templates) { workout in
+                ForEach(templates) { template in
                     Section {
-                        NavigationLink(destination: WorkoutDetailView(workout: workout, deleteOn: templates.count == 3 ? false : true)) {
+                        NavigationLink(value: template) {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack {
                                     Spacer()
                                     VStack(alignment: .trailing, spacing: 0) {
-                                        Text(workout.title)
-                                        Text(exerciseCategories(for: workout))
+                                        Text(template.title)
+                                        Text(exerciseCategories(for: template))
                                             .font(.caption2)
                                             .foregroundStyle(Color.secondary)
                                     }
                                     .fontWeight(.semibold)
                                 }
                                 .padding(.bottom, 3)
-                                ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                                ForEach(template.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                                     HStack(spacing: 1) {
-                                        Text("\(exercise.sets!.count)x")
+                                        Text("\(exercise.sets.count)x")
                                             .foregroundStyle(Color.primary)
                                         Text(exercise.name)
                                             .foregroundStyle(Color.secondary)
@@ -58,6 +59,20 @@ struct AllTemplatesView: View {
                                     .fontWeight(.semibold)
                                     .padding(.top, 3)
                                 }
+                            }
+                        }
+                        .contextMenu {
+                            Button {
+                                existingWorkout = template
+                            } label: {
+                                Label("Use", systemImage: "figure.strengthtraining.traditional")
+                            }
+                            Button(role: .destructive) {
+                                if let index = templates.firstIndex(where: { $0.id == template.id }) {
+                                    deleteTemplate(at: IndexSet(integer: index))
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
                         }
                     }
@@ -72,26 +87,29 @@ struct AllTemplatesView: View {
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing)
+            .fullScreenCover(item: $existingWorkout) { workout in
+                WorkoutView(existingWorkout: workout)
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if isEditing {
-                        Button(action: {
+                        Button {
                             showDeleteAllAlert = true
-                        }, label: {
+                        } label: {
                             Text("Delete All")
                                 .foregroundColor(.red)
-                        })
+                        }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if !templates.isEmpty {
-                        Button(action: {
+                        Button {
                             withAnimation {
                                 isEditing.toggle()
                             }
-                        }, label: {
+                        } label: {
                             Text(isEditing ? "Done" : "Edit")
-                        })
+                        }
                     }
                 }
             }

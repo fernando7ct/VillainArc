@@ -5,12 +5,22 @@ struct TemplateExerciseView: View {
     @FocusState private var keyboardActive: Bool
     @FocusState private var notesFocused: Bool
     @State private var setRepRangeSheet = false
+    @State private var showHistorySheet = false
     
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
             exercise.sets.remove(atOffsets: offsets)
         }
         HapticManager.instance.impact(style: .light)
+    }
+    private func populateSets(from historySets: [TempSet], notes: String?, repRange: String?) {
+        exercise.sets = historySets
+        if let notes = notes {
+            exercise.notes = notes
+        }
+        if let repRange = repRange {
+            exercise.repRange = repRange
+        }
     }
     var body: some View {
         ZStack {
@@ -36,20 +46,10 @@ struct TemplateExerciseView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
                 Section {
-                    ZStack(alignment: .leading) {
-                        TextEditor(text: $exercise.notes)
-                            .focused($notesFocused)
-                            .textEditorStyle(.plain)
-                            .autocorrectionDisabled()
-                        if !notesFocused && exercise.notes.isEmpty {
-                            Text("Notes...")
-                                .foregroundStyle(.secondary)
-                                .font(.subheadline)
-                                .onTapGesture {
-                                    notesFocused = true
-                                }
-                        }
-                    }
+                    TextField("Exercise Notes", text: $exercise.notes, axis: .vertical)
+                        .focused($notesFocused)
+                        .textEditorStyle(.plain)
+                        .autocorrectionDisabled()
                 }
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
@@ -99,7 +99,7 @@ struct TemplateExerciseView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
                 Section {
-                    Button(action: {
+                    Button {
                         withAnimation {
                             if exercise.sets.isEmpty {
                                 exercise.sets.append(TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false))
@@ -109,14 +109,14 @@ struct TemplateExerciseView: View {
                             }
                         }
                         HapticManager.instance.impact(style: .light)
-                    }, label: {
+                    } label: {
                         HStack {
                             Label("Add Set", systemImage: "plus")
                                 .fontWeight(.semibold)
                             Spacer()
                         }
                         .foregroundStyle(Color.primary)
-                    })
+                    }
                     .padding()
                     .background(BlurView())
                     .cornerRadius(12)
@@ -130,15 +130,15 @@ struct TemplateExerciseView: View {
                 HStack(alignment: .bottom) {
                     Spacer()
                     if keyboardActive || notesFocused {
-                        Button(action: {
+                        Button {
                             hideKeyboard()
                             keyboardActive = false
                             notesFocused = false
-                        }, label: {
+                        } label: {
                             Image(systemName: "keyboard.chevron.compact.down")
                                 .foregroundStyle(Color.primary)
                                 .font(.title)
-                        })
+                        }
                         .buttonStyle(BorderedButtonStyle())
                     }
                 }
@@ -149,11 +149,16 @@ struct TemplateExerciseView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button(action: {
+                    Button {
                         setRepRangeSheet.toggle()
-                    }, label: {
+                    } label: {
                         Label("Rep Range", systemImage: "alternatingcurrent")
-                    })
+                    }
+                    Button {
+                        showHistorySheet.toggle()
+                    } label: {
+                        Label("History", systemImage: "clock")
+                    }
                 } label: {
                     Image(systemName: "chevron.down.circle")
                         .font(.title2)
@@ -162,6 +167,11 @@ struct TemplateExerciseView: View {
                     SetRepRangeView(exercise: $exercise)
                         .interactiveDismissDisabled()
                         .presentationDetents([.medium])
+                }
+                .sheet(isPresented: $showHistorySheet) {
+                    ExerciseHistoryView(exerciseName: $exercise.name, onSelectHistory: populateSets)
+                        .presentationDragIndicator(.visible)
+                        .presentationDetents([.medium, .large])
                 }
             }
         }

@@ -75,9 +75,9 @@ class DataManager {
             for (setIndex, set) in exercise.sets.enumerated() {
                 let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)
                 context.insert(newSet)
-                newExercise.sets?.append(newSet)
+                newExercise.sets.append(newSet)
             }
-            newWorkout.exercises?.append(newExercise)
+            newWorkout.exercises.append(newExercise)
         }
         do {
             try context.save()
@@ -90,7 +90,7 @@ class DataManager {
         print("Workout saved to Firebase")
     }
 
-    func updateWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, isTemplate: Bool, workout: Workout?, context: ModelContext) {
+    func updateWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, workout: Workout?, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
@@ -103,8 +103,7 @@ class DataManager {
         workout.notes = notes
         workout.startTime = startTime
         workout.endTime = endTime
-        workout.template = isTemplate
-        for exercise in workout.exercises! {
+        for exercise in workout.exercises {
             context.delete(exercise)
         }
         workout.exercises = []
@@ -120,9 +119,9 @@ class DataManager {
             for (setIndex, set) in exercise.sets.enumerated() {
                 let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)
                 context.insert(newSet)
-                newExercise.sets!.append(newSet)
+                newExercise.sets.append(newSet)
             }
-            workout.exercises!.append(newExercise)
+            workout.exercises.append(newExercise)
         }
         do {
             try context.save()
@@ -141,15 +140,15 @@ class DataManager {
         }
         let newWorkout = Workout(id: UUID().uuidString, title: workout.title, startTime: Date(), endTime: Date(), notes: workout.notes, template: true, exercises: [])
         context.insert(newWorkout)
-        for exercise in workout.exercises!.sorted(by: { $0.order < $1.order }) {
+        for exercise in workout.exercises.sorted(by: { $0.order < $1.order }) {
             let newExercise = WorkoutExercise(id: UUID().uuidString, exercise: exercise, date: Date(), workout: newWorkout, sets: [])
             context.insert(newExercise)
-            for set in exercise.sets!.sorted(by: { $0.order < $1.order }) {
+            for set in exercise.sets.sorted(by: { $0.order < $1.order }) {
                 let newSet = ExerciseSet(id: UUID().uuidString, set: set, exercise: newExercise)
                 context.insert(newSet)
-                newExercise.sets!.append(newSet)
+                newExercise.sets.append(newSet)
             }
-            newWorkout.exercises!.append(newExercise)
+            newWorkout.exercises.append(newExercise)
         }
         do {
             try context.save()
@@ -379,7 +378,8 @@ class DataManager {
                                let date = (exerciseData["date"] as? Timestamp)?.dateValue(),
                                let order = exerciseData["order"] as? Int,
                                let setsData = exerciseData["sets"] as? [[String: Any]] {
-                                let newExercise = WorkoutExercise(id: exerciseId, name: name, category: category, repRange: repRange, notes: exerciseNotes, date: date, order: order, workout: newWorkout, sets: [])
+                                let sameRestTimes = exerciseData["sameRestTimes"] as? Bool ?? false
+                                let newExercise = WorkoutExercise(id: exerciseId, name: name, category: category, repRange: repRange, notes: exerciseNotes, date: date, order: order, sameRestTimes: sameRestTimes, workout: newWorkout, sets: [])
                                 context.insert(newExercise)
                                 for setData in setsData {
                                     if let setId = setData["id"] as? String,
@@ -390,10 +390,10 @@ class DataManager {
                                        let restSeconds = setData["restSeconds"] as? Int {
                                         let newSet = ExerciseSet(id: setId, reps: reps, weight: weight, order: order, restMinutes: restMinutes, restSeconds: restSeconds, exercise: newExercise)
                                         context.insert(newSet)
-                                        newExercise.sets!.append(newSet)
+                                        newExercise.sets.append(newSet)
                                     }
                                 }
-                                newWorkout.exercises!.append(newExercise)
+                                newWorkout.exercises.append(newExercise)
                             }
                         }
                     }

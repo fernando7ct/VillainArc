@@ -13,6 +13,8 @@
 		FD2201C82BFF084700487151 /* ExerciseSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201C72BFF084700487151 /* ExerciseSet.swift */; };
 		FD2201CA2BFF1AB600487151 /* WorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201C92BFF1AB600487151 /* WorkoutView.swift */; };
 		FD2201CC2BFF304C00487151 /* ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201CB2BFF304C00487151 /* ExerciseView.swift */; };
+		FD2819712C3F92130036CAED /* NutritionEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5D12C27D648000267F2 /* NutritionEntry.swift */; };
+		FD2819722C3F950E0036CAED /* NutritionFood.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9EB5D32C27D799000267F2 /* NutritionFood.swift */; };
 		FD2E77952BF57CF800245E06 /* VillainArcApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77942BF57CF800245E06 /* VillainArcApp.swift */; };
 		FD2E77972BF57CF800245E06 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77962BF57CF800245E06 /* ContentView.swift */; };
 		FD2E77992BF57CF800245E06 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FD2E77982BF57CF800245E06 /* Assets.xcassets */; };
@@ -26,6 +28,9 @@
 		FD2E77B12BF6D0E300245E06 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */; };
 		FD2E77B82BF6D37200245E06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B72BF6D37200245E06 /* User.swift */; };
 		FD2E77BA2BFAE23E00245E06 /* WeightGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */; };
+		FD59AD5E2C45D2830017AFD1 /* Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD59AD5D2C45D2830017AFD1 /* Testing.swift */; };
+		FD59AD602C461E160017AFD1 /* WorkoutActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD59AD5F2C461E160017AFD1 /* WorkoutActivityManager.swift */; };
+		FD59AD622C4645F60017AFD1 /* UpdateMealNamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD59AD612C4645F60017AFD1 /* UpdateMealNamesView.swift */; };
 		FD7714C02C12CF3700FF12AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FD7714BF2C12CF3700FF12AF /* FirebaseStorage */; };
 		FD7714C42C14041B00FF12AF /* HealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7714C32C14041B00FF12AF /* HealthManager.swift */; };
 		FD7714C62C14062400FF12AF /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD7714C52C14062400FF12AF /* HealthKit.framework */; };
@@ -118,6 +123,7 @@
 		FD2201C72BFF084700487151 /* ExerciseSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSet.swift; sourceTree = "<group>"; };
 		FD2201C92BFF1AB600487151 /* WorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutView.swift; sourceTree = "<group>"; };
 		FD2201CB2BFF304C00487151 /* ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseView.swift; sourceTree = "<group>"; };
+		FD2819732C3F99C40036CAED /* WorkoutLiveActivityExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WorkoutLiveActivityExtension.entitlements; sourceTree = "<group>"; };
 		FD2E77912BF57CF800245E06 /* VillainArc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VillainArc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD2E77942BF57CF800245E06 /* VillainArcApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VillainArcApp.swift; sourceTree = "<group>"; };
 		FD2E77962BF57CF800245E06 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -133,6 +139,9 @@
 		FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FD2E77B72BF6D37200245E06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		FD2E77B92BFAE23E00245E06 /* WeightGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WeightGraphView.swift; path = VillainArc/HealthViews/WeightViews/WeightGraphView.swift; sourceTree = SOURCE_ROOT; };
+		FD59AD5D2C45D2830017AFD1 /* Testing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Testing.swift; sourceTree = "<group>"; };
+		FD59AD5F2C461E160017AFD1 /* WorkoutActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutActivityManager.swift; sourceTree = "<group>"; };
+		FD59AD612C4645F60017AFD1 /* UpdateMealNamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateMealNamesView.swift; sourceTree = "<group>"; };
 		FD7714C32C14041B00FF12AF /* HealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthManager.swift; sourceTree = "<group>"; };
 		FD7714C52C14062400FF12AF /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		FD7714C72C14F38E00FF12AF /* HealthTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthTab.swift; sourceTree = "<group>"; };
@@ -231,6 +240,7 @@
 		FD2E77882BF57CF800245E06 = {
 			isa = PBXGroup;
 			children = (
+				FD2819732C3F99C40036CAED /* WorkoutLiveActivityExtension.entitlements */,
 				FD2E77932BF57CF800245E06 /* VillainArc */,
 				FDD4FBD12C17F8820028BADB /* WorkoutLiveActivity */,
 				FD2E77922BF57CF800245E06 /* Products */,
@@ -255,6 +265,7 @@
 				FD2E77942BF57CF800245E06 /* VillainArcApp.swift */,
 				FD9EB5F52C2FD47D000267F2 /* HapticManager.swift */,
 				FD2E77962BF57CF800245E06 /* ContentView.swift */,
+				FD59AD5D2C45D2830017AFD1 /* Testing.swift */,
 				FD9EB5D72C2A6EDE000267F2 /* LoginViews */,
 				FD9EB5D82C2A6EED000267F2 /* Tabs */,
 				FD9EB5E72C2BBDDA000267F2 /* HomeViews */,
@@ -314,6 +325,7 @@
 				FD2201C52BFF066A00487151 /* WorkoutExercise.swift */,
 				FD2201C72BFF084700487151 /* ExerciseSet.swift */,
 				FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */,
+				FD59AD5F2C461E160017AFD1 /* WorkoutActivityManager.swift */,
 			);
 			path = Workouts;
 			sourceTree = "<group>";
@@ -357,6 +369,7 @@
 				FD9EB5F32C2E6D6E000267F2 /* EditEntryFoodView.swift */,
 				FD9EB5EF2C2D4430000267F2 /* FoodToEntryView.swift */,
 				FD9EB5ED2C2D1FCB000267F2 /* CreateFoodView.swift */,
+				FD59AD612C4645F60017AFD1 /* UpdateMealNamesView.swift */,
 				FD9EB5F12C2E5AA5000267F2 /* AddFirebaseFoodView.swift */,
 			);
 			path = NutritionViews;
@@ -577,11 +590,13 @@
 				FDD4FB692C1588230028BADB /* HealthActiveEnergy.swift in Sources */,
 				FD7C6EF62C0BFA82001453F2 /* WorkoutSectionView.swift in Sources */,
 				FD2E77A62BF57ED700245E06 /* WeightView.swift in Sources */,
+				FD59AD622C4645F60017AFD1 /* UpdateMealNamesView.swift in Sources */,
 				FD9EB5DF2C2B82A4000267F2 /* NutritionHub.swift in Sources */,
 				FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */,
 				FD7C6EFA2C0BFC9B001453F2 /* AllWorkoutsView.swift in Sources */,
 				FD7C6F092C0E9336001453F2 /* NotificationManager.swift in Sources */,
 				FD9EB5F82C32576C000267F2 /* WeightSectionView.swift in Sources */,
+				FD59AD602C461E160017AFD1 /* WorkoutActivityManager.swift in Sources */,
 				FD9EB5CD2C27A84C000267F2 /* CompleteProfileView.swift in Sources */,
 				FDD4FBE92C1A78FD0028BADB /* SetRepRangeView.swift in Sources */,
 				FD7714CA2C14F8D800FF12AF /* HealthSteps.swift in Sources */,
@@ -596,6 +611,7 @@
 				FDB39EAE2C0A95D8008929DF /* TemplateView.swift in Sources */,
 				FD9EB5F22C2E5AA5000267F2 /* AddFirebaseFoodView.swift in Sources */,
 				FD9EB5DE2C2B81E8000267F2 /* NutritionDataManager.swift in Sources */,
+				FD59AD5E2C45D2830017AFD1 /* Testing.swift in Sources */,
 				FD2E77A42BF57D6600245E06 /* WeightEntry.swift in Sources */,
 				FDD4FBE22C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */,
 				FD2E77AE2BF6D03C00245E06 /* LogInView.swift in Sources */,
@@ -611,6 +627,8 @@
 				FD9EB5CB2C2781B2000267F2 /* WorkoutAttributes.swift in Sources */,
 				FDD4FBD72C17F8820028BADB /* WorkoutLiveActivity.swift in Sources */,
 				FDD4FBD32C17F8820028BADB /* WorkoutLiveActivityBundle.swift in Sources */,
+				FD2819712C3F92130036CAED /* NutritionEntry.swift in Sources */,
+				FD2819722C3F950E0036CAED /* NutritionFood.swift in Sources */,
 				FDD4FBD52C17F8820028BADB /* WorkoutLiveActivityLiveActivity.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -774,7 +792,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.2;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -816,7 +834,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.4.2;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -834,6 +852,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorkoutLiveActivityExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6SVFNFHMZZ;
@@ -841,13 +860,13 @@
 				INFOPLIST_FILE = WorkoutLiveActivity/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WorkoutLiveActivity;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc.WorkoutLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -866,6 +885,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorkoutLiveActivityExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6SVFNFHMZZ;
@@ -873,13 +893,13 @@
 				INFOPLIST_FILE = WorkoutLiveActivity/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WorkoutLiveActivity;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc.WorkoutLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

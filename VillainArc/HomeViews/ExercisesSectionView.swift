@@ -9,12 +9,12 @@ struct ExercisesSectionView: View {
     private var topExercises: [ExerciseInfo] {
         var exerciseDict: [String: ExerciseInfo] = [:]
         for workout in workouts {
-            for exercise in workout.exercises! {
+            for exercise in workout.exercises {
                 if exerciseDict[exercise.name] == nil {
                     exerciseDict[exercise.name] = ExerciseInfo(name: exercise.name, category: exercise.category, count: 0, sets: [])
                 }
                 exerciseDict[exercise.name]?.count += 1
-                exerciseDict[exercise.name]?.sets.append(contentsOf: exercise.sets!)
+                exerciseDict[exercise.name]?.sets.append(contentsOf: exercise.sets)
             }
         }
         return exerciseDict.values
@@ -56,8 +56,8 @@ struct ExercisesSectionView: View {
                     .customStyle()
                 }
             }
-            if workouts.flatMap({ $0.exercises! }).count > 5 {
-                NavigationLink(destination: AllExercisesView()) {
+            if workouts.flatMap({ $0.exercises }).count > 5 {
+                NavigationLink(value: 2) {
                     HStack {
                         Text("All Exercises")
                             .fontWeight(.semibold)

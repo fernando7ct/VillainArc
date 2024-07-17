@@ -19,6 +19,36 @@ extension DataManager {
         print("Nutrition Hub saved to Firebase")
         self.createNutritionEntry(context: context)
     }
+    func updateNutritionHub(goal: Double, proteinGoal: Double, carbsGoal: Double, fatGoal: Double, caloriesGoal: Double, proteinPercentage: Double, carbsPercentage: Double, fatPercentage: Double, activityLevel: Double, context: ModelContext, entry: NutritionEntry) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        let descriptor = FetchDescriptor<NutritionHub>()
+        guard let hub = try? context.fetch(descriptor).first else {
+            return
+        }
+        hub.goal = goal
+        hub.proteinGoal = proteinGoal
+        hub.carbsGoal = carbsGoal
+        hub.fatGoal = fatGoal
+        hub.caloriesGoal = caloriesGoal
+        hub.proteinPercentage = proteinPercentage
+        hub.carbsPercentage = carbsPercentage
+        hub.activityLevel = activityLevel
+        entry.proteinGoal = proteinGoal
+        entry.carbsGoal = carbsGoal
+        entry.fatGoal = fatGoal
+        entry.caloriesGoal = caloriesGoal
+        try? context.save()
+        print("Nutrition Hub and Entry Goals Updated in Swiftdata")
+        let hubData = hub.toDictionary()
+        db.collection("users").document(userID).collection("Nutrition").document("NutritionHub").setData(hubData)
+        print("Nutrition Hub Goals Updated in Firebase")
+        let entryData = entry.toDictionary()
+        db.collection("users").document(userID).collection("Nutrition").document("NutritionHub").collection("NutritionEntries").document(entry.id).setData(entryData)
+        print("Nutrition Entry Goals Updated in Firebase")
+    }
     func nutritionEntryToday(context: ModelContext, completion: @escaping (Bool) -> Void) {
         let fetchDescriptor = FetchDescriptor<NutritionEntry>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         let entries = try? context.fetch(fetchDescriptor)
@@ -73,7 +103,7 @@ extension DataManager {
                             if let id = foodData["id"] as? String, let name = foodData["name"] as? String, let brand = foodData["brand"] as? String, let barcode = foodData["barcode"] as? String, let servingSizeDigit = foodData["servingSizeDigit"] as? Double, let servingSizeUnit = foodData["servingSizeUnit"] as? String, let servingSizeDigit2 = foodData["servingSizeDigit2"] as? Double, let servingSizeUnit2 = foodData["servingSizeUnit2"] as? String, let servingsCount = foodData["servingsCount"] as? Double, let servingsPerContainer = foodData["servingsPerContainer"] as? Double, let date = (foodData["date"] as? Timestamp)?.dateValue(), let mealCategory = foodData["mealCategory"] as? String, let protein = foodData["protein"] as? Double, let carbs = foodData["carbs"] as? Double, let fat = foodData["fat"] as? Double, let calories = foodData["calories"] as? Double {
                                 let newFood = NutritionFood(id: id, name: name, brand: brand, barcode: barcode, servingSizeDigit: servingSizeDigit, servingSizeUnit: servingSizeUnit, servingSizeDigit2: servingSizeDigit2, servingSizeUnit2: servingSizeUnit2, servingsCount: servingsCount, servingsPerContainer: servingsPerContainer, date: date, mealCategory: mealCategory, protein: protein, carbs: carbs, fat: fat, calories: calories, entry: nutritionEntry)
                                 context.insert(newFood)
-                                nutritionEntry.foods!.append(newFood)
+                                nutritionEntry.foods.append(newFood)
                             }
                         }
                     }
@@ -181,7 +211,7 @@ extension DataManager {
         food.mealCategory = category
         let newFood = NutritionFood(id: UUID().uuidString, name: food.name, brand: food.brand, barcode: food.barcode, servingSizeDigit: food.servingSizeDigit, servingSizeUnit: food.servingSizeUnit, servingSizeDigit2: food.servingSizeDigit2, servingSizeUnit2: food.servingSizeUnit2, servingsCount: food.servingsCount, servingsPerContainer: food.servingsPerContainer, date: food.date, mealCategory: food.mealCategory, protein: food.protein, carbs: food.carbs, fat: food.fat, calories: food.calories, entry: entry)
         context.insert(newFood)
-        entry.foods!.append(newFood)
+        entry.foods.append(newFood)
         do {
             try context.save()
             print("Nutrtion Entry updated in SwiftData")
@@ -209,7 +239,7 @@ extension DataManager {
         food.mealCategory = category
         let newFood = NutritionFood(id: UUID().uuidString, name: food.name, brand: food.brand, barcode: food.barcode, servingSizeDigit: food.servingSizeDigit, servingSizeUnit: food.servingSizeUnit, servingSizeDigit2: food.servingSizeDigit2, servingSizeUnit2: food.servingSizeUnit2, servingsCount: food.servingsCount, servingsPerContainer: food.servingsPerContainer, date: food.date, mealCategory: food.mealCategory, protein: food.protein, carbs: food.carbs, fat: food.fat, calories: food.calories, entry: entry)
         context.insert(newFood)
-        entry.foods!.append(newFood)
+        entry.foods.append(newFood)
         do {
             try context.save()
             print("Nutrtion Entry updated in SwiftData")
@@ -220,8 +250,9 @@ extension DataManager {
         db.collection("users").document(userID).collection("Nutrition").document("NutritionHub").collection("NutritionEntries").document(entry.id).setData(entryData)
         print("Nutrition Entry updated in Firebase")
         let id = food.id
+        let name = food.name
         let fetchDescriptor = FetchDescriptor<NutritionFood>(predicate: #Predicate {
-            $0.id == id
+            $0.id == id || $0.name == name && $0.entry == nil
         })
         do {
             let existingFoods = try context.fetch(fetchDescriptor)
@@ -230,12 +261,8 @@ extension DataManager {
                 existingFood.date = food.date
                 existingFood.mealCategory = category
             } else {
-                let newFood = NutritionFood(id: UUID().uuidString, name: food.name, brand: food.brand, barcode: food.barcode, servingSizeDigit: food.servingSizeDigit, servingSizeUnit: food.servingSizeUnit, servingSizeDigit2: food.servingSizeDigit2, servingSizeUnit2: food.servingSizeUnit2, servingsCount: food.servingsCount, servingsPerContainer: food.servingsPerContainer, date: food.date, mealCategory: food.mealCategory, protein: food.protein, carbs: food.carbs, fat: food.fat, calories: food.calories, entry: entry)
+                let newFood = NutritionFood(id: UUID().uuidString, name: food.name, brand: food.brand, barcode: food.barcode, servingSizeDigit: food.servingSizeDigit, servingSizeUnit: food.servingSizeUnit, servingSizeDigit2: food.servingSizeDigit2, servingSizeUnit2: food.servingSizeUnit2, servingsCount: food.servingsCount, servingsPerContainer: food.servingsPerContainer, date: food.date, mealCategory: food.mealCategory, protein: food.protein, carbs: food.carbs, fat: food.fat, calories: food.calories, entry: nil)
                 context.insert(newFood)
-                if entry.foods == nil {
-                    entry.foods = []
-                }
-                entry.foods!.append(newFood)
             }
             try context.save()
             print("Nutrition Entry updated in SwiftData")
@@ -290,8 +317,8 @@ extension DataManager {
         entry.carbsConsumed -= food.servingsCount * food.carbs
         entry.fatConsumed -= food.servingsCount * food.fat
         
-        if let index = entry.foods!.firstIndex(of: food) {
-            entry.foods!.remove(at: index)
+        if let index = entry.foods.firstIndex(of: food) {
+            entry.foods.remove(at: index)
         }
         context.delete(food)
         print("Food removed from Nutrition Entry in SwiftData")
@@ -304,5 +331,93 @@ extension DataManager {
         let entryData = entry.toDictionary()
         db.collection("users").document(userID).collection("Nutrition").document("NutritionHub").collection("NutritionEntries").document(entry.id).setData(entryData)
         print("Nutrition Entry updated in Firebase")
+    }
+    func updateNutritionEntryNotes(entry: NutritionEntry) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        let entryData = entry.toDictionary()
+        db.collection("users").document(userID).collection("Nutrition").document("NutritionHub").collection("NutritionEntries").document(entry.id).setData(entryData)
+        print("Nutrition Entry Notes updated in Firebase")
+    }
+    func updateNutritionMealNames(entry: NutritionEntry, mealNames: [String], context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        let descriptor = FetchDescriptor<NutritionHub>()
+        let hub = try? context.fetch(descriptor)
+        guard let nutritionHub = hub?.first else {
+            print("No NutritionHub found.")
+            return
+        }
+        let oldCategories = nutritionHub.mealCategories
+        nutritionHub.mealCategories = mealNames
+        print("Nutrition Hub Meal Names Updated in SwiftData")
+
+        let nutritionData = nutritionHub.toDictionary()
+        db.collection("users").document(userID).collection("Nutrition").document("NutritionHub").setData(nutritionData)
+        print("Nutrition Hub Meal Names Updated in Firebase")
+
+        for food in entry.foods {
+            if let index = oldCategories.firstIndex(of: food.mealCategory) {
+                food.mealCategory = mealNames[index]
+            }
+        }
+        entry.mealCategories = mealNames
+        do {
+            try context.save()
+            print("Nutrition Foods in Entry Meal Names Updated in SwiftData")
+        } catch {
+            print("Failed to save updated meal categories in SwiftData: \(error)")
+        }
+        let entryData = entry.toDictionary()
+        db.collection("users").document(userID).collection("Nutrition").document("NutritionHub").collection("NutritionEntries").document(entry.id).setData(entryData) { error in
+            if let error = error {
+                print("Error updating Nutrition Entry in Firebase: \(error)")
+            } else {
+                print("Nutrition Foods in Entry Meal Names Updated in Firebase")
+            }
+        }
+    }
+
+}
+extension DataManager {
+    func searchFoodsInFirebase(with query: String, completion: @escaping ([NutritionFood]) -> Void) {
+        let tokens = query.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        if tokens.isEmpty {
+            completion([])
+            return
+        }
+        db.collection("NutritionFoods").getDocuments { snapshot, error in
+            var matchingFoods: [NutritionFood] = []
+            if let snapshot = snapshot {
+                for document in snapshot.documents {
+                    if let id = document.data()["id"] as? String,
+                       let name = document.data()["name"] as? String,
+                       let brand = document.data()["brand"] as? String,
+                       let barcode = document.data()["barcode"] as? String,
+                       let servingSizeDigit = document.data()["servingSizeDigit"] as? Double,
+                       let servingSizeUnit = document.data()["servingSizeUnit"] as? String,
+                       let servingSizeDigit2 = document.data()["servingSizeDigit2"] as? Double,
+                       let servingSizeUnit2 = document.data()["servingSizeUnit2"] as? String,
+                       let servingsPerContainer = document.data()["servingsPerContainer"] as? Double,
+                       let protein = document.data()["protein"] as? Double,
+                       let carbs = document.data()["carbs"] as? Double,
+                       let fat = document.data()["fat"] as? Double,
+                       let calories = document.data()["calories"] as? Double {
+                        let food = NutritionFood(id: id, name: name, brand: brand, barcode: barcode, servingSizeDigit: servingSizeDigit, servingSizeUnit: servingSizeUnit, servingSizeDigit2: servingSizeDigit2, servingSizeUnit2: servingSizeUnit2, servingsCount: 1, servingsPerContainer: servingsPerContainer, date: Date(), mealCategory: "", protein: protein, carbs: carbs, fat: fat, calories: calories, entry: nil)
+                        if tokens.allSatisfy({ token in name.lowercased().contains(token) || brand.lowercased().contains(token) }) {
+                            matchingFoods.append(food)
+                        }
+                    }
+                }
+                completion(matchingFoods)
+            } else {
+                print("Error fetching foods from Firebase: \(String(describing: error))")
+                completion([])
+            }
+        }
     }
 }

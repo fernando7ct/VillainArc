@@ -7,7 +7,7 @@ struct CaloriesSectionView: View {
         
     var body: some View {
         HStack {
-            NavigationLink(destination: CaloriesView()) {
+            NavigationLink(value: 2) {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .bottom, spacing: 4) {
                         Text("\(Int(activeCalories))")

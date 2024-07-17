@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class NutritionEntry {
+class NutritionEntry: Hashable {
     var id: String = UUID().uuidString
     var date: Date = Date()
     var proteinGoal: Double = 0
@@ -16,7 +16,7 @@ class NutritionEntry {
     var mealCategories: [String] = []
     var notes: String = ""
     @Relationship(deleteRule: .cascade)
-    var foods: [NutritionFood]?
+    var foods: [NutritionFood] = []
     
     init(id: String, date: Date, proteinGoal: Double, carbsGoal: Double, fatGoal: Double, caloriesGoal: Double, proteinConsumed: Double, carbsConsumed: Double, fatConsumed: Double, caloriesConsumed: Double, mealCategories: [String], notes: String, foods: [NutritionFood]) {
         self.id = id
@@ -49,7 +49,7 @@ extension NutritionEntry {
             "caloriesConsumed": self.caloriesConsumed,
             "mealCategories": self.mealCategories,
             "notes": self.notes,
-            "foods": self.foods?.map { food in
+            "foods": self.foods.map { food in
                 return [
                     "id": food.id,
                     "name": food.name,
@@ -68,7 +68,7 @@ extension NutritionEntry {
                     "fat": food.fat,
                     "calories": food.calories
                 ]
-            } ?? []
+            }
         ]
     }
 }

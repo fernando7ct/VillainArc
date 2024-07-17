@@ -4,6 +4,7 @@ import SwiftData
 struct NutritionSetupView: View {
     @AppStorage("nutritionSetup") var nutritionSetup = false
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     @State private var currentWeight: Double = 0
     @State private var goal: Double = 0
     @State private var activityLevel: Double = 1.375
@@ -18,7 +19,8 @@ struct NutritionSetupView: View {
     @State private var heightFeet: Int = 0
     @State private var heightInches: Int = 0
     @State private var sex: String = ""
-    @State private var mealCategories: [String] = ["Breakfast", "Lunch", "Dinner", "Snacks"]
+    @State private var mealCategories: [String] = ["Breakfast", "Lunch", "Dinner", "Snacks", "", ""]
+    @State var nutritionEntry: NutritionEntry?
     
     private func getUserData() {
         let userDescriptor = FetchDescriptor<User>()
@@ -40,6 +42,22 @@ struct NutritionSetupView: View {
             updateData()
         } catch {
             print("Error getting user data \(error.localizedDescription)")
+        }
+    }
+    private func getOldHubData() {
+        let descriptor = FetchDescriptor<NutritionHub>()
+        let hubs = try? context.fetch(descriptor)
+        if let hub = hubs?.first {
+            goal = hub.goal
+            protein = Int(hub.proteinGoal)
+            proteinPercentage = hub.proteinPercentage
+            carbs = Int(hub.carbsGoal)
+            carbsPercentage = hub.carbsPercentage
+            fat = Int(hub.fatGoal)
+            fatPercentage = hub.fatPercentage
+            calories = Int(hub.caloriesGoal)
+            activityLevel = hub.activityLevel
+            updateData()
         }
     }
     private func updateData() {
@@ -71,8 +89,13 @@ struct NutritionSetupView: View {
         return (proteinPercentage + carbsPercentage + fatPercentage == 1.0)
     }
     private func createNutritionHub() {
-        DataManager.shared.createNutritionHub(goal: goal, proteinGoal: Double(protein), carbsGoal: Double(carbs), fatGoal: Double(fat), caloriesGoal: Double(calories), proteinPercentage: proteinPercentage, carbsPercentage: carbsPercentage, fatPercentage: fatPercentage, activityLevel: activityLevel, mealCategories: mealCategories, context: context)
-        nutritionSetup = true
+        if let nutritionEntry {
+            DataManager.shared.updateNutritionHub(goal: goal, proteinGoal: Double(protein), carbsGoal: Double(carbs), fatGoal: Double(fat), caloriesGoal: Double(calories), proteinPercentage: proteinPercentage, carbsPercentage: carbsPercentage, fatPercentage: fatPercentage, activityLevel: activityLevel, context: context, entry: nutritionEntry)
+            dismiss()
+        } else {
+            DataManager.shared.createNutritionHub(goal: goal, proteinGoal: Double(protein), carbsGoal: Double(carbs), fatGoal: Double(fat), caloriesGoal: Double(calories), proteinPercentage: proteinPercentage, carbsPercentage: carbsPercentage, fatPercentage: fatPercentage, activityLevel: activityLevel, mealCategories: mealCategories, context: context)
+            nutritionSetup = true
+        }
     }
     
     var body: some View {
@@ -136,9 +159,7 @@ struct NutritionSetupView: View {
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color.secondary)
                             Spacer()
-                            TextField("Cals", value: $calories, format: .number)
-                                .keyboardType(.numberPad)
-                                .frame(width: 50)
+                            Text("\(calories)")
                         }
                     }
                     .listRowBackground(BlurView())
@@ -227,7 +248,7 @@ struct NutritionSetupView: View {
                 }
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Nutrition Setup")
+            .navigationTitle(nutritionEntry == nil ? "Nutrition Setup" : "Update Goals")
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .toolbar {
@@ -235,7 +256,7 @@ struct NutritionSetupView: View {
                     Button {
                         createNutritionHub()
                     } label: {
-                        Text("Save")
+                        Text(nutritionEntry == nil ? "Save" : "Update")
                             .foregroundStyle(.green)
                             .fontWeight(.semibold)
                     }
@@ -245,6 +266,9 @@ struct NutritionSetupView: View {
             }
             .onAppear {
                 getUserData()
+                if nutritionEntry != nil {
+                    getOldHubData()
+                }
             }
             .onTapGesture {
                 hideKeyboard()

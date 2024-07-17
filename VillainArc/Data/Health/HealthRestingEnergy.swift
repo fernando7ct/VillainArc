@@ -18,7 +18,7 @@ extension HealthRestingEnergy {
         return [
             "id": self.id,
             "date": self.date,
-            "activeEnergy": self.restingEnergy
+            "restingEnergy": self.restingEnergy
         ]
     }
 }

@@ -3,7 +3,6 @@ import SwiftData
 
 struct WorkoutDetailView: View {
     @State var workout: Workout
-    @State var deleteOn: Bool
     @State private var workoutStarted = false
     @State private var editWorkout = false
     @Environment(\.dismiss) private var dismiss
@@ -64,9 +63,9 @@ struct WorkoutDetailView: View {
                         })
                         .listRowBackground(BlurView())
                     }
-                    ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                    ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                         Section(content: {
-                            ForEach(exercise.sets!.sorted(by: { $0.order < $1.order})) { set in
+                            ForEach(exercise.sets.sorted(by: { $0.order < $1.order})) { set in
                                 HStack {
                                     Text("Set: \(set.order + 1)")
                                     Spacer()
@@ -126,7 +125,7 @@ struct WorkoutDetailView: View {
                         .listRowSeparator(.hidden)
                     }
                     Section {
-                        ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                        ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text(exercise.name)
@@ -142,7 +141,7 @@ struct WorkoutDetailView: View {
                                             .multilineTextAlignment(.leading)
                                     }
                                     Text(exercise.category)
-                                    Text("\(exercise.sets!.count) \(exercise.sets!.count == 1 ? "set" : "sets")")
+                                    Text("\(exercise.sets.count) \(exercise.sets.count == 1 ? "set" : "sets")")
                                 }
                                 .font(.subheadline)
                                 .foregroundStyle(Color.secondary)
@@ -171,32 +170,30 @@ struct WorkoutDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button(action: {
+                    Button {
                         workoutStarted.toggle()
                         HapticManager.instance.notification(type: .success)
-                    }, label: {
+                    } label: {
                         Label("Use", systemImage: "figure.strengthtraining.traditional")
-                    })
-                    Button(action: {
+                    }
+                    Button {
                         editWorkout.toggle()
                         HapticManager.instance.impact(style: .medium)
-                    }, label: {
+                    } label: {
                         Label("Edit", systemImage: "pencil")
-                    })
+                    }
                     if !workout.template {
-                        Button(action: {
+                        Button {
                             saveWorkoutAsTemplate()
                             dismiss()
-                        }, label: {
+                        } label: {
                             Label("Make into Template", systemImage: "doc.text")
-                        })
+                        }
                     }
-                    if deleteOn {
-                        Button(role: .destructive, action: {
-                            showDeleteAlert = true
-                        }, label: {
-                            Label("Delete", systemImage: "trash")
-                        })
+                    Button(role: .destructive) {
+                        showDeleteAlert = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "chevron.down.circle")

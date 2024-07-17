@@ -10,11 +10,11 @@ class WorkoutExercise: Identifiable {
     var notes: String = ""
     var date: Date = Date()
     var order: Int = 0
+    var sameRestTimes: Bool = false
     var workout: Workout?
-    @Relationship(deleteRule: .cascade)
-    var sets: [ExerciseSet]?
+    @Relationship(deleteRule: .cascade) var sets: [ExerciseSet] = []
     
-    init(id: String, name: String, category: String, repRange: String, notes: String, date: Date, order: Int, workout: Workout, sets: [ExerciseSet]) {
+    init(id: String, name: String, category: String, repRange: String, notes: String, date: Date, order: Int, sameRestTimes: Bool, workout: Workout, sets: [ExerciseSet]) {
         self.id = id
         self.name = name
         self.category = category
@@ -22,6 +22,7 @@ class WorkoutExercise: Identifiable {
         self.notes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.date = date
         self.order = order
+        self.sameRestTimes = sameRestTimes
         self.workout = workout
         self.sets = sets
     }
@@ -33,6 +34,7 @@ class WorkoutExercise: Identifiable {
         self.notes = tempExercise.notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.date = date
         self.order = order
+        self.sameRestTimes = tempExercise.sameRestTimes
         self.workout = workout
         self.sets = sets
     }
@@ -44,6 +46,7 @@ class WorkoutExercise: Identifiable {
         self.notes = exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines)
         self.date = date
         self.order = exercise.order
+        self.sameRestTimes = exercise.sameRestTimes
         self.workout = workout
         self.sets = sets
     }
@@ -55,13 +58,15 @@ struct TempExercise: Identifiable {
     var category: String
     var repRange: String
     var notes: String
+    var sameRestTimes: Bool
     var sets: [TempSet]
     
-    init(name: String, category: String, repRange: String, notes: String, sets: [TempSet]) {
+    init(name: String, category: String, repRange: String, notes: String, sameRestTimes: Bool, sets: [TempSet]) {
         self.name = name
         self.category = category
         self.repRange = repRange
         self.notes = notes
+        self.sameRestTimes = sameRestTimes
         self.sets = sets
     }
     
@@ -70,7 +75,8 @@ struct TempExercise: Identifiable {
         self.category = exercise.category
         self.repRange = exercise.repRange
         self.notes = exercise.notes
-        self.sets = exercise.sets!.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
+        self.sameRestTimes = exercise.sameRestTimes
+        self.sets = exercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
     }
 }
 struct ExerciseInfo {
@@ -89,7 +95,8 @@ extension WorkoutExercise {
             "notes": self.notes,
             "date": self.date,
             "order": self.order,
-            "sets": self.sets?.map { $0.toDictionary() } ?? []
+            "sameRestTimes": self.sameRestTimes,
+            "sets": self.sets.map { $0.toDictionary() }
         ]
     }
 }

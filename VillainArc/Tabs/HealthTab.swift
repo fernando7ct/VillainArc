@@ -4,10 +4,11 @@ struct HealthTab: View {
     @AppStorage("healthAccess") var healthAccess = false
     @Environment(\.modelContext) private var context
     @StateObject var healthManager = HealthManager.shared
-    @State private var scrollPosition = Calendar.current.date(byAdding: .day, value: -6, to: Calendar.current.startOfDay(for: Date()))!
+    @Binding var path: NavigationPath
+    
     
     var body: some View {
-        NavigationView {
+        NavigationStack(path: $path) {
             ZStack {
                 BackgroundView()
                 if healthAccess {
@@ -28,6 +29,17 @@ struct HealthTab: View {
                     unavailableView
                 }
             }
+            .navigationDestination(for: Int.self) { int in
+                if int == 0 {
+                    WeightView()
+                } else if int == 1 {
+                    StepsView()
+                } else if int == 2 {
+                    CaloriesView()
+                } else if int == 3 {
+                    AllWeightEntriesView()
+                }
+            }
         }
     }
     
@@ -37,7 +49,7 @@ struct HealthTab: View {
         }, description: {
             Text("You haven't allowed access to health data.")
         }, actions: {
-            Button(action: {
+            Button {
                 healthManager.requestHealthData { granted in
                     if granted {
                         healthManager.accessGranted { success in
@@ -47,14 +59,10 @@ struct HealthTab: View {
                         }
                     }
                 }
-            }) {
+            } label:  {
                 Text("Update Access")
                     .fontWeight(.semibold)
             }
         })
     }
-}
-
-#Preview {
-    HealthTab()
 }

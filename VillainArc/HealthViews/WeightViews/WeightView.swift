@@ -11,7 +11,7 @@ struct WeightView: View {
                     .frame(height: 500)
                     .padding(.horizontal)
                 
-                NavigationLink(destination: AllWeightEntriesView()) {
+                NavigationLink(value: 3) {
                     HStack {
                         Text("All Weight Entries")
                             .fontWeight(.semibold)
@@ -26,12 +26,12 @@ struct WeightView: View {
         .navigationTitle("Weight")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
+                Button {
                     addWeightSheetActive = true
-                }, label: {
+                } label: {
                     Image(systemName: "plus")
                         .foregroundStyle(Color.primary)
-                })
+                }
                 .sheet(isPresented: $addWeightSheetActive) {
                     AddWeightEntryView()
                 }

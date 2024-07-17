@@ -18,7 +18,7 @@ extension HealthWalkingRunningDistance {
         return [
             "id": self.id,
             "date": self.date,
-            "activeEnergy": self.distance
+            "distance": self.distance
         ]
     }
 }

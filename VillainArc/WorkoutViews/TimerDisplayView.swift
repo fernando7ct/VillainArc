@@ -69,15 +69,13 @@ struct TimerDisplayView: View {
     
     var body: some View {
         VStack {
-            if viewModel.restTimeRemaining > 0 {
-                Text(viewModel.formattedTime(viewModel.restTimeRemaining))
-                    .font(.title)
-                    .padding(.horizontal, 5)
-                    .background {
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .stroke(lineWidth: 2)
-                    }
-            }
+            Text(viewModel.formattedTime(viewModel.restTimeRemaining))
+                .font(.title)
+                .padding(.horizontal, 5)
+                .background {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(lineWidth: 2)
+                }
         }
         .onAppear {
             viewModel.updateRestTimeRemaining()

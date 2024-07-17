@@ -8,6 +8,7 @@ struct AllWorkoutsView: View {
     }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var workouts: [Workout]
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
+    @State private var existingWorkout: Workout? = nil
     
     private func deleteWorkout(at offsets: IndexSet) {
         withAnimation {
@@ -32,7 +33,7 @@ struct AllWorkoutsView: View {
             List {
                 ForEach(workouts) { workout in
                     Section {
-                        NavigationLink(destination: WorkoutDetailView(workout: workout, deleteOn: workouts.count == 3 ? false : true)) {
+                        NavigationLink(value: workout) {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack {
                                     Spacer()
@@ -45,9 +46,9 @@ struct AllWorkoutsView: View {
                                     .fontWeight(.semibold)
                                 }
                                 .padding(.bottom, 3)
-                                ForEach(workout.exercises!.sorted(by: { $0.order < $1.order})) { exercise in
+                                ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                                     HStack(spacing: 1) {
-                                        Text("\(exercise.sets!.count)x")
+                                        Text("\(exercise.sets.count)x")
                                             .foregroundStyle(Color.primary)
                                         Text(exercise.name)
                                             .foregroundStyle(Color.secondary)
@@ -57,6 +58,20 @@ struct AllWorkoutsView: View {
                                     .fontWeight(.semibold)
                                     .padding(.top, 3)
                                 }
+                            }
+                        }
+                        .contextMenu {
+                            Button {
+                                existingWorkout = workout
+                            } label: {
+                                Label("Use", systemImage: "figure.strengthtraining.traditional")
+                            }
+                            Button(role: .destructive) {
+                                if let index = workouts.firstIndex(where: { $0.id == workout.id }) {
+                                    deleteWorkout(at: IndexSet(integer: index))
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
                         }
                     }
@@ -71,26 +86,29 @@ struct AllWorkoutsView: View {
             .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing)
+            .fullScreenCover(item: $existingWorkout) { workout in
+                WorkoutView(existingWorkout: workout)
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    if isEditing{
-                        Button(action: {
+                    if isEditing {
+                        Button {
                             showDeleteAllAlert = true
-                        }, label: {
+                        } label: {
                             Text("Delete All")
                                 .foregroundColor(.red)
-                        })
+                        }
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if !workouts.isEmpty {
-                        Button(action: {
+                        Button {
                             withAnimation {
                                 isEditing.toggle()
                             }
-                        }, label: {
+                        } label: {
                             Text(isEditing ? "Done" : "Edit")
-                        })
+                        }
                     }
                 }
             }
