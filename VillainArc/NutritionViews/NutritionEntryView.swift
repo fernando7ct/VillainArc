@@ -114,6 +114,7 @@ struct NutritionEntryDataView: View {
     @State private var showNotes = false
     @State private var updateMealNames = false
     @State private var updateGoals = false
+    @State private var tempNotes = ""
     
     enum DisplayedMacros: String {
         case cals = "cals"
@@ -333,7 +334,7 @@ struct NutritionEntryDataView: View {
                 ZStack {
                     BackgroundView()
                     Form {
-                        TextField("Notes", text: $entry.notes, axis: .vertical)
+                        TextField("Notes", text: $tempNotes, axis: .vertical)
                             .listRowBackground(BlurView())
                     }
                     .scrollContentBackground(.hidden)
@@ -343,6 +344,13 @@ struct NutritionEntryDataView: View {
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
                 .onTapGesture {
                     hideKeyboard()
+                }
+                .onAppear {
+                    tempNotes = entry.notes
+                }
+                .onDisappear {
+                    entry.notes = tempNotes
+                    tempNotes.removeAll()
                 }
             }
             .presentationDetents([.medium, .large])

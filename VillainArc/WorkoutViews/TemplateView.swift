@@ -14,6 +14,7 @@ struct TemplateView: View {
     @State private var showSaveSheet = false
     @State private var existingWorkout: Workout?
     @State private var isEditing = false
+    @State private var exerciseToReplaceIndex: Int? = nil
     
     init(existingWorkout: Workout? = nil) {
         self._existingWorkout = State(initialValue: existingWorkout)
@@ -48,6 +49,10 @@ struct TemplateView: View {
             exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
         }
         HapticManager.instance.impact(style: .light)
+    }
+    private func replaceExercise(at index: Int, with exercise: ExerciseSelectionView.Exercise) {
+        exercises[index] = TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)])
+        HapticManager.instance.impact(style: .medium)
     }
     private func saveWorkout() {
         if !isEditing {
@@ -136,8 +141,32 @@ struct TemplateView: View {
                     }
                     Section {
                         ForEach(exercises.indices, id: \.self) { index in
-                            NavigationLink(destination: TemplateExerciseView(exercise: $exercises[index])) {
+                            NavigationLink(destination: TemplateExerciseView(exercise: $exercises[index], deleteExercise: {
+                                deleteExercise(at: IndexSet(integer: index))
+                            })) {
                                 WorkoutExerciseRowView(exercise: exercises[index])
+                            }
+                            .contextMenu {
+                                if !isEditingExercises {
+                                    Button {
+                                        exerciseToReplaceIndex = index
+                                        showExerciseSelection.toggle()
+                                    } label: {
+                                        Label("Replace Exercise", systemImage: "arrow.triangle.2.circlepath")
+                                    }
+                                    Button {
+                                        withAnimation {
+                                            isEditingExercises.toggle()
+                                        }
+                                    } label: {
+                                        Label("Edit Exercises", systemImage: "list.bullet")
+                                    }
+                                    Button(role: .destructive) {
+                                        deleteExercise(at: IndexSet(integer: index))
+                                    } label: {
+                                        Label("Delete Exercise", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                         .onDelete(perform: deleteExercise)
@@ -161,7 +190,7 @@ struct TemplateView: View {
                             .background(BlurView())
                             .cornerRadius(12)
                             .sheet(isPresented: $showExerciseSelection) {
-                                ExerciseSelectionView(onAdd: addSelectedExercises)
+                                ExerciseSelectionView(exerciseToReplaceIndex: $exerciseToReplaceIndex, onAdd: addSelectedExercises, onReplace: replaceExercise)
                                     .interactiveDismissDisabled()
                             }
                         }

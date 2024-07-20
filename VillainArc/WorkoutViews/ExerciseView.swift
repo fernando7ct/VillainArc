@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ExerciseView: View {
+    @Environment(\.dismiss) private var dismiss
     @Binding var exercise: TempExercise
     @ObservedObject var timer: TimerDisplayViewModel
     var isEditing: Bool
@@ -10,6 +11,7 @@ struct ExerciseView: View {
     @State private var setRestTimeSheet = false
     @State private var setRepRangeSheet = false
     let updateLiveActivity: () -> Void
+    let deleteExercise: () -> Void
     
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
@@ -196,6 +198,12 @@ struct ExerciseView: View {
                         showHistorySheet.toggle()
                     } label: {
                         Label("History", systemImage: "clock")
+                    }
+                    Button(role: .destructive) {
+                        deleteExercise()
+                        dismiss()
+                    } label: {
+                        Label("Delete Exercise", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "chevron.down.circle")

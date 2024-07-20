@@ -10,6 +10,10 @@ struct AllWorkoutsView: View {
     @State private var showDeleteAllAlert = false
     @State private var existingWorkout: Workout? = nil
     
+    var totalWorkoutTime: TimeInterval {
+        workouts.reduce(0) { $0 + $1.totalTime }
+    }
+    
     private func deleteWorkout(at offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -31,6 +35,36 @@ struct AllWorkoutsView: View {
         ZStack {
             BackgroundView()
             List {
+                HStack(spacing: 10) {
+                    VStack(alignment: .center, spacing: 0) {
+                        Text("# of Workouts")
+                            .textScale(.secondary)
+                            .foregroundStyle(.secondary)
+                        Text("\(workouts.count)")
+                            .fontWeight(.semibold)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(.ultraThickMaterial)
+                    }
+                    VStack(alignment: .center, spacing: 0) {
+                        Text("Total Workout Time")
+                            .textScale(.secondary)
+                            .foregroundStyle(.secondary)
+                        Text(formattedTotalTime(totalWorkoutTime))
+                            .fontWeight(.semibold)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(.ultraThickMaterial)
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .padding(.horizontal, -20)
                 ForEach(workouts) { workout in
                     Section {
                         NavigationLink(value: workout) {
@@ -41,7 +75,7 @@ struct AllWorkoutsView: View {
                                         Text(workout.title)
                                         Text("\(workout.startTime.formatted(.dateTime.month().day().year()))")
                                             .font(.caption2)
-                                            .foregroundStyle(Color.secondary)
+                                            .foregroundStyle(.secondary)
                                     }
                                     .fontWeight(.semibold)
                                 }

@@ -40,7 +40,7 @@ struct AddWeightEntryView: View {
             return
         }
         let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: Double(weight)!, notes: notes, date: combinedDate, photoData: selectedPhotoData)
-        DataManager.shared.saveWeightEntry(weightEntry: newWeightEntry, context: context, update: false)
+        DataManager.shared.saveWeightEntry(weightEntry: newWeightEntry, context: context, update: false, saveToHealthKit: true)
         dismiss()
     }
     private func gestureTap() {

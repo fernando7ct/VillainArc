@@ -14,8 +14,8 @@ class HealthManager: ObservableObject {
     
     func requestHealthData(completion: @escaping (Bool) -> Void) {
         if HKHealthStore.isHealthDataAvailable() {
-            let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned), HKQuantityType(.distanceWalkingRunning)]
-            healthStore.requestAuthorization(toShare: [], read: healthTypes) { success, _ in
+            let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned), HKQuantityType(.distanceWalkingRunning), HKQuantityType(.bodyMass)]
+            healthStore.requestAuthorization(toShare: [HKQuantityType(.bodyMass)], read: healthTypes) { success, _ in
                 DispatchQueue.main.async {
                     completion(success)
                 }
@@ -26,7 +26,7 @@ class HealthManager: ObservableObject {
             }
         }
     }
-
+    
     func accessGranted(success: @escaping (Bool) -> Void) {
         let predicate = HKQuery.predicateForSamples(withStart: .distantPast, end: .now)
         
@@ -114,6 +114,14 @@ class HealthManager: ObservableObject {
         let startDate4 = secondToLast4 ?? userStartDate
         fetchAndSaveWalkingRunningDistance(context: context, startDate: startDate4, endDate: endDate)
         
+        let mostRecentWeightEntry = getMostRecentWeightEntry(context: context)?.date
+        var secondToLast5: Date? = nil
+        if let mostRecentWeightEntry {
+            secondToLast5 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentWeightEntry)
+        }
+        let startDate5 = secondToLast5 ?? userStartDate
+        fetchAndSaveWeightData(context: context, startDate: startDate4, endDate: endDate)
+        
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         
         fetchTodaySteps(context: context) { steps in
@@ -186,6 +194,11 @@ class HealthManager: ObservableObject {
         let healthWalkingRunningDistance = try? context.fetch(fetchDescriptor)
         return healthWalkingRunningDistance?.first
     }
+    private func getMostRecentWeightEntry(context: ModelContext) -> WeightEntry? {
+        let fetchDescriptor = FetchDescriptor<WeightEntry>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+        let entries = try? context.fetch(fetchDescriptor)
+        return entries?.first
+    }
     func fetchAllHealthSteps(context: ModelContext) -> [HealthSteps] {
         let fetchDescriptor = FetchDescriptor<HealthSteps>()
         do {
@@ -219,6 +232,15 @@ class HealthManager: ObservableObject {
             return try context.fetch(fetchDescriptor)
         } catch {
             print("Error fetching Health Resting Energy: \(error.localizedDescription)")
+            return []
+        }
+    }
+    func fetchAllWeightEntries(context: ModelContext) -> [WeightEntry] {
+        let fetchDescriptor = FetchDescriptor<WeightEntry>()
+        do {
+            return try context.fetch(fetchDescriptor)
+        } catch {
+            print("Error fetching Weight Entries: \(error.localizedDescription)")
             return []
         }
     }
@@ -374,5 +396,54 @@ class HealthManager: ObservableObject {
             }
         }
         healthStore.execute(query)
+    }
+    func fetchAndSaveWeightData(context: ModelContext, startDate: Date, endDate: Date) {
+        guard let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass) else {
+            print("Weight type is not available in HealthKit")
+            return
+        }
+        let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
+        let query = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { [weak self] _, samples, error in
+            guard let self = self, let samples = samples as? [HKQuantitySample], error == nil else {
+                print("Error fetching weight data: \(String(describing: error))")
+                return
+            }
+            let existingWeightEntries = self.fetchAllWeightEntries(context: context)
+            self.updateQueue.async(flags: .barrier) {
+                for sample in samples {
+                    let weightInKilograms = sample.quantity.doubleValue(for: .gramUnit(with: .kilo))
+                    let weightInPounds = weightInKilograms / 0.45359237
+                    let date = sample.startDate
+                    
+                    if let existingEntry = existingWeightEntries.first(where: { $0.date == date }) {
+                        if existingEntry.weight != weightInPounds {
+                            existingEntry.weight = weightInPounds
+                            DispatchQueue.main.async {
+                                DataManager.shared.saveWeightEntry(weightEntry: existingEntry, context: context, update: true, saveToHealthKit: false)
+                            }
+                        }
+                    } else {
+                        let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weightInPounds, notes: "", date: date, photoData: nil)
+                        DispatchQueue.main.async {
+                            DataManager.shared.saveWeightEntry(weightEntry: newWeightEntry, context: context, update: false, saveToHealthKit: false)
+                        }
+                    }
+                }
+            }
+        }
+        healthStore.execute(query)
+    }
+    func saveWeightToHealthKit(weight: Double, date: Date, completion: @escaping (Bool, Error?) -> Void) {
+        guard let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass) else {
+            completion(false, nil)
+            return
+        }
+        let weightInKilograms = weight * 0.45359237
+        let weightQuantity = HKQuantity(unit: HKUnit.gramUnit(with: .kilo), doubleValue: weightInKilograms)
+        let weightSample = HKQuantitySample(type: weightType, quantity: weightQuantity, start: date, end: date)
+        
+        healthStore.save(weightSample) { success, error in
+            completion(success, error)
+        }
     }
 }

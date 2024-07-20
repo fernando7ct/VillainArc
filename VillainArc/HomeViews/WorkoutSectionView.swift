@@ -107,11 +107,11 @@ struct WorkoutHomeRow: View {
                             if !workout.template {
                                 Text("\(workout.startTime.formatted(.dateTime.month().day().year()))")
                                     .font(.caption2)
-                                    .foregroundStyle(Color.secondary)
+                                    .foregroundStyle(.secondary)
                             } else {
                                 Text(exerciseCategories(for: workout))
                                     .font(.caption2)
-                                    .foregroundStyle(Color.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                         .fontWeight(.semibold)
@@ -122,9 +122,8 @@ struct WorkoutHomeRow: View {
                             ForEach(workout.exercises.sorted(by: { $0.order < $1.order}).prefix(5)) { exercise in
                                 HStack(spacing: 1) {
                                     Text("\(exercise.sets.count)x")
-                                        .foregroundStyle(Color.primary)
                                     Text(exercise.name)
-                                        .foregroundStyle(Color.secondary)
+                                        .foregroundStyle(.secondary)
                                     Spacer()
                                 }
                                 .lineLimit(1)

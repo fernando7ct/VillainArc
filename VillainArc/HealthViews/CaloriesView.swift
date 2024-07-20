@@ -31,6 +31,7 @@ struct CaloriesView: View {
     @Query private var healthActiveEnergy: [HealthActiveEnergy]
     @Query private var healthRestingEnergy: [HealthRestingEnergy]
     @State private var selectedCaloriesRange: GraphRanges = .week
+    @State private var showTotal = false
     
     var combinedEntries: [CombinedCalories] {
         var combinedEntries: [CombinedCalories] = []
@@ -92,9 +93,30 @@ struct CaloriesView: View {
         }
         
         let sortedObjects = groupedObjects.keys.sorted()
-        return sortedObjects.map { key in
+        var groupedCalories = sortedObjects.map { key in
             GroupedCalories(entries: groupedObjects[key]!, startDate: key)
         }.sorted(by: { $0.startDate < $1.startDate })
+        
+        if groupedCalories.isEmpty {
+            let startDate: Date
+            switch selectedCaloriesRange {
+            case .week:
+                startDate = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
+            case .month:
+                startDate = calendar.date(from: calendar.dateComponents([.month, .year], from: Date()))!
+            case .sixMonths:
+                let components = calendar.dateComponents([.year, .month], from: Date())
+                let month = components.month!
+                let year = components.year!
+                if month <= 6 {
+                    startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
+                } else {
+                    startDate = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
+                }
+            }
+            groupedCalories.append(GroupedCalories(entries: [], startDate: startDate))
+        }
+        return groupedCalories.sorted(by: { $0.startDate < $1.startDate })
     }
     
     var body: some View {
@@ -111,7 +133,7 @@ struct CaloriesView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(groupedCalories, id: \.startDate) { group in
-                            CaloriesGraphView(calories: group.entries, startDate: group.startDate, selectedRange: selectedCaloriesRange)
+                            CaloriesGraphView(calories: group.entries, startDate: group.startDate, selectedRange: selectedCaloriesRange, showTotal: $showTotal)
                                 .containerRelativeFrame(.horizontal)
                                 .frame(height: 500)
                                 .scrollTransition { content, phase in
@@ -140,6 +162,7 @@ struct CaloriesGraphView: View {
     var calories: [CombinedCalories]
     var startDate: Date
     var selectedRange: GraphRanges
+    @Binding var showTotal: Bool
     @State private var selectedDate: Date? = nil
     @State private var selectedEntry: CombinedCalories? = nil
     
@@ -147,21 +170,34 @@ struct CaloriesGraphView: View {
         guard let maxCalories = graphCalories.map({ $0.total }).max() else {
             return 0...2000
         }
+        if showTotal && selectedRange == .sixMonths {
+            return 0...(maxCalories + 5000)
+        }
         return 0...(maxCalories + 300)
     }
     private func averageCalories() -> Double {
         guard !calories.isEmpty else { return 0 }
-        
         return calories.reduce(0) { $0 + $1.total } / Double(calories.count)
+    }
+    private func totalCalories() -> Double {
+        guard !calories.isEmpty else { return 0 }
+        return calories.reduce(0) { $0 + $1.total }
     }
     
     var graphCalories: [CombinedCalories] {
         if selectedRange == .sixMonths {
             return calories.groupedByMonth().map { month in
-                let averageActive = month.entries.reduce(0) { $0 + $1.activeEnergy } / Double(month.entries.count)
-                let averageResting = month.entries.reduce(0) { $0 + $1.restingEnergy } / Double(month.entries.count)
+                var active: Double
+                var resting: Double
+                if showTotal {
+                    active = month.entries.reduce(0) { $0 + $1.activeEnergy }
+                    resting = month.entries.reduce(0) { $0 + $1.restingEnergy }
+                } else {
+                    active = month.entries.reduce(0) { $0 + $1.activeEnergy } / Double(month.entries.count)
+                    resting = month.entries.reduce(0) { $0 + $1.restingEnergy } / Double(month.entries.count)
+                }
                 
-                return CombinedCalories(activeEnergy: averageActive, restingEnergy: averageResting, date: month.startDate)
+                return CombinedCalories(activeEnergy: active, restingEnergy: resting, date: month.startDate)
             }
         } else {
             return calories
@@ -172,22 +208,35 @@ struct CaloriesGraphView: View {
         VStack {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(calories.count > 1 ? "Daily Average" : " ")
-                        .foregroundStyle(.secondary)
-                        .textScale(.secondary)
+                    if showTotal {
+                        Text("Total")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                    } else {
+                        Text(calories.count > 1 ? "Daily Average" : " ")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                    }
                     HStack(alignment: .bottom, spacing: 3) {
-                        Text("\(Int(averageCalories()))")
-                            .foregroundStyle(.primary)
-                            .font(.largeTitle)
-                        if averageCalories() != 0 {
+                        if !calories.isEmpty {
+                            Text("\(Int(showTotal ? totalCalories() : averageCalories()))")
+                                .font(.largeTitle)
                             Text("Calories")
                                 .foregroundStyle(.secondary)
                                 .offset(y: -4.0)
+                        } else {
+                            Text("No Data")
+                                .font(.largeTitle)
                         }
                     }
                     Text(dateRange(startDate: startDate, selectedRange: selectedRange))
                         .foregroundStyle(.secondary)
                         .textScale(.secondary)
+                }
+                .onTapGesture {
+                    withAnimation(.easeIn) {
+                        showTotal.toggle()
+                    }
                 }
                 Spacer()
             }
@@ -292,8 +341,11 @@ struct CaloriesGraphView: View {
 }
 
 #Preview {
-    CaloriesView()
+    NavigationView {
+        CaloriesView()
+    }
 }
+
 extension Array where Element == CombinedCalories {
     func groupedByMonth() -> [GroupedCalories] {
         let calendar = Calendar.current

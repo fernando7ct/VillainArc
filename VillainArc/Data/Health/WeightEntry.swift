@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class WeightEntry {
+class WeightEntry: Identifiable {
     var id: String = UUID().uuidString
     var weight: Double = 0
     var notes: String = ""

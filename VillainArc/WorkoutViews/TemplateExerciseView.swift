@@ -1,11 +1,13 @@
 import SwiftUI
 
 struct TemplateExerciseView: View {
+    @Environment(\.dismiss) private var dismiss
     @Binding var exercise: TempExercise
     @FocusState private var keyboardActive: Bool
     @FocusState private var notesFocused: Bool
     @State private var setRepRangeSheet = false
     @State private var showHistorySheet = false
+    let deleteExercise: () -> Void
     
     private func deleteSet(at offsets: IndexSet) {
         withAnimation {
@@ -158,6 +160,12 @@ struct TemplateExerciseView: View {
                         showHistorySheet.toggle()
                     } label: {
                         Label("History", systemImage: "clock")
+                    }
+                    Button(role: .destructive) {
+                        deleteExercise()
+                        dismiss()
+                    } label: {
+                        Label("Delete Exercise", systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "chevron.down.circle")

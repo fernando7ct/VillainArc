@@ -34,15 +34,15 @@ struct HomeTab: View {
             .navigationDestination(for: Workout.self) {
                 WorkoutDetailView(workout: $0)
             }
-//            .toolbar {
-//                ToolbarItem(placement: .topBarTrailing) {
-//                    Button {
-//                        DataManager.shared.deleteDataAndSignOut(context: context)
-//                    } label: {
-//                        Text("Log Out")
-//                    }
-//                }
-//            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        DataManager.shared.deleteDataAndSignOut(context: context)
+                    } label: {
+                        Text("Log Out")
+                    }
+                }
+            }
         }
     }
 }

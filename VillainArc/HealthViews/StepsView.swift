@@ -16,6 +16,7 @@ struct GroupedSteps {
 struct StepsView: View {
     @Query private var healthSteps: [HealthSteps]
     @State private var selectedStepRange: GraphRanges = .week
+    @State private var showTotal = false
     
     var groupedSteps: [GroupedSteps] {
         let calendar = Calendar.current
@@ -54,10 +55,32 @@ struct StepsView: View {
                 }
             }
         }
+        
         let sortedObjects = groupedObjects.keys.sorted()
-        return sortedObjects.map { key in
+        var groupedSteps = sortedObjects.map { key in
             GroupedSteps(entries: groupedObjects[key]!, startDate: key)
         }.sorted(by: { $0.startDate < $1.startDate })
+        
+        if groupedSteps.isEmpty {
+            let startDate: Date
+            switch selectedStepRange {
+            case .week:
+                startDate = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
+            case .month:
+                startDate = calendar.date(from: calendar.dateComponents([.month, .year], from: Date()))!
+            case .sixMonths:
+                let components = calendar.dateComponents([.year, .month], from: Date())
+                let month = components.month!
+                let year = components.year!
+                if month <= 6 {
+                    startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
+                } else {
+                    startDate = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
+                }
+            }
+            groupedSteps.append(GroupedSteps(entries: [], startDate: startDate))
+        }
+        return groupedSteps.sorted(by: { $0.startDate < $1.startDate })
     }
     
     var body: some View {
@@ -74,13 +97,12 @@ struct StepsView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(groupedSteps, id: \.startDate) { group in
-                            StepsGraphView(steps: group.entries, startDate: group.startDate, selectedRange: selectedStepRange)
+                            StepsGraphView(steps: group.entries, startDate: group.startDate, selectedRange: selectedStepRange, showTotal: $showTotal)
                                 .containerRelativeFrame(.horizontal)
                                 .frame(height: 500)
                                 .scrollTransition { content, phase in
                                     content
-                                        .opacity(phase.isIdentity ? 1.0 : 0.1) //.rotation3DEffect(.degrees(phase.value * -30), axis: (x: 0, y: 1, z: 0))
-                                    //.scaleEffect(phase.isIdentity ? 1.0 : 0.3)
+                                        .opacity(phase.isIdentity ? 1.0 : 0.1)
                                         .offset(y: phase.isIdentity ? 0 : 70)
                                 }
                         }
@@ -144,6 +166,7 @@ struct StepsGraphView: View {
     var steps: [HealthSteps]
     var startDate: Date
     var selectedRange: GraphRanges
+    @Binding var showTotal: Bool
     @State private var selectedDate: Date? = nil
     @State private var selectedEntry: HealthSteps? = nil
     
@@ -151,19 +174,29 @@ struct StepsGraphView: View {
         guard let maxSteps = graphSteps.map({ $0.steps }).max() else {
             return 0...1000
         }
+        if showTotal && selectedRange == .sixMonths {
+            return 0...(maxSteps + 10000)
+        }
         return 0...(maxSteps + 3000)
     }
     private func averageSteps() -> Double {
-        guard !steps.isEmpty else { return 0}
-        
+        guard !steps.isEmpty else { return 0 }
         return steps.reduce(0) { $0 + $1.steps } / Double(steps.count)
     }
-    
+    private func totalSteps() -> Double {
+        guard !steps.isEmpty else { return 0 }
+        return steps.reduce(0) { $0 + $1.steps }
+    }
     var graphSteps: [HealthSteps] {
         if selectedRange == .sixMonths {
             return steps.groupedByMonth().map { month in
-                let averageSteps = month.entries.reduce(0) { $0 + $1.steps } / Double(month.entries.count)
-                return HealthSteps(id: UUID().uuidString, date: month.startDate, steps: averageSteps)
+                var steps: Double
+                if showTotal {
+                    steps = month.entries.reduce(0) { $0 + $1.steps }
+                } else {
+                    steps = month.entries.reduce(0) { $0 + $1.steps } / Double(month.entries.count)
+                }
+                return HealthSteps(id: UUID().uuidString, date: month.startDate, steps: steps)
             }
         } else {
             return steps
@@ -174,22 +207,35 @@ struct StepsGraphView: View {
         VStack {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(steps.count > 1 ? "Daily Average" : " ")
-                        .foregroundStyle(.secondary)
-                        .textScale(.secondary)
+                    if showTotal {
+                        Text("Total")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                    } else {
+                        Text(steps.count > 1 ? "Daily Average" : " ")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                    }
                     HStack(alignment: .bottom, spacing: 3) {
-                        Text("\(Int(averageSteps()))")
-                            .foregroundStyle(.primary)
-                            .font(.largeTitle)
-                        if averageSteps() != 0 {
+                        if !steps.isEmpty {
+                            Text("\(Int(showTotal ? totalSteps() : averageSteps()))")
+                                .font(.largeTitle)
                             Text("Steps")
                                 .foregroundStyle(.secondary)
                                 .offset(y: -4.0)
+                        } else {
+                            Text("No Data")
+                                .font(.largeTitle)
                         }
                     }
                     Text(dateRange(startDate: startDate, selectedRange: selectedRange))
                         .foregroundStyle(.secondary)
                         .textScale(.secondary)
+                }
+                .onTapGesture {
+                    withAnimation(.easeIn) {
+                        showTotal.toggle()
+                    }
                 }
                 Spacer()
             }
@@ -284,8 +330,11 @@ struct StepsGraphView: View {
 }
 
 #Preview {
-    StepsView()
+    NavigationView {
+        StepsView()
+    }
 }
+
 extension Array where Element == HealthSteps {
     func groupedByMonth() -> [GroupedSteps] {
         let calendar = Calendar.current

@@ -42,7 +42,7 @@ struct AllTemplatesView: View {
                                         Text(template.title)
                                         Text(exerciseCategories(for: template))
                                             .font(.caption2)
-                                            .foregroundStyle(Color.secondary)
+                                            .foregroundStyle(.secondary)
                                     }
                                     .fontWeight(.semibold)
                                 }
@@ -50,9 +50,8 @@ struct AllTemplatesView: View {
                                 ForEach(template.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                                     HStack(spacing: 1) {
                                         Text("\(exercise.sets.count)x")
-                                            .foregroundStyle(Color.primary)
                                         Text(exercise.name)
-                                            .foregroundStyle(Color.secondary)
+                                            .foregroundStyle(.secondary)
                                     }
                                     .lineLimit(1)
                                     .font(.headline)

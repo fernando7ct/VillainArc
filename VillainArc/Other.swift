@@ -36,3 +36,24 @@ func totalWorkoutTime(startTime: Date, endTime: Date) -> String {
     let seconds = Int(timeInterval) % 60
     return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
 }
+func formattedTotalTime(_ timeInterval: TimeInterval) -> String {
+    let secondsInYear: Double = 60 * 60 * 24 * 365
+    let secondsInMonth: Double = 60 * 60 * 24 * 30
+    let secondsInDay: Double = 60 * 60 * 24
+    let secondsInHour: Double = 60 * 60
+    let secondsInMinute: Double = 60
+
+    if timeInterval >= secondsInYear {
+        return String(format: "%.1f years", timeInterval / secondsInYear)
+    } else if timeInterval >= secondsInMonth {
+        return String(format: "%.1f months", timeInterval / secondsInMonth)
+    } else if timeInterval >= secondsInDay {
+        return String(format: "%.1f days", timeInterval / secondsInDay)
+    } else if timeInterval >= secondsInHour {
+        return String(format: "%.1f hrs", timeInterval / secondsInHour)
+    } else if timeInterval >= secondsInMinute {
+        return String(format: "%.1f mins", timeInterval / secondsInMinute)
+    } else {
+        return String(format: "%.1f secs", timeInterval)
+    }
+}

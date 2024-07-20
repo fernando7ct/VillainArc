@@ -19,6 +19,7 @@ struct WorkoutView: View {
     @State private var isEditing = false
     var existingWorkout: Workout?
     @FocusState private var keyboardActive: Bool
+    @State private var exerciseToReplaceIndex: Int? = nil
     
     init(existingWorkout: Workout? = nil, isEditing: Bool? = nil) {
         self.existingWorkout = existingWorkout
@@ -76,6 +77,11 @@ struct WorkoutView: View {
         WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
         HapticManager.instance.impact(style: .medium)
     }
+    private func replaceExercise(at index: Int, with exercise: ExerciseSelectionView.Exercise) {
+        exercises[index] = TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)])
+        WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
+        HapticManager.instance.impact(style: .medium)
+    }
     private func saveWorkout() {
         if !isEditing {
             DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
@@ -87,7 +93,7 @@ struct WorkoutView: View {
         HapticManager.instance.notification(type: .success)
         dismiss()
     }
-    
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -185,8 +191,32 @@ struct WorkoutView: View {
                         ForEach(exercises.indices, id: \.self) { index in
                             NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, isEditing: isEditing, updateLiveActivity: {
                                 WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
+                            }, deleteExercise: {
+                                deleteExercise(at: IndexSet(integer: index))
                             })) {
                                 WorkoutExerciseRowView(exercise: exercises[index])
+                            }
+                            .contextMenu {
+                                if !isEditingExercises {
+                                    Button {
+                                        exerciseToReplaceIndex = index
+                                        showExerciseSelection.toggle()
+                                    } label: {
+                                        Label("Replace Exercise", systemImage: "arrow.triangle.2.circlepath")
+                                    }
+                                    Button {
+                                        withAnimation {
+                                            isEditingExercises.toggle()
+                                        }
+                                    } label: {
+                                        Label("Edit Exercises", systemImage: "list.bullet")
+                                    }
+                                    Button(role: .destructive) {
+                                        deleteExercise(at: IndexSet(integer: index))
+                                    } label: {
+                                        Label("Delete Exercise", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                         .onDelete(perform: deleteExercise)
@@ -210,7 +240,7 @@ struct WorkoutView: View {
                             .background(BlurView())
                             .cornerRadius(12)
                             .sheet(isPresented: $showExerciseSelection) {
-                                ExerciseSelectionView(onAdd: addSelectedExercises)
+                                ExerciseSelectionView(exerciseToReplaceIndex: $exerciseToReplaceIndex, onAdd: addSelectedExercises, onReplace: replaceExercise)
                                     .interactiveDismissDisabled()
                             }
                         }

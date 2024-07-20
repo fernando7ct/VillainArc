@@ -5,8 +5,9 @@ struct ExerciseSelectionView: View {
     @State private var searchText = ""
     @State private var selectedExercises: [Exercise] = []
     @State private var exercises: [Exercise] = loadExercises()
-    
+    @Binding var exerciseToReplaceIndex: Int?
     var onAdd: ([Exercise]) -> Void
+    var onReplace: (Int, Exercise) -> Void
     
     struct Exercise: Identifiable, Codable {
         var id = UUID()
@@ -107,10 +108,15 @@ struct ExerciseSelectionView: View {
                 VStack {
                     List(filteredExercises) { exercise in
                         Button {
-                            if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
-                                selectedExercises.remove(at: index)
+                            if let index = exerciseToReplaceIndex {
+                                onReplace(index, exercise)
+                                dismiss()
                             } else {
-                                selectedExercises.append(exercise)
+                                if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
+                                    selectedExercises.remove(at: index)
+                                } else {
+                                    selectedExercises.append(exercise)
+                                }
                             }
                         } label: {
                             HStack {
@@ -145,15 +151,16 @@ struct ExerciseSelectionView: View {
                                 .foregroundStyle(.red)
                         }
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            onAdd(selectedExercises)
-                            dismiss()
-                        } label: {
-                            Text("Add (\(selectedExercises.count))")
-                                .fontWeight(.semibold)
+                    if exerciseToReplaceIndex == nil {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button {
+                                onAdd(selectedExercises)
+                                dismiss()
+                            } label: {
+                                Text("Add (\(selectedExercises.count))")
+                                    .fontWeight(.semibold)
+                            }
                         }
-                        .disabled(selectedExercises.count == 0)
                     }
                 }
             }
@@ -162,5 +169,5 @@ struct ExerciseSelectionView: View {
 }
 
 #Preview {
-    ExerciseSelectionView(onAdd: { _ in })
+    ExerciseSelectionView(exerciseToReplaceIndex: .constant(nil), onAdd: { _ in }, onReplace: { _, _ in })
 }

@@ -12,7 +12,7 @@ class DataManager {
     let db = Firestore.firestore()
     let storageRef = Storage.storage().reference()
     
-    func saveWeightEntry(weightEntry: WeightEntry, context: ModelContext, update: Bool) {
+    func saveWeightEntry(weightEntry: WeightEntry, context: ModelContext, update: Bool, saveToHealthKit: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
@@ -61,6 +61,15 @@ class DataManager {
             db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).setData(weightEntryData)
             print(update ? "Weight Entry updated in Firebase": "Weight Entry saved to Firebase")
         }
+        if saveToHealthKit {
+            HealthManager.shared.saveWeightToHealthKit(weight: weightEntry.weight, date: weightEntry.date) { success, error in
+                if success {
+                    print("Weight Entry saved to HealthKit")
+                } else {
+                    print("Error saving Weight Entry to HealthKit: \(String(describing: error))")
+                }
+            }
+        }
     }
     func saveWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, isTemplate: Bool, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -89,7 +98,7 @@ class DataManager {
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
         print("Workout saved to Firebase")
     }
-
+    
     func updateWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, workout: Workout?, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
@@ -364,9 +373,9 @@ class DataManager {
         db.collection("users").document(userID).collection("Workouts").getDocuments { snapshot, error in
             if let snapshot = snapshot {
                 for document in snapshot.documents {
-                    if let id = document.data()["id"] as? String, 
-                    let title = document.data()["title"] as? String,
-                        let startTime = (document.data()["startTime"] as? Timestamp)?.dateValue(), let endTime = (document.data()["endTime"] as? Timestamp)?.dateValue(), let notes = document.data()["notes"] as? String, let template = document.data()["template"] as? Bool, let exercisesData = document.data()["exercises"] as? [[String: Any]] {
+                    if let id = document.data()["id"] as? String,
+                        let title = document.data()["title"] as? String,
+                       let startTime = (document.data()["startTime"] as? Timestamp)?.dateValue(), let endTime = (document.data()["endTime"] as? Timestamp)?.dateValue(), let notes = document.data()["notes"] as? String, let template = document.data()["template"] as? Bool, let exercisesData = document.data()["exercises"] as? [[String: Any]] {
                         let newWorkout = Workout(id: id, title: title, startTime: startTime, endTime: endTime, notes: notes, template: template, exercises: [])
                         context.insert(newWorkout)
                         for exerciseData in exercisesData {

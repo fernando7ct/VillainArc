@@ -7,6 +7,9 @@ class Workout: Identifiable {
     var title: String = ""
     var startTime: Date = Date()
     var endTime: Date = Date()
+    var totalTime: TimeInterval {
+        endTime.timeIntervalSince(startTime)
+    }
     var notes: String = ""
     var template: Bool = false
     @Relationship(deleteRule: .cascade) var exercises: [WorkoutExercise] = []
