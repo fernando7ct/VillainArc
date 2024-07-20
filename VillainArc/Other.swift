@@ -7,7 +7,6 @@ extension View {
     }
 }
 #endif
-
 func formattedDouble(_ weight: Double) -> String {
     let weightInt = Int(weight)
     return weight.truncatingRemainder(dividingBy: 1) == 0 ? "\(weightInt)" : String(format: "%.1f", weight)
@@ -55,5 +54,46 @@ func formattedTotalTime(_ timeInterval: TimeInterval) -> String {
         return String(format: "%.1f mins", timeInterval / secondsInMinute)
     } else {
         return String(format: "%.1f secs", timeInterval)
+    }
+}
+func xAxisRange(startDate: Date, selectedRange: GraphRanges) -> ClosedRange<Date> {
+    let calendar = Calendar.current
+    let endDate: Date
+    switch selectedRange {
+    case .week:
+        endDate = calendar.date(byAdding: .day, value: 7, to: startDate)!
+    case .month:
+        endDate = calendar.date(byAdding: .month, value: 1, to: startDate)!
+    case .sixMonths:
+        endDate = calendar.date(byAdding: .month, value: 6, to: startDate)!
+    }
+    return startDate...endDate
+}
+func adjustDate(_ date: Date, selectedRange: GraphRanges) -> Date {
+    let calendar = Calendar.current
+    if selectedRange == .sixMonths {
+        return calendar.date(byAdding: .day, value: 15, to: date)!
+    } else {
+        return calendar.date(byAdding: .hour, value: 12, to: date)!
+    }
+}
+func dateRange(startDate: Date, selectedRange: GraphRanges) -> String {
+    let calendar = Calendar.current
+    switch selectedRange {
+    case .week:
+        let endDate = calendar.date(byAdding: .day, value: 6, to: startDate)!
+        return "\(startDate.formatted(.dateTime.month().day())) - \(endDate.formatted(.dateTime.month().day()))"
+    case .month:
+        return "\(startDate.formatted(.dateTime.month(.wide).year()))"
+    case .sixMonths:
+        let endDate = calendar.date(byAdding: .month, value: 5, to: startDate)!
+        return "\(startDate.formatted(.dateTime.month(.wide).year())) - \(endDate.formatted(.dateTime.month(.wide).year()))"
+    }
+}
+func annotationDate(for date: Date, selectedRange: GraphRanges) -> String {
+    if selectedRange == .sixMonths {
+        return "\(date.formatted(.dateTime.month().year()))"
+    } else {
+        return "\(date.formatted(.dateTime.month().day().year()))"
     }
 }

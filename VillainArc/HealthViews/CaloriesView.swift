@@ -20,10 +20,12 @@ struct CombinedCalories: Identifiable {
 struct GroupedCalories {
     var entries: [CombinedCalories]
     var startDate: Date
+    var previousEntries: [CombinedCalories]
     
-    init(entries: [CombinedCalories], startDate: Date) {
+    init(entries: [CombinedCalories], startDate: Date, previousEntries: [CombinedCalories]) {
         self.entries = entries
         self.startDate = startDate
+        self.previousEntries = previousEntries
     }
 }
 
@@ -44,16 +46,13 @@ struct CaloriesView: View {
                 combinedEntries.append(CombinedCalories(activeEnergy: entry.activeEnergy, restingEnergy: 0, date: entry.date))
             }
         }
-        
         for entry in healthRestingEnergy {
             if !combinedEntries.contains(where: { calendar.isDate($0.date, inSameDayAs: entry.date) }) {
                 combinedEntries.append(CombinedCalories(activeEnergy: 0, restingEnergy: entry.restingEnergy, date: entry.date))
             }
         }
-        
         return combinedEntries.sorted { $0.date < $1.date }
     }
-    
     var groupedCalories: [GroupedCalories] {
         let calendar = Calendar.current
         var groupedObjects = [Date: [CombinedCalories]]()
@@ -93,8 +92,9 @@ struct CaloriesView: View {
         }
         
         let sortedObjects = groupedObjects.keys.sorted()
-        var groupedCalories = sortedObjects.map { key in
-            GroupedCalories(entries: groupedObjects[key]!, startDate: key)
+        var groupedCalories = sortedObjects.enumerated().map { index, key in
+            let previousEntries = index > 0 ? groupedObjects[sortedObjects[index - 1]]! : []
+            return GroupedCalories(entries: groupedObjects[key]!, startDate: key, previousEntries: previousEntries)
         }.sorted(by: { $0.startDate < $1.startDate })
         
         if groupedCalories.isEmpty {
@@ -114,7 +114,7 @@ struct CaloriesView: View {
                     startDate = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
                 }
             }
-            groupedCalories.append(GroupedCalories(entries: [], startDate: startDate))
+            groupedCalories.append(GroupedCalories(entries: [], startDate: startDate, previousEntries: []))
         }
         return groupedCalories.sorted(by: { $0.startDate < $1.startDate })
     }
@@ -133,7 +133,7 @@ struct CaloriesView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(groupedCalories, id: \.startDate) { group in
-                            CaloriesGraphView(calories: group.entries, startDate: group.startDate, selectedRange: selectedCaloriesRange, showTotal: $showTotal)
+                            CaloriesGraphView(calories: group.entries, previousCalories: group.previousEntries, startDate: group.startDate, selectedRange: selectedCaloriesRange, showTotal: $showTotal)
                                 .containerRelativeFrame(.horizontal)
                                 .frame(height: 500)
                                 .scrollTransition { content, phase in
@@ -160,6 +160,7 @@ struct CaloriesView: View {
 
 struct CaloriesGraphView: View {
     var calories: [CombinedCalories]
+    var previousCalories: [CombinedCalories]
     var startDate: Date
     var selectedRange: GraphRanges
     @Binding var showTotal: Bool
@@ -179,9 +180,32 @@ struct CaloriesGraphView: View {
         guard !calories.isEmpty else { return 0 }
         return calories.reduce(0) { $0 + $1.total } / Double(calories.count)
     }
+    private func previousAverageCalories() -> Double {
+        guard !previousCalories.isEmpty else { return 0 }
+        return previousCalories.reduce(0) { $0 + $1.total } / Double(previousCalories.count)
+    }
     private func totalCalories() -> Double {
         guard !calories.isEmpty else { return 0 }
         return calories.reduce(0) { $0 + $1.total }
+    }
+    private func previousTotalCalories() -> Double {
+        guard !previousCalories.isEmpty else { return 0 }
+        return previousCalories.reduce(0) { $0 + $1.total }
+    }
+    private func percentageChange() -> Double {
+        let current = showTotal ? totalCalories() : averageCalories()
+        let previous = showTotal ? previousTotalCalories() : previousAverageCalories()
+        guard previous != 0 else { return 0 }
+        return ((current - previous) / previous) * 100
+    }
+    private func caloriesChange() -> Double {
+        let current = showTotal ? totalCalories() : averageCalories()
+        let previous = showTotal ? previousTotalCalories() : previousAverageCalories()
+        return current - previous
+    }
+    private func trend() -> String {
+        let change = percentageChange()
+        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "→ 0%")
     }
     
     var graphCalories: [CombinedCalories] {
@@ -239,6 +263,20 @@ struct CaloriesGraphView: View {
                     }
                 }
                 Spacer()
+                if !previousCalories.isEmpty {
+                    VStack(alignment: .trailing) {
+                        Text("Trend")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                        Text(trend())
+                            .font(.title)
+                            .foregroundStyle(trend().contains("↓") ? .red : .green)
+                        let change = caloriesChange()
+                        Text(change > 0 ? "+\(Int(change)) cals\(!showTotal ? "/day" : "")" : (change < 0 ? "\(Int(change)) cals\(!showTotal ? "/day" : "")" : "Same Cals"))
+                            .textScale(.secondary)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             .fontWeight(.medium)
             Chart(graphCalories) { day in
@@ -360,7 +398,7 @@ extension Array where Element == CombinedCalories {
             }
         }
         return groupedObjects.keys.sorted().map { key in
-            GroupedCalories(entries: groupedObjects[key]!, startDate: key)
+            GroupedCalories(entries: groupedObjects[key]!, startDate: key, previousEntries: [])
         }
     }
 }

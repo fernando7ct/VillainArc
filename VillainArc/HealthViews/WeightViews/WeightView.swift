@@ -11,10 +11,12 @@ enum GraphRanges {
 struct GroupedWeight {
     var entries: [WeightEntry]
     var startDate: Date
+    var previousEntries: [WeightEntry]
     
-    init(entries: [WeightEntry], startDate: Date) {
+    init(entries: [WeightEntry], startDate: Date, previousEntries: [WeightEntry]) {
         self.entries = entries
         self.startDate = startDate
+        self.previousEntries = previousEntries
     }
 }
 
@@ -61,8 +63,9 @@ struct WeightView: View {
             }
         }
         let sortedObjects = groupedObjects.keys.sorted()
-        let groupedWeights = sortedObjects.map { key in
-            GroupedWeight(entries: groupedObjects[key]!, startDate: key)
+        let groupedWeights = sortedObjects.enumerated().map { index, key in
+            let previousEntries = index > 0 ? groupedObjects[sortedObjects[index - 1]]! : []
+            return GroupedWeight(entries: groupedObjects[key]!, startDate: key, previousEntries: previousEntries)
         }.sorted(by: { $0.startDate < $1.startDate })
         
         var newGrouped = groupedWeights
@@ -92,7 +95,7 @@ struct WeightView: View {
                     startDate = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
                 }
             }
-            newGrouped.append(GroupedWeight(entries: [], startDate: startDate))
+            newGrouped.append(GroupedWeight(entries: [], startDate: startDate, previousEntries: []))
         }
         return newGrouped.sorted(by: { $0.startDate < $1.startDate })
     }
@@ -111,7 +114,7 @@ struct WeightView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(groupedWeights, id: \.startDate) { group in
-                            WeightGraphView(weights: group.entries, startDate: group.startDate, selectedRange: selectedWeightRange)
+                            WeightGraphView(weights: group.entries, previousWeights: group.previousEntries, startDate: group.startDate, selectedRange: selectedWeightRange)
                                 .containerRelativeFrame(.horizontal)
                                 .frame(height: 500)
                                 .scrollTransition { content, phase in
@@ -166,6 +169,7 @@ struct WeightView: View {
 
 struct WeightGraphView: View {
     var weights: [WeightEntry]
+    var previousWeights: [WeightEntry]
     var startDate: Date
     var selectedRange: GraphRanges
     @State private var selectedDate: Date? = nil
@@ -186,6 +190,31 @@ struct WeightGraphView: View {
         guard !filteredWeights.isEmpty else { return 0 }
         
         return filteredWeights.reduce(0) { $0 + $1.weight } / Double(filteredWeights.count)
+    }
+    private func previousAverageWeight() -> Double {
+        guard !previousWeights.isEmpty else { return 0 }
+        
+        return previousWeights.reduce(0) { $0 + $1.weight } / Double(previousWeights.count)
+    }
+    private func percentageChange(current: Double, previous: Double) -> Double {
+        guard previous != 0 else { return 0 }
+        return ((current - previous) / previous) * 100
+    }
+    private func weightChange(current: Double, previous: Double) -> Double {
+        return current - previous
+    }
+    private func trend() -> String {
+        let current = averageWeight()
+        let previous = previousAverageWeight()
+        let change = percentageChange(current: current, previous: previous)
+        
+        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "→ 0%")
+    }
+    private func weightChangeText() -> String {
+        let current = averageWeight()
+        let previous = previousAverageWeight()
+        let change = percentageChange(current: current, previous: previous)
+        return change > 0 ? "+\(formattedDouble(change)) lbs" : (change < 0 ? "\(formattedDouble(change)) lbs" : "Same Weight")
     }
     
     var body: some View {
@@ -212,6 +241,19 @@ struct WeightGraphView: View {
                         .textScale(.secondary)
                 }
                 Spacer()
+                if !previousWeights.isEmpty {
+                    VStack(alignment: .trailing) {
+                        Text("Trend")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                        Text(trend())
+                            .font(.title)
+                            .foregroundStyle(trend().contains("↓") ? .red : .green)
+                        Text(weightChangeText())
+                            .textScale(.secondary)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             .fontWeight(.medium)
             Chart(weights.sorted(by: { $0.date < $1.date })) { weight in
