@@ -16,9 +16,8 @@ struct GroupedSteps {
 }
 
 struct StepsView: View {
-    @Query private var healthSteps: [HealthSteps]
+    @Query(filter: #Predicate<HealthSteps> { $0.steps != 0 }) private var healthSteps: [HealthSteps]
     @State private var selectedStepRange: GraphRanges = .week
-    @State private var showTotal = false
     
     var groupedSteps: [GroupedSteps] {
         let calendar = Calendar.current
@@ -100,7 +99,7 @@ struct StepsView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(groupedSteps, id: \.startDate) { group in
-                            StepsGraphView(steps: group.entries, previousSteps: group.previousEntries, startDate: group.startDate, selectedRange: selectedStepRange, showTotal: $showTotal)
+                            StepsGraphView(steps: group.entries, previousSteps: group.previousEntries, startDate: group.startDate, selectedRange: selectedStepRange)
                                 .containerRelativeFrame(.horizontal)
                                 .frame(height: 500)
                                 .scrollTransition { content, phase in
@@ -130,7 +129,7 @@ struct StepsGraphView: View {
     var previousSteps: [HealthSteps]
     var startDate: Date
     var selectedRange: GraphRanges
-    @Binding var showTotal: Bool
+    @State private var showTotal = false
     @State private var selectedDate: Date? = nil
     @State private var selectedEntry: HealthSteps? = nil
     
@@ -172,7 +171,7 @@ struct StepsGraphView: View {
     }
     private func trend() -> String {
         let change = percentageChange()
-        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "→ 0%")
+        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "0%")
     }
 
     var graphSteps: [HealthSteps] {

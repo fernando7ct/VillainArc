@@ -48,7 +48,7 @@ struct TempSet: Identifiable {
     var restSeconds: Int
     var completed: Bool
     
-    init(reps: Int, weight: Double, restMinutes: Int, restSeconds: Int, completed: Bool) {
+    init(reps: Int, weight: Double, restMinutes: Int, restSeconds: Int, completed: Bool = false) {
         self.reps = reps
         self.weight = weight
         self.restMinutes = restMinutes

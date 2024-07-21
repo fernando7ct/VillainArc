@@ -33,7 +33,6 @@ struct CaloriesView: View {
     @Query private var healthActiveEnergy: [HealthActiveEnergy]
     @Query private var healthRestingEnergy: [HealthRestingEnergy]
     @State private var selectedCaloriesRange: GraphRanges = .week
-    @State private var showTotal = false
     
     var combinedEntries: [CombinedCalories] {
         var combinedEntries: [CombinedCalories] = []
@@ -133,7 +132,7 @@ struct CaloriesView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(groupedCalories, id: \.startDate) { group in
-                            CaloriesGraphView(calories: group.entries, previousCalories: group.previousEntries, startDate: group.startDate, selectedRange: selectedCaloriesRange, showTotal: $showTotal)
+                            CaloriesGraphView(calories: group.entries, previousCalories: group.previousEntries, startDate: group.startDate, selectedRange: selectedCaloriesRange)
                                 .containerRelativeFrame(.horizontal)
                                 .frame(height: 500)
                                 .scrollTransition { content, phase in
@@ -163,7 +162,7 @@ struct CaloriesGraphView: View {
     var previousCalories: [CombinedCalories]
     var startDate: Date
     var selectedRange: GraphRanges
-    @Binding var showTotal: Bool
+    @State private var showTotal = false
     @State private var selectedDate: Date? = nil
     @State private var selectedEntry: CombinedCalories? = nil
     
@@ -205,7 +204,7 @@ struct CaloriesGraphView: View {
     }
     private func trend() -> String {
         let change = percentageChange()
-        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "→ 0%")
+        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "0%")
     }
     
     var graphCalories: [CombinedCalories] {

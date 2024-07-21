@@ -71,6 +71,34 @@ class DataManager {
             }
         }
     }
+    func createSampleData(context: ModelContext) {
+        let incline = TempExercise(name: "Smith Machine Incline Bench Press", category: "Chest", repRange: "3-7", notes: "", sameRestTimes: false, sets: [
+                TempSet(reps: 0, weight: 0, restMinutes: 1, restSeconds: 30),
+                TempSet(reps: 0, weight: 0, restMinutes: 2, restSeconds: 00),
+                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 00),
+                TempSet(reps: 0, weight: 0, restMinutes: 4, restSeconds: 00),
+                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 00)
+        ])
+        let machineLaterals = TempExercise(name: "Machine Lateral Raise", category: "Shoulders", repRange: "8-12", notes: "", sameRestTimes: false, sets: [
+                TempSet(reps: 0, weight: 0, restMinutes: 2, restSeconds: 0),
+                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+        ])
+        let inclinePress = TempExercise(name: "Incline Machine Press", category: "Chest", repRange: "8-12", notes: "", sameRestTimes: false, sets: [
+                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+        ])
+        let cableLaterals = TempExercise(name: "Cable Lateral Raise", category: "Shoulders", repRange: "12-15", notes: "", sameRestTimes: false, sets: [
+                TempSet(reps: 0, weight: 0, restMinutes: 1, restSeconds: 30),
+                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+        ])
+        let benchPress = TempExercise(name: "Bench Press", category: "Chest", repRange: "3-7", notes: "", sameRestTimes: false, sets: [
+                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+        ])
+        saveWorkout(exercises: [incline, machineLaterals, inclinePress, cableLaterals, benchPress], title: "Fernando's Chest & Side Delts Workout", notes: "", startTime: Date(), endTime: Date(), isTemplate: true, context: context)
+    }
     func saveWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, isTemplate: Bool, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
@@ -265,6 +293,7 @@ class DataManager {
                 completion(false)
             } else {
                 print("User created successfully")
+                self.createSampleData(context: context)
                 self.downloadWeightEntries(userID: userID, context: context, completion: completion)
                 self.downloadWorkouts(userID: userID, context: context, completion: completion)
                 self.downloadHealthSteps(userID: userID, context: context, completion: completion)

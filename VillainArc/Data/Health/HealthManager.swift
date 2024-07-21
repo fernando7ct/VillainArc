@@ -75,10 +75,7 @@ class HealthManager: ObservableObject {
     }
     
     func fetchAndUpdateAllData(context: ModelContext) async {
-        let fetchDescriptor = FetchDescriptor<User>()
-        let users = try! context.fetch(fetchDescriptor)
-        let user = users.first!
-        let userStartDate = Calendar.current.startOfDay(for: user.dateJoined)
+        let distantPast = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .month, value: -9, to: Date())!)
         
         let endDate = Date()
         
@@ -87,7 +84,7 @@ class HealthManager: ObservableObject {
         if let mostRecentStepsDate {
             secondToLast = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentStepsDate)
         }
-        let startDate = secondToLast ?? userStartDate
+        let startDate = secondToLast ?? distantPast
         fetchAndSaveSteps(context: context, startDate: startDate, endDate: endDate)
         
         let mostRecentActiveDate = getMostRecentHealthActiveEnergy(context: context)?.date
@@ -95,7 +92,7 @@ class HealthManager: ObservableObject {
         if let mostRecentActiveDate {
             secondToLast2 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentActiveDate)
         }
-        let startDate2 = secondToLast2 ?? userStartDate
+        let startDate2 = secondToLast2 ?? distantPast
         fetchAndSaveActiveEnergy(context: context, startDate: startDate2, endDate: endDate)
         
         let mostRecentRestingDate = getMostRecentHealthRestingEnergy(context: context)?.date
@@ -103,7 +100,7 @@ class HealthManager: ObservableObject {
         if let mostRecentRestingDate {
             secondToLast3 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentRestingDate)
         }
-        let startDate3 = secondToLast3 ?? userStartDate
+        let startDate3 = secondToLast3 ?? distantPast
         fetchAndSaveRestingEnergy(context: context, startDate: startDate3, endDate: endDate)
         
         let mostRecentDistanceDate = getMostRecentHealthWalkingRunningDistance(context: context)?.date
@@ -111,7 +108,7 @@ class HealthManager: ObservableObject {
         if let mostRecentDistanceDate {
             secondToLast4 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentDistanceDate)
         }
-        let startDate4 = secondToLast4 ?? userStartDate
+        let startDate4 = secondToLast4 ?? distantPast
         fetchAndSaveWalkingRunningDistance(context: context, startDate: startDate4, endDate: endDate)
         
         let mostRecentWeightEntry = getMostRecentWeightEntry(context: context)?.date
@@ -119,8 +116,8 @@ class HealthManager: ObservableObject {
         if let mostRecentWeightEntry {
             secondToLast5 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentWeightEntry)
         }
-        let startDate5 = secondToLast5 ?? userStartDate
-        fetchAndSaveWeightData(context: context, startDate: startDate4, endDate: endDate)
+        let startDate5 = secondToLast5 ?? distantPast
+        fetchAndSaveWeightData(context: context, startDate: startDate5, endDate: endDate)
         
         try? await Task.sleep(nanoseconds: 1_000_000_000)
         
