@@ -6,7 +6,6 @@ struct HealthTab: View {
     @StateObject var healthManager = HealthManager.shared
     @Binding var path: NavigationPath
     
-    
     var body: some View {
         NavigationStack(path: $path) {
             ZStack {

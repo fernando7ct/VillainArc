@@ -4,11 +4,14 @@ import FirebaseFirestore
 import FirebaseAuth
 import FirebaseStorage
 import SwiftUI
+import MapKit
 
 class DataManager {
     @AppStorage("isSignedIn") var isSignedIn = false
     @AppStorage("nutritionSetup") var nutritionSetup = false
+    
     static let shared = DataManager()
+    
     let db = Firestore.firestore()
     let storageRef = Storage.storage().reference()
     
@@ -189,13 +192,13 @@ class DataManager {
         }
         do {
             try context.save()
-            print("Saved Workout to SwiftData")
+            print("Workout saved as Template in SwiftData")
         } catch {
             print("Failed to save workout: \(error.localizedDescription)")
         }
-        let workoutData = workout.toDictionary()
+        let workoutData = newWorkout.toDictionary()
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
-        print("Workout saved to Firebase")
+        print("Workout saved as Template in SwiftData")
     }
     func deleteWorkout(workout: Workout, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -225,6 +228,28 @@ class DataManager {
         }
         db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).delete()
         print("Weight Entry deleted from Firebase")
+    }
+    func saveHomeGym(gym: MKMapItem, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        let fetch = FetchDescriptor<User>()
+        let users = try? context.fetch(fetch).first
+        let user = users!
+        user.homeGymName = gym.placemark.name
+        user.homeGymAddress = gym.placemark.title
+        user.homeGymLatitude = gym.placemark.coordinate.latitude
+        user.homeGymLongitude = gym.placemark.coordinate.longitude
+        do {
+            try context.save()
+            print("Home gym saved to SwiftData")
+        } catch {
+            print("Failed to save home gym: \(error.localizedDescription)")
+        }
+        let userData = user.toDictionary()
+        db.collection("users").document(userID).setData(userData)
+        print("Home gym saved to Firebase")
     }
     func checkUserDataComplete(completion: @escaping (Bool) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -310,9 +335,33 @@ class DataManager {
     func downloadUserData(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).getDocument { document, error in
             if let document = document, document.exists {
-                if let data = document.data(), let name = data["name"] as? String, let dateJoined = data["dateJoined"] as? Timestamp, let birthday = data["birthday"] as? Timestamp, let heightFeet = data["heightFeet"] as? Int, let heightInches = data["heightInches"] as? Int, let sex = data["sex"] as? String {
-                    let user = User(id: userID, name: name, dateJoined: dateJoined.dateValue(), birthday: birthday.dateValue(), heightFeet: heightFeet, heightInches: heightInches, sex: sex)
+                if let data = document.data(),
+                   let name = data["name"] as? String,
+                   let dateJoined = data["dateJoined"] as? Timestamp,
+                   let birthday = data["birthday"] as? Timestamp,
+                   let heightFeet = data["heightFeet"] as? Int,
+                   let heightInches = data["heightInches"] as? Int,
+                   let sex = data["sex"] as? String {
+                    
+                    let homeGymName = data["homeGymName"] as? String
+                    let homeGymAddress = data["homeGymAddress"] as? String
+                    let homeGymLatitude = data["homeGymLatitude"] as? Double
+                    let homeGymLongitude = data["homeGymLongitude"] as? Double
+                    
+                    let user = User(id: userID,
+                                    name: name,
+                                    dateJoined: dateJoined.dateValue(),
+                                    birthday: birthday.dateValue(),
+                                    heightFeet: heightFeet,
+                                    heightInches: heightInches,
+                                    sex: sex,
+                                    homeGymName: homeGymName,
+                                    homeGymAddress: homeGymAddress,
+                                    homeGymLatitude: homeGymLatitude,
+                                    homeGymLongitude: homeGymLongitude)
+                    
                     context.insert(user)
+                    
                     self.downloadWeightEntries(userID: userID, context: context, completion: completion)
                     self.downloadWorkouts(userID: userID, context: context, completion: completion)
                     self.downloadHealthSteps(userID: userID, context: context, completion: completion)
@@ -322,7 +371,12 @@ class DataManager {
                     self.downloadNutritionHub(userID: userID, context: context, completion: completion)
                     self.downloadNutritionEntries(userID: userID, context: context, completion: completion)
                     self.downloadNutritionFoods(userID: userID, context: context, completion: completion)
+                    
                     print("User data successfully downloaded")
+                    completion(true)
+                } else {
+                    print("Error parsing user data")
+                    completion(false)
                 }
             } else {
                 print("Error downloading user data: \(error?.localizedDescription ?? "Unknown error")")
@@ -330,6 +384,7 @@ class DataManager {
             }
         }
     }
+
     private func downloadWeightEntries(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).collection("WeightEntries").getDocuments { snapshot, error in
             if let snapshot = snapshot {

@@ -10,6 +10,8 @@ struct HomeTab: View {
                 BackgroundView()
                 ScrollView {
                     VStack(spacing: 0) {
+                        GymSectionView()
+                            .padding(.vertical)
                         TemplateSectionView()
                             .padding(.vertical)
                         WorkoutSectionView()
@@ -29,6 +31,8 @@ struct HomeTab: View {
                     AllWorkoutsView()
                 } else if int == 2 {
                     AllExercisesView()
+                } else if int == 3 {
+                    GymSelectionView()
                 }
             }
             .navigationDestination(for: Workout.self) {
