@@ -146,8 +146,8 @@ struct ExerciseView: View {
                         HStack {
                             Label("Add Set", systemImage: "plus")
                                 .fontWeight(.semibold)
-                            Spacer()
                         }
+                        .hSpacing(.leading)
                         .foregroundStyle(Color.primary)
                     }
                     .padding()

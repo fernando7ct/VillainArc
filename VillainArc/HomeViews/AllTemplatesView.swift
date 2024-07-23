@@ -37,7 +37,6 @@ struct AllTemplatesView: View {
                         NavigationLink(value: template) {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack {
-                                    Spacer()
                                     VStack(alignment: .trailing, spacing: 0) {
                                         Text(template.title)
                                         Text(exerciseCategories(for: template))
@@ -46,6 +45,7 @@ struct AllTemplatesView: View {
                                     }
                                     .fontWeight(.semibold)
                                 }
+                                .hSpacing(.trailing)
                                 .padding(.bottom, 3)
                                 ForEach(template.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                                     HStack(spacing: 1) {

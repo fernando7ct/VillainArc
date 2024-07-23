@@ -105,39 +105,37 @@ struct ExerciseSelectionView: View {
         NavigationView {
             ZStack {
                 BackgroundView()
-                VStack {
-                    List(filteredExercises) { exercise in
-                        Button {
-                            if let index = exerciseToReplaceIndex {
-                                onReplace(index, exercise)
-                                dismiss()
+                List(filteredExercises) { exercise in
+                    Button {
+                        if let index = exerciseToReplaceIndex {
+                            onReplace(index, exercise)
+                            dismiss()
+                        } else {
+                            if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
+                                selectedExercises.remove(at: index)
                             } else {
-                                if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
-                                    selectedExercises.remove(at: index)
-                                } else {
-                                    selectedExercises.append(exercise)
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(exercise.name)
-                                        .foregroundStyle(.primary)
-                                        .font(.title3)
-                                    Text(exercise.category)
-                                        .textScale(.secondary)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
+                                selectedExercises.append(exercise)
                             }
                         }
-                        .buttonStyle(BorderlessButtonStyle())
-                        .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(exercise.name)
+                                    .foregroundStyle(.primary)
+                                    .font(.title3)
+                                Text(exercise.category)
+                                    .textScale(.secondary)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .hSpacing(.leading)
                     }
-                    .searchable(text: $searchText)
-                    .searchPresentationToolbarBehavior(.avoidHidingContent)
-                    .listStyle(.plain)
+                    .buttonStyle(BorderlessButtonStyle())
+                    .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
                 }
+                .searchable(text: $searchText)
+                .searchPresentationToolbarBehavior(.avoidHidingContent)
+                .listStyle(.plain)
                 .navigationTitle("Exercises")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)

@@ -55,8 +55,8 @@ struct SetRepRangeView: View {
                                 .font(.title2)
                         }
                     }
-                    Spacer()
                 }
+                .vSpacing(.top)
                 .padding(.horizontal)
             }
             .onAppear {

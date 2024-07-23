@@ -15,7 +15,7 @@ struct AddWeightEntryView: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedPhotoData: Data?
     @State private var uploadingImage = false
-
+    
     private var dateFormatter: DateFormatter {
         let f = DateFormatter()
         f.dateStyle = .long
@@ -107,24 +107,9 @@ struct AddWeightEntryView: View {
                         .listRowSeparator(.hidden)
                         .listRowBackground(BlurView())
                         Section {
-                            ZStack(alignment: .leading) {
-                                TextEditor(text: $notes)
-                                    .onTapGesture {
-                                        gestureTap()
-                                    }
-                                    .textEditorStyle(.plain)
-                                    .focused($notesFocused)
-                                    .autocorrectionDisabled()
-                                if !notesFocused && notes.isEmpty {
-                                    Text("Notes...")
-                                        .foregroundStyle(.secondary)
-                                        .font(.subheadline)
-                                        .onTapGesture {
-                                            notesFocused = true
-                                            gestureTap()
-                                        }
-                                }
-                            }
+                            TextField("Notes", text: $notes, axis: .vertical)
+                                .focused($notesFocused)
+                                .autocorrectionDisabled()
                         }
                         .listRowBackground(BlurView())
                         Section {

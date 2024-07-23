@@ -37,6 +37,7 @@ struct StepsSectionView: View {
         .customStyle()
     }
 }
+
 #Preview {
     StepsSectionView(todaysSteps: 9230, todaysDistance: 2.1)
 }

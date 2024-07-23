@@ -40,8 +40,8 @@ struct WorkoutSectionView: View {
             if workouts.isEmpty {
                 HStack {
                     Text("You have no past workouts")
-                    Spacer()
                 }
+                .hSpacing(.leading)
                 .customStyle()
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -65,6 +65,8 @@ struct WorkoutSectionView: View {
                                         .opacity(phase.isIdentity ? 1.0 : 0.1)
                                         .scaleEffect(phase.isIdentity ? 1.0 : 0.5)
                                 }
+                                .padding(.horizontal)
+                                .padding(.vertical, 3)
                         }
                     }
                     .scrollTargetLayout()
@@ -79,8 +81,8 @@ struct WorkoutSectionView: View {
                     HStack {
                         Text("All Workouts")
                             .fontWeight(.semibold)
-                        Spacer()
                     }
+                    .hSpacing(.leading)
                     .customStyle()
                 }
             }
@@ -101,11 +103,10 @@ struct WorkoutHomeRow: View {
             HStack {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        Spacer()
                         VStack(alignment: .trailing, spacing: 0) {
                             Text(workout.title)
                             if !workout.template {
-                                Text("\(workout.startTime.formatted(.dateTime.month().day().year()))")
+                                Text(workout.startTime, format: .dateTime.month().day().year())
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             } else {
@@ -116,6 +117,7 @@ struct WorkoutHomeRow: View {
                         }
                         .fontWeight(.semibold)
                     }
+                    .hSpacing(.trailing)
                     Spacer()
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: 0) {
@@ -124,8 +126,8 @@ struct WorkoutHomeRow: View {
                                     Text("\(exercise.sets.count)x")
                                     Text(exercise.name)
                                         .foregroundStyle(.secondary)
-                                    Spacer()
                                 }
+                                .hSpacing(.leading)
                                 .lineLimit(1)
                                 .font(.headline)
                                 .fontWeight(.semibold)
@@ -151,8 +153,6 @@ struct WorkoutHomeRow: View {
             .frame(width: 330, height: 130)
             .padding()
             .background(.ultraThinMaterial, in: .rect(cornerRadius: 12))
-            .padding(.horizontal)
-            .padding(.vertical, 3)
         }
     }
 }

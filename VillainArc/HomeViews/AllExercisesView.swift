@@ -35,11 +35,9 @@ struct AllExercisesView: View {
             BackgroundView()
             List {
                 ForEach(topExercises, id: \.name) { item in
-                    HStack {
-                        ExerciseRow(item: item)
-                    }
-                    .listRowBackground(BlurView())
-                    .listRowSeparator(.hidden)
+                    ExerciseRow(item: item)
+                        .listRowBackground(BlurView())
+                        .listRowSeparator(.hidden)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -58,26 +56,28 @@ struct ExerciseRow: View {
     var item: ExerciseInfo
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(item.name)
-                .fontWeight(.semibold)
-                .lineLimit(1)
-            Text(item.category)
-                .font(.subheadline)
-                .foregroundStyle(Color.secondary)
-            Text(topSet(for: item))
-                .font(.subheadline)
-                .foregroundStyle(Color.secondary)
-        }
-        Spacer()
-        VStack(alignment: .trailing, spacing: 0) {
-            Text("Completed")
-                .font(.subheadline)
-                .foregroundStyle(Color.secondary)
-            Text("\(item.count) \(item.count == 1 ? "time" : "times")")
-                .fontWeight(.semibold)
-            Text("\(item.sets.count) \(item.sets.count == 1 ? "set" : "sets")")
-                .fontWeight(.semibold)
+        HStack {
+            VStack(alignment: .leading) {
+                Text(item.name)
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+                Text(item.category)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.secondary)
+                Text(topSet(for: item))
+                    .font(.subheadline)
+                    .foregroundStyle(Color.secondary)
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 0) {
+                Text("Completed")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.secondary)
+                Text("\(item.count) \(item.count == 1 ? "time" : "times")")
+                    .fontWeight(.semibold)
+                Text("\(item.sets.count) \(item.sets.count == 1 ? "set" : "sets")")
+                    .fontWeight(.semibold)
+            }
         }
     }
 }

@@ -93,7 +93,7 @@ struct WorkoutView: View {
         HapticManager.instance.notification(type: .success)
         dismiss()
     }
-
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -108,7 +108,7 @@ struct WorkoutView: View {
                                     .onChange(of: title) {
                                         WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
                                     }
-                                Text("\(startTime.formatted(.dateTime.month().day().year().weekday(.wide)))")
+                                Text(startTime, format: .dateTime.month().day().year().weekday(.wide))
                                     .textScale(.secondary)
                                     .foregroundStyle(.secondary)
                                 if !isEditing {
@@ -172,7 +172,7 @@ struct WorkoutView: View {
                         }
                         .sheet(isPresented: $showSaveSheet) {
                             SaveWorkoutSheet(title: $title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: isTemplate, isEditing: isEditing, onSave: saveWorkout)
-                            .interactiveDismissDisabled()
+                                .interactiveDismissDisabled()
                         }
                     }
                     .listRowBackground(Color.clear)
@@ -232,8 +232,8 @@ struct WorkoutView: View {
                                 HStack {
                                     Label("Add Exercise", systemImage: "plus")
                                         .fontWeight(.semibold)
-                                    Spacer()
                                 }
+                                .hSpacing(.leading)
                                 .foregroundStyle(Color.primary)
                             }
                             .padding()

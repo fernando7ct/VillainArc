@@ -113,8 +113,8 @@ struct ExerciseHistoryView: View {
                                             Text("Notes: \(exercise.notes)")
                                         }
                                     }
-                                    Spacer()
                                 }
+                                .hSpacing(.leading)
                             })
                             .listRowBackground(BlurView())
                         }

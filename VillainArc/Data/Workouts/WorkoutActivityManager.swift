@@ -31,8 +31,10 @@ class WorkoutActivityManager {
 
     func updateLiveActivity(with exercises: [TempExercise], title: String, startTime: Date, timer: TimerDisplayViewModel) {
         let data = currentActiveSet(from: exercises)
-        let timeRemaining = timer.restTimeRemaining
-        let endDate = Calendar.current.date(byAdding: .second, value: Int(timeRemaining), to: Date())!
+        var endDate: Date? = nil
+        if let end = timer.restEndDate {
+            endDate = end
+        }
         let updatedContentState = WorkoutAttributes.ContentState(
             exerciseName: currentActiveExercise(from: exercises),
             setNumber: data.0,

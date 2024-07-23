@@ -134,8 +134,8 @@ struct WeightView: View {
                     HStack {
                         Text("All Weight Entries")
                             .fontWeight(.semibold)
-                        Spacer()
                     }
+                    .hSpacing(.leading)
                 }
                 .padding()
                 .background {

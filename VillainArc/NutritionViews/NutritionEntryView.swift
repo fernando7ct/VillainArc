@@ -285,8 +285,8 @@ struct NutritionEntryDataView: View {
                             HStack {
                                 Label("Add Food", systemImage: "plus")
                                     .fontWeight(.semibold)
-                                Spacer()
                             }
+                            .hSpacing(.leading)
                         }
                         .customStyle()
                     }
@@ -300,9 +300,8 @@ struct NutritionEntryDataView: View {
                     Text("Notes: \(entry.notes.isEmpty ? "Click to Add" : entry.notes)")
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
-                    Spacer()
                 }
-                .frame(maxWidth: .infinity)
+                .hSpacing(.leading)
                 .customStyle()
             }
             if Calendar.current.startOfDay(for: Date()) == entry.date {

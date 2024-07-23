@@ -70,15 +70,15 @@ struct AllWorkoutsView: View {
                         NavigationLink(value: workout) {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack {
-                                    Spacer()
                                     VStack(alignment: .trailing, spacing: 0) {
                                         Text(workout.title)
-                                        Text("\(workout.startTime.formatted(.dateTime.month().day().year()))")
+                                        Text(workout.startTime, format: .dateTime.month().day().year())
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
                                     }
                                     .fontWeight(.semibold)
                                 }
+                                .hSpacing(.trailing)
                                 .padding(.bottom, 3)
                                 ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
                                     HStack(spacing: 1) {

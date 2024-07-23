@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		FD2201C12BFF033E00487151 /* HomeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201C02BFF033E00487151 /* HomeTab.swift */; };
+		FD2201C12BFF033E00487151 /* WorkoutTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201C02BFF033E00487151 /* WorkoutTab.swift */; };
 		FD2201C42BFF060E00487151 /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201C32BFF060E00487151 /* Workout.swift */; };
 		FD2201C62BFF066A00487151 /* WorkoutExercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201C52BFF066A00487151 /* WorkoutExercise.swift */; };
 		FD2201C82BFF084700487151 /* ExerciseSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2201C72BFF084700487151 /* ExerciseSet.swift */; };
@@ -27,7 +27,6 @@
 		FD2E77AE2BF6D03C00245E06 /* LogInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77AD2BF6D03C00245E06 /* LogInView.swift */; };
 		FD2E77B12BF6D0E300245E06 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */; };
 		FD2E77B82BF6D37200245E06 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD2E77B72BF6D37200245E06 /* User.swift */; };
-		FD59AD5E2C45D2830017AFD1 /* Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD59AD5D2C45D2830017AFD1 /* Testing.swift */; };
 		FD59AD602C461E160017AFD1 /* WorkoutActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD59AD5F2C461E160017AFD1 /* WorkoutActivityManager.swift */; };
 		FD59AD622C4645F60017AFD1 /* UpdateMealNamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD59AD612C4645F60017AFD1 /* UpdateMealNamesView.swift */; };
 		FD7714C02C12CF3700FF12AF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = FD7714BF2C12CF3700FF12AF /* FirebaseStorage */; };
@@ -94,6 +93,8 @@
 		FDED2D622C4CAFAF00F55A37 /* GymSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */; };
 		FDED2D642C4E4B8E00F55A37 /* Gym.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D632C4E4B8E00F55A37 /* Gym.swift */; };
 		FDED2D662C4F1AAF00F55A37 /* GymDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */; };
+		FDED2D6A2C4F6BFF00F55A37 /* HomeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D692C4F6BFF00F55A37 /* HomeTab.swift */; };
+		FDED2D6E2C50498600F55A37 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D6D2C50498600F55A37 /* Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,7 +122,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		FD2201C02BFF033E00487151 /* HomeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTab.swift; sourceTree = "<group>"; };
+		FD2201C02BFF033E00487151 /* WorkoutTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTab.swift; sourceTree = "<group>"; };
 		FD2201C32BFF060E00487151 /* Workout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workout.swift; sourceTree = "<group>"; };
 		FD2201C52BFF066A00487151 /* WorkoutExercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutExercise.swift; sourceTree = "<group>"; };
 		FD2201C72BFF084700487151 /* ExerciseSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSet.swift; sourceTree = "<group>"; };
@@ -142,7 +143,6 @@
 		FD2E77AF2BF6D0C400245E06 /* VillainArc.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VillainArc.entitlements; sourceTree = "<group>"; };
 		FD2E77B02BF6D0E300245E06 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FD2E77B72BF6D37200245E06 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		FD59AD5D2C45D2830017AFD1 /* Testing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Testing.swift; sourceTree = "<group>"; };
 		FD59AD5F2C461E160017AFD1 /* WorkoutActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutActivityManager.swift; sourceTree = "<group>"; };
 		FD59AD612C4645F60017AFD1 /* UpdateMealNamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateMealNamesView.swift; sourceTree = "<group>"; };
 		FD7714C32C14041B00FF12AF /* HealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthManager.swift; sourceTree = "<group>"; };
@@ -206,6 +206,8 @@
 		FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSectionView.swift; sourceTree = "<group>"; };
 		FDED2D632C4E4B8E00F55A37 /* Gym.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gym.swift; sourceTree = "<group>"; };
 		FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymDetailView.swift; sourceTree = "<group>"; };
+		FDED2D692C4F6BFF00F55A37 /* HomeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTab.swift; sourceTree = "<group>"; };
+		FDED2D6D2C50498600F55A37 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -272,7 +274,6 @@
 				FD2E77942BF57CF800245E06 /* VillainArcApp.swift */,
 				FD9EB5F52C2FD47D000267F2 /* HapticManager.swift */,
 				FD2E77962BF57CF800245E06 /* ContentView.swift */,
-				FD59AD5D2C45D2830017AFD1 /* Testing.swift */,
 				FD9EB5D72C2A6EDE000267F2 /* LoginViews */,
 				FD9EB5D82C2A6EED000267F2 /* Tabs */,
 				FD9EB5E72C2BBDDA000267F2 /* HomeViews */,
@@ -280,6 +281,7 @@
 				FDD4FB712C16A6170028BADB /* HealthViews */,
 				FDB39EA82C0A4378008929DF /* WorkoutViews */,
 				FD2E77A92BF587E800245E06 /* Other.swift */,
+				FDED2D6D2C50498600F55A37 /* Extensions.swift */,
 				FD7C6EF32C0BB6B0001453F2 /* BackgroundView.swift */,
 				FD2E77982BF57CF800245E06 /* Assets.xcassets */,
 				FD2E77A22BF57D1500245E06 /* Data */,
@@ -362,9 +364,10 @@
 		FD9EB5D82C2A6EED000267F2 /* Tabs */ = {
 			isa = PBXGroup;
 			children = (
-				FD2201C02BFF033E00487151 /* HomeTab.swift */,
+				FD2201C02BFF033E00487151 /* WorkoutTab.swift */,
 				FD7714C72C14F38E00FF12AF /* HealthTab.swift */,
 				FD9EB5C02C262254000267F2 /* NutritionTab.swift */,
+				FDED2D692C4F6BFF00F55A37 /* HomeTab.swift */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -567,12 +570,13 @@
 			files = (
 				FDD4FB6D2C169DEE0028BADB /* CaloriesSectionView.swift in Sources */,
 				FD9EB5E12C2B82AF000267F2 /* NutritionFood.swift in Sources */,
+				FDED2D6A2C4F6BFF00F55A37 /* HomeTab.swift in Sources */,
 				FD9EB5E02C2B82AC000267F2 /* NutritionEntry.swift in Sources */,
 				FDB39EAC2C0A7D04008929DF /* SaveWorkoutSheet.swift in Sources */,
 				FD7C6F042C0E8381001453F2 /* TimerDisplayView.swift in Sources */,
 				FDD4FB672C1564190028BADB /* StepsView.swift in Sources */,
 				FDB39EAA2C0A4496008929DF /* WorkoutDetailView.swift in Sources */,
-				FD2201C12BFF033E00487151 /* HomeTab.swift in Sources */,
+				FD2201C12BFF033E00487151 /* WorkoutTab.swift in Sources */,
 				FD9EB5DC2C2B80E2000267F2 /* HealthDataManager.swift in Sources */,
 				FD2E77AA2BF587E800245E06 /* Other.swift in Sources */,
 				FD9EB5E92C2BD45F000267F2 /* AddFoodView.swift in Sources */,
@@ -610,6 +614,7 @@
 				FDED2D5E2C4C8F4200F55A37 /* GymSelectionView.swift in Sources */,
 				FDB0B5D72BFC25190099D91D /* AllWeightEntriesView.swift in Sources */,
 				FD7C6EFA2C0BFC9B001453F2 /* AllWorkoutsView.swift in Sources */,
+				FDED2D6E2C50498600F55A37 /* Extensions.swift in Sources */,
 				FD7C6F092C0E9336001453F2 /* NotificationManager.swift in Sources */,
 				FD9EB5F82C32576C000267F2 /* WeightSectionView.swift in Sources */,
 				FD59AD602C461E160017AFD1 /* WorkoutActivityManager.swift in Sources */,
@@ -627,7 +632,6 @@
 				FD9EB5F22C2E5AA5000267F2 /* AddFirebaseFoodView.swift in Sources */,
 				FDED2D622C4CAFAF00F55A37 /* GymSectionView.swift in Sources */,
 				FD9EB5DE2C2B81E8000267F2 /* NutritionDataManager.swift in Sources */,
-				FD59AD5E2C45D2830017AFD1 /* Testing.swift in Sources */,
 				FD2E77A42BF57D6600245E06 /* WeightEntry.swift in Sources */,
 				FDD4FBE22C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */,
 				FD2E77AE2BF6D03C00245E06 /* LogInView.swift in Sources */,
@@ -809,7 +813,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.5.1;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -852,7 +856,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.5.1;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -884,7 +888,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.5.1;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc.WorkoutLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -917,7 +921,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.5.1;
+				MARKETING_VERSION = 0.6;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc.WorkoutLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

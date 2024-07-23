@@ -37,23 +37,21 @@ struct ExercisesSectionView: View {
                 Text("Top Exercises")
                     .fontWeight(.semibold)
                     .font(.title2)
-                Spacer()
             }
+            .hSpacing(.leading)
             .padding(.horizontal)
             .padding(.bottom, 5)
             
             if topExercises.isEmpty {
                 HStack {
                     Text("You haven't done any exercises")
-                    Spacer()
                 }
+                .hSpacing(.leading)
                 .customStyle()
             } else {
                 ForEach(topExercises, id: \.name) { item in
-                    HStack {
-                        ExerciseRow(item: item)
-                    }
-                    .customStyle()
+                    ExerciseRow(item: item)
+                        .customStyle()
                 }
             }
             if workouts.flatMap({ $0.exercises }).count > 5 {
@@ -61,8 +59,8 @@ struct ExercisesSectionView: View {
                     HStack {
                         Text("All Exercises")
                             .fontWeight(.semibold)
-                        Spacer()
                     }
+                    .hSpacing(.leading)
                     .customStyle()
                 }
             }

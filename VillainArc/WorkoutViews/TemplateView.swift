@@ -123,7 +123,7 @@ struct TemplateView: View {
                         }
                         .sheet(isPresented: $showSaveSheet) {
                             SaveWorkoutSheet(title: $title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: true, isEditing: isEditing, onSave:
-                                saveWorkout)
+                                                saveWorkout)
                             .interactiveDismissDisabled()
                         }
                     }
@@ -131,10 +131,10 @@ struct TemplateView: View {
                     .listRowSeparator(.hidden)
                     if !isEditingExercises {
                         Section {
-                                TextField("Template Notes", text: $notes, axis: .vertical)
-                                    .focused($notesFocused)
-                                    .textEditorStyle(.plain)
-                                    .autocorrectionDisabled()
+                            TextField("Template Notes", text: $notes, axis: .vertical)
+                                .focused($notesFocused)
+                                .textEditorStyle(.plain)
+                                .autocorrectionDisabled()
                         }
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
@@ -182,8 +182,8 @@ struct TemplateView: View {
                                 HStack {
                                     Label("Add Exercise", systemImage: "plus")
                                         .fontWeight(.semibold)
-                                    Spacer()
                                 }
+                                .hSpacing(.leading)
                                 .foregroundStyle(Color.primary)
                             }
                             .padding()

@@ -3,15 +3,14 @@ import Combine
 import UserNotifications
 
 class TimerDisplayViewModel: ObservableObject {
-    @Published var restTimeRemaining: TimeInterval = 0
     
-    private var restEndDate: Date? = nil
+    @Published var restEndDate: Date? = nil
     
     private var restTimerSubscription: AnyCancellable?
     
     private var hasRequestedAuthorization = false
     
-    func startRestTimer(minutes: Int, seconds: Int) {
+    @MainActor func startRestTimer(minutes: Int, seconds: Int) {
         let totalSeconds = TimeInterval(minutes * 60 + seconds)
         restEndDate = Date().addingTimeInterval(totalSeconds)
         
@@ -44,16 +43,16 @@ class TimerDisplayViewModel: ObservableObject {
     func endActivity() {
         NotificationManager.shared.removeAllNotifications()
     }
-    func updateRestTimeRemaining() {
-        guard let restEndDate = restEndDate else {
-            restTimeRemaining = 0
+    @MainActor func updateRestTimeRemaining() {
+        guard let endDate = restEndDate else {
+            
             return
         }
         let currentTime = Date()
-        restTimeRemaining = restEndDate.timeIntervalSince(currentTime)
+        let restTimeRemaining = endDate.timeIntervalSince(currentTime)
         if restTimeRemaining <= 0 {
-            restTimeRemaining = 0
             restTimerSubscription?.cancel()
+            restEndDate = nil
             print("Rest timer finished")
         }
     }
@@ -69,19 +68,34 @@ struct TimerDisplayView: View {
     
     var body: some View {
         VStack {
-            Text(viewModel.formattedTime(viewModel.restTimeRemaining))
-                .font(.title)
-                .padding(.horizontal, 5)
-                .background {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(lineWidth: 2)
-                }
+            if let endDate = viewModel.restEndDate {
+                Text(endDate, style: .timer)
+                    .font(.title)
+                    .padding(.horizontal, 5)
+                    .background {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(lineWidth: 2)
+                    }
+            } else {
+                Text("0:00")
+                    .font(.title)
+                    .padding(.horizontal, 5)
+                    .background {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(lineWidth: 2)
+                    }
+            }
         }
         .onAppear {
             viewModel.updateRestTimeRemaining()
         }
     }
 }
+
+#Preview {
+    TimerDisplayView(viewModel: TimerDisplayViewModel())
+}
+
 
 #Preview {
     TimerDisplayView(viewModel: TimerDisplayViewModel())

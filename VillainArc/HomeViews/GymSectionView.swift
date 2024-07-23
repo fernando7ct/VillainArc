@@ -45,8 +45,7 @@ struct GymSectionView: View {
                     }
                 }
                 .padding()
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(10)
+                .background(.ultraThinMaterial, in: .rect(cornerRadius: 12))
             }
             .padding(.horizontal)
         }

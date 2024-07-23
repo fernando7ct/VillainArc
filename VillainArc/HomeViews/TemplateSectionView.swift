@@ -39,8 +39,8 @@ struct TemplateSectionView: View {
             if templates.isEmpty {
                 HStack {
                     Text("You have no templates")
-                    Spacer()
                 }
+                .hSpacing(.leading)
                 .customStyle()
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -64,13 +64,15 @@ struct TemplateSectionView: View {
                                         .opacity(phase.isIdentity ? 1.0 : 0.1)
                                         .scaleEffect(phase.isIdentity ? 1.0 : 0.5)
                                 }
+                                .padding(.horizontal)
+                                .padding(.vertical, 3)
                         }
                     }
                     .scrollTargetLayout()
                 }
                 .scrollTargetBehavior(.viewAligned)
-                .fullScreenCover(item: $existingWorkout) { workout in
-                    WorkoutView(existingWorkout: workout)
+                .fullScreenCover(item: $existingWorkout) {
+                    WorkoutView(existingWorkout: $0)
                 }
             }
             if templates.count > 2 {
@@ -78,8 +80,8 @@ struct TemplateSectionView: View {
                     HStack {
                         Text("All Templates")
                             .fontWeight(.semibold)
-                        Spacer()
                     }
+                    .hSpacing(.leading)
                     .customStyle()
                 }
             }

@@ -42,8 +42,8 @@ struct TemplateExerciseView: View {
                                 .font(.subheadline)
                                 .foregroundStyle(Color.secondary)
                         }
-                        Spacer()
                     }
+                    .hSpacing(.leading)
                 }
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
@@ -115,8 +115,8 @@ struct TemplateExerciseView: View {
                         HStack {
                             Label("Add Set", systemImage: "plus")
                                 .fontWeight(.semibold)
-                            Spacer()
                         }
+                        .hSpacing(.leading)
                         .foregroundStyle(Color.primary)
                     }
                     .padding()

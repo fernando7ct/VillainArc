@@ -235,7 +235,6 @@ struct NutritionSetupView: View {
                         }
                     } header: {
                         HStack {
-                            Spacer()
                             HStack(spacing: 3) {
                                 Text("Total:")
                                 Text("\(Int((proteinPercentage + carbsPercentage + fatPercentage) * 100))%")
@@ -243,6 +242,7 @@ struct NutritionSetupView: View {
                             }
                             .fontWeight(.semibold)
                         }
+                        .hSpacing(.trailing)
                     }
                     .listRowBackground(BlurView())
                 }
