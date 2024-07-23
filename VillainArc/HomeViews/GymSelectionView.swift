@@ -6,6 +6,7 @@ struct GymSelectionView: View {
     @StateObject var locationManager = LocationManager.shared
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var selectedGym: MKMapItem?
+    @State private var viewingRegion: MKCoordinateRegion?
     @Query(filter: #Predicate<Gym> { $0.favorite }) private var gyms: [Gym]
     var homeGym: Gym? { return gyms.first }
     
@@ -26,7 +27,7 @@ struct GymSelectionView: View {
             ScrollView {
                 Section {
                     TextField("Search", text: $locationManager.searchText, onCommit: {
-                        locationManager.searchGyms()
+                        locationManager.searchGyms(in: viewingRegion)
                         cameraPosition = .automatic
                     })
                     .customStyle()
@@ -36,7 +37,7 @@ struct GymSelectionView: View {
                     ForEach(locationManager.filteredGyms, id: \.self) { gym in
                         Button {
                             selectedGym = gym
-                            let adjustedCoordinate = CLLocationCoordinate2D(latitude: gym.placemark.coordinate.latitude - 0.02, longitude: gym.placemark.coordinate.longitude)
+                            let adjustedCoordinate = CLLocationCoordinate2D(latitude: gym.placemark.coordinate.latitude - 0.01, longitude: gym.placemark.coordinate.longitude)
                             cameraPosition = .region(MKCoordinateRegion(center: adjustedCoordinate, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
                             if sheetDetent == .large {
                                 sheetDetent = .height(UIScreen.main.bounds.height / 3)
@@ -66,7 +67,7 @@ struct GymSelectionView: View {
             }
             .scrollContentBackground(.hidden)
             .sheet(item: $selectedGym, onDismiss: { 
-                if let previous = previousDetent {
+                if let _ = previousDetent {
                     sheetDetent = .large
                     previousDetent = nil
                 }
@@ -88,7 +89,11 @@ struct GymSelectionView: View {
                 }
                 .mapControls {
                     MapUserLocationButton()
+                    MapPitchToggle()
                 }
+                .onMapCameraChange({ ctx in
+                    viewingRegion = ctx.region
+                })
                 .mapStyle(.standard(elevation: .realistic))
                 .sheet(isPresented: $showSheet) {
                     gymListView

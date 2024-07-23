@@ -32,14 +32,18 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func searchGyms() {
+    func searchGyms(in region: MKCoordinateRegion? = nil) {
         let request = MKLocalSearch.Request()
         let emptySearch = searchText.isEmpty
         request.naturalLanguageQuery = emptySearch ? "Gym" : searchText
         request.resultTypes = .pointOfInterest
-        if locationEnabled, let userLocation = locationManager.location {
+        
+        if let region = region {
+            request.region = region
+        } else if locationEnabled, let userLocation = locationManager.location {
             request.region = MKCoordinateRegion(center: userLocation.coordinate, span: MKCoordinateSpan(latitudeDelta: emptySearch ? 0.05 : 0.1, longitudeDelta: emptySearch ? 0.05 : 0.1))
-        } 
+        }
+        
         Task {
             let search = MKLocalSearch(request: request)
             let response = try? await search.start()
