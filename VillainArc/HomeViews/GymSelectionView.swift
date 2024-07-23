@@ -5,83 +5,106 @@ import SwiftData
 struct GymSelectionView: View {
     @StateObject var locationManager = LocationManager.shared
     @State private var cameraPosition: MapCameraPosition = .automatic
-    @FocusState var searchFocused: Bool
     @State private var selectedGym: MKMapItem?
+    @Query(filter: #Predicate<Gym> { $0.favorite }) private var gyms: [Gym]
+    var homeGym: Gym? { return gyms.first }
     
-    @Query private var users: [User]
-    var user: User { return users.first! }
+    @State private var sheetDetent: PresentationDetent = .height(UIScreen.main.bounds.height / 3)
+    @State private var previousDetent: PresentationDetent?
+    @State private var showSheet = true
     
     private func isHomeGym(_ gym: MKMapItem) -> Bool {
-        return user.homeGymLatitude == gym.placemark.coordinate.latitude && user.homeGymLongitude == gym.placemark.coordinate.longitude
+        if let homeGym {
+            return homeGym.latitude == gym.placemark.coordinate.latitude && homeGym.longitude == gym.placemark.coordinate.longitude
+        } else {
+            return false
+        }
     }
-    
-    var body: some View {
+    var gymListView: some View {
         ZStack {
             BackgroundView()
-            VStack(spacing: 0) {
-                if locationManager.locationEnabled {
-                    Map(position: $cameraPosition, selection: $selectedGym) {
-                        UserAnnotation()
-                        ForEach(locationManager.filteredGyms, id: \.self) { gym in
-                            Marker(item: gym)
-                                .tint(isHomeGym(gym) ? .blue : .primary)
-                        }
-                    }
-                    .mapControls {
-                        MapUserLocationButton()
-                    }
-                    .frame(height: UIScreen.main.bounds.height / (searchFocused ? 5 : 3))
-                    .mapStyle(.standard(elevation: .realistic))
-                    .onChange(of: selectedGym) {
-                        if let gym = selectedGym {
-                            cameraPosition = .region(MKCoordinateRegion(center: gym.placemark.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
-                        }
-                    }
+            ScrollView {
+                Section {
+                    TextField("Search", text: $locationManager.searchText, onCommit: {
+                        locationManager.searchGyms()
+                        cameraPosition = .automatic
+                    })
+                    .customStyle()
+                    .padding(.top)
                 }
-                List {
-                    Section {
-                        TextField("Search", text: $locationManager.searchText, onCommit: {
-                            locationManager.searchGyms()
-                        })
-                        .focused($searchFocused)
-                        .listRowBackground(BlurView())
-                    }
-                    Section {
-                        ForEach(locationManager.filteredGyms, id: \.self) { gym in
-                            Button {
-                                selectedGym = gym
-                                cameraPosition = .region(MKCoordinateRegion(center: gym.placemark.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
-                            } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 0) {
-                                        Text(gym.placemark.name ?? "Unknown Gym")
-                                            .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
-                                        Text(gym.placemark.title ?? "")
-                                            .foregroundStyle(.secondary)
-                                            .textScale(.secondary)
-                                    }
-                                    Spacer()
-                                    Text("\(locationManager.calculateDistance(to: gym), specifier: "%.2f") mi")
-                                        .font(.footnote)
-                                        .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
-                                }
-                                .fontWeight(.semibold)
+                Section {
+                    ForEach(locationManager.filteredGyms, id: \.self) { gym in
+                        Button {
+                            selectedGym = gym
+                            let adjustedCoordinate = CLLocationCoordinate2D(latitude: gym.placemark.coordinate.latitude - 0.02, longitude: gym.placemark.coordinate.longitude)
+                            cameraPosition = .region(MKCoordinateRegion(center: adjustedCoordinate, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
+                            if sheetDetent == .large {
+                                sheetDetent = .height(UIScreen.main.bounds.height / 3)
+                                previousDetent = .large
                             }
-                            .listRowBackground(BlurView())
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(gym.placemark.name ?? "Unknown Gym")
+                                        .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
+                                    Text(gym.placemark.title ?? "")
+                                        .foregroundStyle(.secondary)
+                                        .textScale(.secondary)
+                                        .multilineTextAlignment(.leading)
+                                }
+                                Spacer()
+                                let distance = locationManager.calculateDistance(to: gym)
+                                Text(distance == 0 ? "" : "\(formattedDouble(distance)) mi")
+                                    .font(.footnote)
+                                    .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
+                            }
+                            .fontWeight(.semibold)
                         }
+                        .customStyle()
                     }
                 }
-                .scrollContentBackground(.hidden)
             }
-            .sheet(item: $selectedGym) {
+            .scrollContentBackground(.hidden)
+            .sheet(item: $selectedGym, onDismiss: { 
+                if let previous = previousDetent {
+                    sheetDetent = .large
+                    previousDetent = nil
+                }
+            }) {
                 GymDetailView(gym: $0)
-                    .presentationDetents([.medium, .large])
+                    .presentationDetents([.height(UIScreen.main.bounds.height / 3), .large])
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(locationManager.locationEnabled ? .hidden : .visible, for: .navigationBar)
-            .animation(.smooth, value: searchFocused)
-            .navigationTitle(locationManager.locationEnabled ? "" : "Set Home Gym")
         }
+    }
+    var body: some View {
+        Group {
+            if locationManager.locationEnabled {
+                Map(position: $cameraPosition, selection: $selectedGym) {
+                    UserAnnotation()
+                    ForEach(locationManager.filteredGyms, id: \.self) { gym in
+                        Marker(item: gym)
+                            .tint(isHomeGym(gym) ? .blue : .primary)
+                    }
+                }
+                .mapControls {
+                    MapUserLocationButton()
+                }
+                .mapStyle(.standard(elevation: .realistic))
+                .sheet(isPresented: $showSheet) {
+                    gymListView
+                        .interactiveDismissDisabled()
+                        .presentationDetents([.height(60), .height(UIScreen.main.bounds.height / 3), .large], selection: $sheetDetent)
+                        .presentationBackgroundInteraction(.enabled)
+                        .presentationCornerRadius(20)
+                }
+                .toolbarBackground(.hidden, for: .navigationBar)
+            } else {
+                gymListView
+                    .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                    .navigationTitle("Set Home Gym")
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 extension MKMapItem: Identifiable {
@@ -89,101 +112,6 @@ extension MKMapItem: Identifiable {
         return "\(self.placemark.coordinate.latitude),\(self.placemark.coordinate.longitude)"
     }
 }
-struct GymDetailView: View {
-    var gym: MKMapItem
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationView {
-            ZStack {
-                BackgroundView()
-                Form {
-                    if let address = gym.placemark.title {
-                        HStack {
-                            Text(address)
-                                .font(.body)
-                            Spacer()
-                            Button(action: {
-                                openMaps(for: gym)
-                            }) {
-                                Image(systemName: "map.fill")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .listRowBackground(BlurView())
-                    }
-                    if let phoneNumber = gym.phoneNumber {
-                        HStack {
-                            Text("Phone: \(phoneNumber)")
-                                .font(.body)
-                            Spacer()
-                            Button(action: {
-                                callPhoneNumber(phoneNumber)
-                            }) {
-                                Image(systemName: "phone.fill")
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .listRowBackground(BlurView())
-                    }
-                    if let url = gym.url {
-                        HStack {
-                            Text(trimmedURL(url))
-                                .font(.body)
-                                .foregroundColor(.primary)
-                                .lineLimit(1)
-                            Spacer()
-                            Link(destination: url) {
-                                Image(systemName: "link")
-                                    .font(.body)
-                                    .foregroundColor(.blue)
-                            }
-                        }
-                        .listRowBackground(BlurView())
-                    }
-                    Section {
-                        Button(action: {
-                            DataManager.shared.saveHomeGym(gym: gym, context: modelContext)
-                            dismiss()
-                        }) {
-                            Text("Set as Home Gym")
-                                .fontWeight(.semibold)
-                        }
-                        .listRowBackground(Color.blue.opacity(0.5))
-                    }
-                }
-                .navigationTitle(gym.placemark.name ?? "Unknown Gym")
-                .navigationBarTitleDisplayMode(.large)
-                .scrollContentBackground(.hidden)
-            }
-        }
-    }
-
-    private func openMaps(for gym: MKMapItem) {
-        let mapItem = gym
-        mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
-    }
-    
-    private func callPhoneNumber(_ phoneNumber: String) {
-        let formattedPhoneNumber = phoneNumber.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "")
-        if let phoneURL = URL(string: "tel://\(formattedPhoneNumber)"), UIApplication.shared.canOpenURL(phoneURL) {
-            UIApplication.shared.open(phoneURL, options: [:], completionHandler: nil)
-        }
-    }
-    
-    private func trimmedURL(_ url: URL) -> String {
-        let urlString = url.absoluteString
-        let components = urlString.split(separator: "/")
-        
-        if components.count > 3 {
-            return components.prefix(3).joined(separator: "/") + "/..."
-        } else {
-            return urlString
-        }
-    }
-}
-
 #Preview {
     GymSelectionView()
 }

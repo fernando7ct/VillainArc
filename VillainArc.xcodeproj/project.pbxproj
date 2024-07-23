@@ -93,6 +93,7 @@
 		FDED2D602C4C937E00F55A37 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D5F2C4C937E00F55A37 /* LocationManager.swift */; };
 		FDED2D622C4CAFAF00F55A37 /* GymSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */; };
 		FDED2D642C4E4B8E00F55A37 /* Gym.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D632C4E4B8E00F55A37 /* Gym.swift */; };
+		FDED2D662C4F1AAF00F55A37 /* GymDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -204,6 +205,7 @@
 		FDED2D5F2C4C937E00F55A37 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSectionView.swift; sourceTree = "<group>"; };
 		FDED2D632C4E4B8E00F55A37 /* Gym.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gym.swift; sourceTree = "<group>"; };
+		FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -388,6 +390,7 @@
 				FD7C6EF72C0BFA92001453F2 /* TemplateSectionView.swift */,
 				FDED2D5D2C4C8F4200F55A37 /* GymSelectionView.swift */,
 				FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */,
+				FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */,
 				FD7C6EF52C0BFA82001453F2 /* WorkoutSectionView.swift */,
 				FDAC23222C11530F007B53B7 /* ExercisesSectionView.swift */,
 				FD7C6EF92C0BFC9B001453F2 /* AllWorkoutsView.swift */,
@@ -579,6 +582,7 @@
 				FD9EB5F42C2E6D6E000267F2 /* EditEntryFoodView.swift in Sources */,
 				FDED2D602C4C937E00F55A37 /* LocationManager.swift in Sources */,
 				FDD4FB652C155D850028BADB /* StepsSectionView.swift in Sources */,
+				FDED2D662C4F1AAF00F55A37 /* GymDetailView.swift in Sources */,
 				FDAC23232C11530F007B53B7 /* ExercisesSectionView.swift in Sources */,
 				FD7714C82C14F38E00FF12AF /* HealthTab.swift in Sources */,
 				FD9EB5DA2C2A83B8000267F2 /* NutritionSetupView.swift in Sources */,

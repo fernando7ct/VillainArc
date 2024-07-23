@@ -49,6 +49,7 @@ struct SetRestTimeView: View {
     @Binding var exercise: TempExercise
     @State private var sameRestMinutes = 0
     @State private var sameRestSeconds = 0
+    @Environment(\.dismiss) private var dismiss
     
     private func updateAllRestTimes() {
         for setIndex in exercise.sets.indices {
@@ -139,6 +140,19 @@ struct SetRestTimeView: View {
             }
             .onTapGesture {
                 hideKeyboard()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .symbolRenderingMode(.hierarchical)
+                            .fontWeight(.semibold)
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }

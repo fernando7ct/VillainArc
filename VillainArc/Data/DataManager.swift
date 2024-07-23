@@ -234,22 +234,62 @@ class DataManager {
             print("No user is signed in.")
             return
         }
-        let fetch = FetchDescriptor<User>()
-        let users = try? context.fetch(fetch).first
-        let user = users!
-        user.homeGymName = gym.placemark.name
-        user.homeGymAddress = gym.placemark.title
-        user.homeGymLatitude = gym.placemark.coordinate.latitude
-        user.homeGymLongitude = gym.placemark.coordinate.longitude
+
+        let fetch = FetchDescriptor<Gym>()
+        guard let gyms = try? context.fetch(fetch) else { return }
+        
+        if let existingHomeGym = gyms.first(where: { $0.favorite }) {
+            existingHomeGym.favorite = false
+            do {
+                try context.save()
+                print("Previous home gym unset in SwiftData")
+            } catch {
+                print("Error unsetting previous home gym")
+            }
+            let gymData = existingHomeGym.toDictionary()
+            db.collection("users").document(userID).collection("Gyms").document(existingHomeGym.id).setData(gymData)
+            print("Previous home gym unset in Firebase")
+        }
+        if let existingGym = gyms.first(where: { $0.latitude == gym.placemark.coordinate.latitude && $0.longitude == gym.placemark.coordinate.longitude }) {
+            existingGym.favorite = true
+            do {
+                try context.save()
+                print("Existing Gym set as home gym in SwiftData")
+            } catch {
+                print("Error changing existing gym as home gym")
+            }
+            let gymData = existingGym.toDictionary()
+            db.collection("users").document(userID).collection("Gyms").document(existingGym.id).setData(gymData)
+            print("Existing gym set as home gym in Firebase")
+        } else {
+            let newGym = Gym(id: UUID().uuidString, mapItem: gym, favorite: true)
+            context.insert(newGym)
+            do {
+                try context.save()
+                print("New home gym saved in SwiftData")
+            } catch {
+                print("Error saving new home gym")
+            }
+            let gymData = newGym.toDictionary()
+            db.collection("users").document(userID).collection("Gyms").document(newGym.id).setData(gymData)
+            print("New home gym saved in Firebase")
+        }
+    }
+    func removeHomeGym(gym: Gym, context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        gym.favorite = false
         do {
             try context.save()
-            print("Home gym saved to SwiftData")
+            print("Home Gym changed in SwiftData")
         } catch {
-            print("Failed to save home gym: \(error.localizedDescription)")
+            print("Error changing home gym in SwiftData")
         }
-        let userData = user.toDictionary()
-        db.collection("users").document(userID).setData(userData)
-        print("Home gym saved to Firebase")
+        let gymData = gym.toDictionary()
+        db.collection("users").document(userID).collection("Gyms").document(gym.id).setData(gymData)
+        print("Home Gym changed in Firebase")
     }
     func checkUserDataComplete(completion: @escaping (Bool) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -302,6 +342,7 @@ class DataManager {
             try context.delete(model: NutritionHub.self)
             try context.delete(model: NutritionEntry.self)
             try context.delete(model: NutritionFood.self)
+            try context.delete(model: Gym.self)
             try Auth.auth().signOut()
             isSignedIn = false
         } catch {
@@ -321,6 +362,7 @@ class DataManager {
                 self.createSampleData(context: context)
                 self.downloadWeightEntries(userID: userID, context: context, completion: completion)
                 self.downloadWorkouts(userID: userID, context: context, completion: completion)
+                self.downloadHomeGym(userId: userID, context: context, completion: completion)
                 self.downloadHealthSteps(userID: userID, context: context, completion: completion)
                 self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
                 self.downloadHealthRestingEnergy(userID: userID, context: context, completion: completion)
@@ -342,28 +384,12 @@ class DataManager {
                    let heightFeet = data["heightFeet"] as? Int,
                    let heightInches = data["heightInches"] as? Int,
                    let sex = data["sex"] as? String {
-                    
-                    let homeGymName = data["homeGymName"] as? String
-                    let homeGymAddress = data["homeGymAddress"] as? String
-                    let homeGymLatitude = data["homeGymLatitude"] as? Double
-                    let homeGymLongitude = data["homeGymLongitude"] as? Double
-                    
-                    let user = User(id: userID,
-                                    name: name,
-                                    dateJoined: dateJoined.dateValue(),
-                                    birthday: birthday.dateValue(),
-                                    heightFeet: heightFeet,
-                                    heightInches: heightInches,
-                                    sex: sex,
-                                    homeGymName: homeGymName,
-                                    homeGymAddress: homeGymAddress,
-                                    homeGymLatitude: homeGymLatitude,
-                                    homeGymLongitude: homeGymLongitude)
-                    
+                    let user = User(id: userID, name: name, dateJoined: dateJoined.dateValue(), birthday: birthday.dateValue(), heightFeet: heightFeet, heightInches: heightInches, sex: sex)
                     context.insert(user)
                     
                     self.downloadWeightEntries(userID: userID, context: context, completion: completion)
                     self.downloadWorkouts(userID: userID, context: context, completion: completion)
+                    self.downloadHomeGym(userId: userID, context: context, completion: completion)
                     self.downloadHealthSteps(userID: userID, context: context, completion: completion)
                     self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
                     self.downloadHealthRestingEnergy(userID: userID, context: context, completion: completion)
@@ -384,7 +410,26 @@ class DataManager {
             }
         }
     }
-
+    private func downloadHomeGym(userId: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
+        db.collection("users").document(userId).collection("Gyms").getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                for document in snapshot.documents {
+                    if let id = document.data()["id"] as? String,
+                       let name = document.data()["name"] as? String,
+                       let address = document.data()["address"] as? String,
+                       let latitude = document.data()["latitude"] as? Double,
+                       let longitude = document.data()["longitude"] as? Double,
+                       let favorite = document.data()["favorite"] as? Bool {
+                        let homeGym = Gym(id: id, name: name, address: address, latitude: latitude, longitude: longitude, favorite: favorite)
+                        context.insert(homeGym)
+                        completion(true)
+                    }
+                }
+            } else {
+                completion(false)
+            }
+        }
+    }
     private func downloadWeightEntries(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).collection("WeightEntries").getDocuments { snapshot, error in
             if let snapshot = snapshot {

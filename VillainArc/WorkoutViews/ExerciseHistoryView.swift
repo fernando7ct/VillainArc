@@ -125,6 +125,19 @@ struct ExerciseHistoryView: View {
                 .onAppear(perform: fetchExerciseHistory)
                 .navigationTitle(exerciseName)
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .symbolRenderingMode(.hierarchical)
+                                .fontWeight(.semibold)
+                                .font(.title2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
         }
     }

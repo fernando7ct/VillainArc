@@ -146,6 +146,8 @@ struct NutritionEntryDataView: View {
         }
     }
     private func updateEntryNotes() {
+        entry.notes = tempNotes
+        tempNotes.removeAll()
         DataManager.shared.updateNutritionEntryNotes(entry: entry)
     }
     private func macroDouble(for food: NutritionFood) -> Double {
@@ -348,9 +350,18 @@ struct NutritionEntryDataView: View {
                 .onAppear {
                     tempNotes = entry.notes
                 }
-                .onDisappear {
-                    entry.notes = tempNotes
-                    tempNotes.removeAll()
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showNotes = false
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .symbolRenderingMode(.hierarchical)
+                                .fontWeight(.semibold)
+                                .font(.title2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
             .presentationDetents([.medium, .large])

@@ -2,10 +2,10 @@ import SwiftUI
 import SwiftData
 
 struct GymSectionView: View {
-    @Query(animation: .smooth) private var users: [User]
+    @Query(filter: #Predicate<Gym> { $0.favorite }, animation: .smooth) private var gyms: [Gym]
     
-    var user: User {
-        return users.first!
+    var homeGym: Gym? {
+        return gyms.first
     }
     
     var body: some View {
@@ -21,10 +21,10 @@ struct GymSectionView: View {
             
             NavigationLink(value: 3) {
                 HStack {
-                    if let homeGymName = user.homeGymName, let homeGymAddress = user.homeGymAddress {
+                    if let homeGym {
                         VStack(alignment: .leading) {
-                            Text(homeGymName)
-                            Text(homeGymAddress)
+                            Text(homeGym.name)
+                            Text(homeGym.address)
                                 .textScale(.secondary)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.leading)
@@ -32,14 +32,12 @@ struct GymSectionView: View {
                         }
                         .fontWeight(.semibold)
                         Spacer()
-                        if let latitude = user.homeGymLatitude, let longitude = user.homeGymLongitude {
                             Button(action: {
-                                LocationManager.shared.openMaps(latitude: latitude, longitude: longitude)
+                                LocationManager.shared.openMaps(latitude: homeGym.latitude, longitude: homeGym.longitude)
                             }) {
                                 Image(systemName: "car.fill")
                                     .font(.title2)
                             }
-                        }
                     } else {
                         Text("Set Home Gym")
                             .fontWeight(.medium)
