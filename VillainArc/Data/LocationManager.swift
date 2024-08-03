@@ -33,6 +33,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func searchGyms(in region: MKCoordinateRegion? = nil) {
+        if region != nil && searchText.isEmpty {
+            retrievedGyms = []
+            filterGyms()
+            return
+        }
         let request = MKLocalSearch.Request()
         let emptySearch = searchText.isEmpty
         request.naturalLanguageQuery = emptySearch ? "Gym" : searchText

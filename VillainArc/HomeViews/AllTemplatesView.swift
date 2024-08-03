@@ -3,9 +3,7 @@ import SwiftData
 
 struct AllTemplatesView: View {
     @Environment(\.modelContext) private var context
-    @Query(filter: #Predicate<Workout> { workout in
-        workout.template
-    }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var templates: [Workout]
+    @Query(filter: #Predicate<Workout> { $0.template }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var templates: [Workout]
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
     @State private var existingWorkout: Workout? = nil

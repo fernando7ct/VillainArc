@@ -20,6 +20,7 @@ struct WorkoutView: View {
     var existingWorkout: Workout?
     @FocusState private var keyboardActive: Bool
     @State private var exerciseToReplaceIndex: Int? = nil
+    @State private var doneFirst = false
     
     init(existingWorkout: Workout? = nil, isEditing: Bool? = nil) {
         self.existingWorkout = existingWorkout
@@ -32,26 +33,25 @@ struct WorkoutView: View {
                 self._endTime = State(initialValue: workout.endTime)
                 self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
                 self._isEditing = State(initialValue: true)
-            } else {
-                if !workout.template {
-                    self._exercises = State(initialValue: workout.exercises.sorted(by: { $0.order < $1.order }).map { TempExercise(from: $0) })
-                }
             }
         }
     }
-    private func fetchLatestExercise(for exerciseName: String) -> WorkoutExercise? {
+    
+    private func fetchLatestSets(for exerciseName: String) -> [TempSet]? {
         let fetchDescriptor = FetchDescriptor<WorkoutExercise>(
             predicate: #Predicate { $0.name == exerciseName && $0.workout?.template != true },
             sortBy: [SortDescriptor(\WorkoutExercise.date, order: .reverse)]
         )
         do {
-            let results = try context.fetch(fetchDescriptor)
-            return results.first
+            if let latestExercise = try context.fetch(fetchDescriptor).first {
+                return latestExercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
+            }
         } catch {
-            print("Failed to fetch latest exercise: \(error.localizedDescription)")
-            return nil
+            print("Failed to fetch latest sets: \(error.localizedDescription)")
         }
+        return nil
     }
+    
     private func deleteExercise(at offsets: IndexSet) {
         withAnimation {
             exercises.remove(atOffsets: offsets)
@@ -64,24 +64,29 @@ struct WorkoutView: View {
             }
         }
     }
+    
     private func moveExercise(from source: IndexSet, to destination: Int) {
         withAnimation {
             exercises.move(fromOffsets: source, toOffset: destination)
             WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
         }
     }
+    
     private func addSelectedExercises(_ selectedExercises: [ExerciseSelectionView.Exercise]) {
         for exercise in selectedExercises {
-            exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)]))
+            exercises.append(TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)], latestSets: fetchLatestSets(for: exercise.name) ?? []))
         }
         WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
         HapticManager.instance.impact(style: .medium)
     }
+    
     private func replaceExercise(at index: Int, with exercise: ExerciseSelectionView.Exercise) {
-        exercises[index] = TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)])
+        exercises[index] = TempExercise(name: exercise.name, category: exercise.category, repRange: "", notes: "", sameRestTimes: false, sets: [TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0, completed: false)], latestSets: fetchLatestSets(for: exercise.name) ?? [])
         WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
         HapticManager.instance.impact(style: .medium)
+        exerciseToReplaceIndex = nil
     }
+    
     private func saveWorkout() {
         if !isEditing {
             DataManager.shared.saveWorkout(exercises: exercises, title: title, notes: notes, startTime: startTime, endTime: endTime, isTemplate: isTemplate, context: context)
@@ -270,15 +275,10 @@ struct WorkoutView: View {
                 .padding()
             }
             .onAppear {
-                if isTemplate {
-                    let recentExercises = existingWorkout?.exercises.sorted(by: { $0.order < $1.order }).compactMap { exercise in
-                        guard let latestExercise = fetchLatestExercise(for: exercise.name) else {
-                            return TempExercise(name: exercise.name, category: exercise.category, repRange: exercise.repRange, notes: exercise.notes, sameRestTimes: exercise.sameRestTimes, sets: [])
-                        }
-                        return TempExercise(name: latestExercise.name, category: latestExercise.category, repRange: exercise.repRange, notes: exercise.notes, sameRestTimes: exercise.sameRestTimes, sets: latestExercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) })
-                    }
+                if !doneFirst && !isEditing {
+                    let recentExercises = existingWorkout?.exercises.sorted(by: { $0.order < $1.order }).compactMap({ TempExercise(from: $0, latestSets: fetchLatestSets(for: $0.name) ?? []) })
                     self.exercises = recentExercises ?? []
-                    isTemplate = false
+                    doneFirst = true
                 }
                 if !activityStarted && !isEditing {
                     WorkoutActivityManager.shared.startLiveActivity(with: exercises, title: title, startTime: startTime)
@@ -288,6 +288,7 @@ struct WorkoutView: View {
         }
     }
 }
+
 
 #Preview {
     WorkoutView()

@@ -9,6 +9,7 @@ struct GymSelectionView: View {
     @State private var viewingRegion: MKCoordinateRegion?
     @Query(filter: #Predicate<Gym> { $0.favorite }) private var gyms: [Gym]
     var homeGym: Gym? { return gyms.first }
+    @Namespace private var locationSpace
     
     @State private var sheetDetent: PresentationDetent = .height(UIScreen.main.bounds.height / 3)
     @State private var previousDetent: PresentationDetent?
@@ -80,7 +81,7 @@ struct GymSelectionView: View {
     var body: some View {
         Group {
             if locationManager.locationEnabled {
-                Map(position: $cameraPosition, selection: $selectedGym) {
+                Map(position: $cameraPosition, selection: $selectedGym, scope: locationSpace) {
                     UserAnnotation()
                     ForEach(locationManager.filteredGyms, id: \.self) { gym in
                         Marker(item: gym)
@@ -91,6 +92,7 @@ struct GymSelectionView: View {
                     MapUserLocationButton()
                     MapPitchToggle()
                 }
+                .mapScope(locationSpace)
                 .onMapCameraChange({ ctx in
                     viewingRegion = ctx.region
                 })

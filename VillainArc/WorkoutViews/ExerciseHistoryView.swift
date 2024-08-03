@@ -16,9 +16,7 @@ struct ExerciseHistoryView: View {
         exercises = try! context.fetch(fetchDescriptor)
     }
     private func convertToTempSets(sets: [ExerciseSet]) -> [TempSet] {
-        sets.sorted(by: { $0.order < $1.order }).map { set in
-            TempSet(from: set)
-        }
+        sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
     }
     
     var body: some View {

@@ -2,355 +2,245 @@ import SwiftUI
 import Charts
 import SwiftData
 
-struct GroupedSteps {
-    var entries: [HealthSteps]
-    var startDate: Date
-    var previousEntries: [HealthSteps]
-    
-    init(entries: [HealthSteps], startDate: Date, previousEntries: [HealthSteps]) {
-        self.entries = entries
-        self.startDate = startDate
-        self.previousEntries = previousEntries
-    }
-    
-}
-
 struct StepsView: View {
-    @Query(filter: #Predicate<HealthSteps> { $0.steps != 0 }) private var healthSteps: [HealthSteps]
-    @State private var selectedStepRange: GraphRanges = .week
-    
-    var groupedSteps: [GroupedSteps] {
-        let calendar = Calendar.current
-        var groupedObjects = [Date: [HealthSteps]]()
-        
-        for step in healthSteps {
-            switch selectedStepRange {
-            case .week:
-                let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: step.date))!
-                if groupedObjects[startOfWeek] == nil {
-                    groupedObjects[startOfWeek] = [step]
-                } else {
-                    groupedObjects[startOfWeek]?.append(step)
-                }
-            case .month:
-                let startOfMonth = calendar.date(from: calendar.dateComponents([.month, .year], from: step.date))!
-                if groupedObjects[startOfMonth] == nil {
-                    groupedObjects[startOfMonth] = [step]
-                } else {
-                    groupedObjects[startOfMonth]?.append(step)
-                }
-            case .sixMonths:
-                let components = calendar.dateComponents([.year, .month], from: step.date)
-                let month = components.month!
-                let year = components.year!
-                let startOfPeriod: Date
-                if month <= 6 {
-                    startOfPeriod = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
-                } else {
-                    startOfPeriod = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
-                }
-                if groupedObjects[startOfPeriod] == nil {
-                    groupedObjects[startOfPeriod] = [step]
-                } else {
-                    groupedObjects[startOfPeriod]?.append(step)
-                }
-            }
-        }
-        
-        let sortedObjects = groupedObjects.keys.sorted()
-        var groupedSteps = sortedObjects.enumerated().map { index, key in
-            let previousEntries = index > 0 ? groupedObjects[sortedObjects[index - 1]]! : []
-            return GroupedSteps(entries: groupedObjects[key]!, startDate: key, previousEntries: previousEntries)
-        }.sorted(by: { $0.startDate < $1.startDate })
-        
-        if groupedSteps.isEmpty {
-            let startDate: Date
-            switch selectedStepRange {
-            case .week:
-                startDate = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
-            case .month:
-                startDate = calendar.date(from: calendar.dateComponents([.month, .year], from: Date()))!
-            case .sixMonths:
-                let components = calendar.dateComponents([.year, .month], from: Date())
-                let month = components.month!
-                let year = components.year!
-                if month <= 6 {
-                    startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
-                } else {
-                    startDate = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
-                }
-            }
-            groupedSteps.append(GroupedSteps(entries: [], startDate: startDate, previousEntries: []))
-        }
-        return groupedSteps.sorted(by: { $0.startDate < $1.startDate })
-    }
-    
-    var body: some View {
-        ZStack {
-            BackgroundView()
-            VStack {
-                Picker("Time Range", selection: $selectedStepRange) {
-                    Text("Week").tag(GraphRanges.week)
-                    Text("Month").tag(GraphRanges.month)
-                    Text("6 Months").tag(GraphRanges.sixMonths)
-                }
-                .pickerStyle(.segmented)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(groupedSteps, id: \.startDate) { group in
-                            StepsGraphView(steps: group.entries, previousSteps: group.previousEntries, startDate: group.startDate, selectedRange: selectedStepRange)
-                                .containerRelativeFrame(.horizontal)
-                                .frame(height: 500)
-                                .scrollTransition { content, phase in
-                                    content
-                                        .opacity(phase.isIdentity ? 1.0 : 0.1)
-                                        .offset(y: phase.isIdentity ? 0 : 70)
-                                }
-                        }
-                    }
-                    .scrollTargetLayout()
-                }
-                .defaultScrollAnchor(.trailing)
-                .scrollTargetBehavior(.viewAligned)
-                .contentMargins(.horizontal, 8, for: .scrollContent)
-                
-                Spacer()
-            }
-            .padding(.horizontal)
-            .navigationTitle("Steps")
-            .navigationBarTitleDisplayMode(.large)
-        }
-    }
-}
-
-struct StepsGraphView: View {
-    var steps: [HealthSteps]
-    var previousSteps: [HealthSteps]
-    var startDate: Date
-    var selectedRange: GraphRanges
-    @State private var showTotal = false
+    @Query(sort: \HealthSteps.date, order: .reverse) private var healthSteps: [HealthSteps]
+    @State private var selectedRange: GraphRanges = .month
     @State private var selectedDate: Date? = nil
     @State private var selectedEntry: HealthSteps? = nil
     
     private func yAxisRange() -> ClosedRange<Double> {
-        guard let maxSteps = graphSteps.map({ $0.steps }).max() else {
-            return 0...1000
-        }
-        if showTotal && selectedRange == .sixMonths {
-            return 0...(maxSteps + 10000)
+        guard let maxSteps = filteredSteps.map({ $0.steps }).max() else {
+            return 0...10000
         }
         return 0...(maxSteps + 2000)
     }
-    private func averageSteps() -> Double {
-        guard !steps.isEmpty else { return 0 }
-        return steps.reduce(0) { $0 + $1.steps } / Double(steps.count)
-    }
-    private func previousAverageSteps() -> Double {
-        guard !previousSteps.isEmpty else { return 0 }
-        return previousSteps.reduce(0) { $0 + $1.steps } / Double(previousSteps.count)
-    }
-    private func totalSteps() -> Double {
-        guard !steps.isEmpty else { return 0 }
-        return steps.reduce(0) { $0 + $1.steps }
-    }
-    private func previousTotalSteps() -> Double {
-        guard !previousSteps.isEmpty else { return 0 }
-        return previousSteps.reduce(0) { $0 + $1.steps }
-    }
-    private func percentageChange() -> Double {
-        let current = showTotal ? totalSteps() : averageSteps()
-        let previous = showTotal ? previousTotalSteps() : previousAverageSteps()
-        guard previous != 0 else { return 0 }
-        return ((current - previous) / previous) * 100
-    }
-    private func stepsChange() -> Double {
-        let current = showTotal ? totalSteps() : averageSteps()
-        let previous = showTotal ? previousTotalSteps() : previousAverageSteps()
-        return current - previous
-    }
-    private func trend() -> String {
-        let change = percentageChange()
-        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "0%")
-    }
-
-    var graphSteps: [HealthSteps] {
-        if selectedRange == .sixMonths {
-            return steps.groupedByMonth().map { month in
-                var steps: Double
-                if showTotal {
-                    steps = month.entries.reduce(0) { $0 + $1.steps }
-                } else {
-                    steps = month.entries.reduce(0) { $0 + $1.steps } / Double(month.entries.count)
-                }
-                return HealthSteps(id: UUID().uuidString, date: month.startDate, steps: steps)
-            }
+    
+    private func xAxisRange() -> ClosedRange<Date> {
+        let calendar = Calendar.current
+        let endDate = Date.now.startOfDay
+        let startDate: Date
+        
+        if healthSteps.isEmpty {
+            startDate = endDate.startOfDay
         } else {
-            return steps
+            let oldestEntryDate = healthSteps.map { $0.date }.min()!
+            switch selectedRange {
+            case .week:
+                let weekStartDate = calendar.date(byAdding: .day, value: -7, to: endDate)!
+                startDate = max(weekStartDate, oldestEntryDate)
+            case .month:
+                let monthStartDate = calendar.date(byAdding: .month, value: -1, to: endDate)!
+                startDate = max(monthStartDate, oldestEntryDate)
+            case .sixMonths:
+                let sixMonthsStartDate = calendar.date(byAdding: .month, value: -6, to: endDate)!
+                startDate = max(sixMonthsStartDate, oldestEntryDate)
+            case .year:
+                let yearStartDate = calendar.date(byAdding: .year, value: -1, to: endDate)!
+                startDate = max(yearStartDate, oldestEntryDate)
+            case .all:
+                startDate = oldestEntryDate
+            }
         }
+        return startDate...endDate
+    }
+    
+    var filteredSteps: [HealthSteps] {
+        let calendar = Calendar.current
+        switch selectedRange {
+        case .week:
+            let startDate = calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
+            return healthSteps.filter({ $0.date >= startDate})
+        case .month:
+            let startDate = calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+            return healthSteps.filter({ $0.date >= startDate})
+        case .sixMonths:
+            let startDate = calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
+            return healthSteps.filter({ $0.date >= startDate})
+        case .year:
+            let startDate = calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
+            return healthSteps.filter({ $0.date >= startDate})
+        case .all:
+            return healthSteps
+        }
+    }
+    var previousFilteredSteps: [HealthSteps] {
+        let calendar = Calendar.current
+        switch selectedRange {
+        case .week:
+            let originalStartDate = calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
+            let newStartDate = calendar.date(byAdding: .day, value: -7, to: originalStartDate)!
+            return healthSteps.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
+        case .month:
+            let originalStartDate = calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+            let newStartDate = calendar.date(byAdding: .month, value: -1, to: originalStartDate)!
+            return healthSteps.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
+        case .sixMonths:
+            let originalStartDate = calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
+            let newStartDate = calendar.date(byAdding: .month, value: -6, to: originalStartDate)!
+            return healthSteps.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
+        case .year:
+            let originalStartDate = calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
+            let newStartDate = calendar.date(byAdding: .year, value: -1, to: originalStartDate)!
+            return healthSteps.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
+        case .all:
+            return []
+        }
+    }
+    var averageSteps: Int {
+        guard !healthSteps.isEmpty else { return 0 }
+        return Int(filteredSteps.reduce(0) { $0 + $1.steps } / Double(filteredSteps.count))
+    }
+    var previousAverageSteps: Int {
+        guard !healthSteps.isEmpty else { return 0 }
+        return Int(previousFilteredSteps.reduce(0) { $0 + $1.steps } / Double(previousFilteredSteps.count))
     }
     
     var body: some View {
         VStack {
-            HStack {
-                VStack(alignment: .leading) {
-                    if showTotal {
-                        Text("Total")
-                            .foregroundStyle(.secondary)
-                            .textScale(.secondary)
-                    } else {
-                        Text(steps.count > 1 ? "Daily Average" : " ")
-                            .foregroundStyle(.secondary)
-                            .textScale(.secondary)
-                    }
-                    HStack(alignment: .bottom, spacing: 3) {
-                        if !steps.isEmpty {
-                            Text("\(Int(showTotal ? totalSteps() : averageSteps()))")
-                                .font(.largeTitle)
-                            Text("Steps")
-                                .foregroundStyle(.secondary)
-                                .offset(y: -4.0)
+            VStack {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if !healthSteps.isEmpty {
+                            if let today = healthSteps.first(where: { $0.date == .now.startOfDay }) {
+                                Text("Today")
+                                    .foregroundStyle(.secondary)
+                                    .textScale(.secondary)
+                                Text("\(Int(today.steps)) Steps")
+                                    .font(.title)
+                            } else if let mostRecent = healthSteps.first {
+                                Text(mostRecent.date, format: .dateTime.month().day().year())
+                                    .foregroundStyle(.secondary)
+                                    .textScale(.secondary)
+                                Text("\(Int(mostRecent.steps)) Steps")
+                                    .font(.title)
+                            }
                         } else {
                             Text("No Data")
-                                .font(.largeTitle)
+                                .font(.title)
                         }
                     }
-                    Text(dateRange(startDate: startDate, selectedRange: selectedRange))
-                        .foregroundStyle(.secondary)
-                        .textScale(.secondary)
                 }
-                .onTapGesture {
-                    withAnimation(.easeIn) {
-                        showTotal.toggle()
-                    }
-                }
-                Spacer()
-                if !previousSteps.isEmpty {
-                    VStack(alignment: .trailing) {
-                        Text("Trend")
-                            .foregroundStyle(.secondary)
-                            .textScale(.secondary)
-                        Text(trend())
-                            .font(.title)
-                            .foregroundStyle(trend().contains("↓") ? .red : .green)
-                        let change = stepsChange()
-                        Text(change > 0 ? "+\(Int(change)) steps\(!showTotal ? "/day" : "")" : (change < 0 ? "\(Int(change)) steps\(!showTotal ? "/day" : "")" : "Same Steps"))
-                            .textScale(.secondary)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .fontWeight(.medium)
-            Chart(graphSteps) { day in
-                BarMark(x: .value("Date", adjustDate(day.date, selectedRange: selectedRange)), y: .value("Steps", day.steps), width: selectedRange == .month ? 8 : 30)
-                    .foregroundStyle(Color.red.gradient)
-                if let selectedEntry {
-                    RuleMark(x: .value("Date", adjustDate(selectedEntry.date, selectedRange: selectedRange)))
+                .hSpacing(.leading)
+                .fontWeight(.semibold)
+                .padding(.bottom)
+                
+                Chart(filteredSteps) { day in
+                    AreaMark(x: .value("Date", day.date), yStart: .value("Steps", 0), yEnd: .value("Steps", day.steps))
+                        .foregroundStyle(Color.red.opacity(0.4))
+                        .interpolationMethod(.monotone)
+                    LineMark(x: .value("Date", day.date), y: .value("Steps", day.steps))
                         .foregroundStyle(Color.red)
-                        .lineStyle(StrokeStyle(lineWidth: 0.1))
-                        .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text(annotationDate(for: selectedEntry.date, selectedRange: selectedRange))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                HStack(alignment: .bottom, spacing: 3) {
-                                    Text("\(Int(selectedEntry.steps))")
-                                        .font(.title3)
-                                        .foregroundStyle(.white)
-                                    Text("Steps")
+                        .interpolationMethod(.monotone)
+                        .lineStyle(StrokeStyle(lineWidth: 1.5))
+                    if let selectedEntry {
+                        PointMark(x: .value("Date", selectedEntry.date), y: .value("Steps", selectedEntry.steps))
+                            .foregroundStyle(Color.red)
+                        RuleMark(x: .value("Date", selectedEntry.date))
+                            .foregroundStyle(Color.red)
+                            .lineStyle(StrokeStyle(lineWidth: 1.5))
+                            .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("\(selectedEntry.date.formatted(.dateTime.month().day().year()))")
+                                        .font(.caption)
                                         .foregroundStyle(.secondary)
-                                        .padding(.bottom, 1)
+                                    HStack(alignment: .bottom, spacing: 3) {
+                                        Text("\(Int(selectedEntry.steps))")
+                                            .font(.title3)
+                                            .foregroundStyle(.white)
+                                        Text("Steps")
+                                            .foregroundStyle(.secondary)
+                                            .padding(.bottom, 1)
+                                    }
+                                }
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background {
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(Color.red.gradient)
                                 }
                             }
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background {
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .fill(Color.red.gradient)
-                            }
-                        }
-                }
-            }
-            .animation(.easeIn, value: selectedRange)
-            .chartYScale(domain: yAxisRange())
-            .chartXScale(domain: xAxisRange(startDate: startDate, selectedRange: selectedRange))
-            .chartXAxis {
-                switch selectedRange {
-                case .week:
-                    AxisMarks(values: .automatic(desiredCount: 7)) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: true)
-                    }
-                case .month:
-                    AxisMarks(values: .stride(by: .day, count: 8)) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.month().day())
-                    }
-                case .sixMonths:
-                    AxisMarks(values: .stride(by: .month, count: 1)) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.month(), centered: true)
                     }
                 }
-            }
-            .chartXSelection(value: $selectedDate)
-            .onChange(of: selectedDate) {
-                if let selectedDate {
-                    let calendar = Calendar.current
-                    let entries = graphSteps
-                    
-                    let dayComponent = calendar.component(.day, from: selectedDate)
-                    let monthComponent = calendar.component(.month, from: selectedDate)
-                    let yearComponent = calendar.component(.year, from: selectedDate)
-                    if selectedRange == .sixMonths {
-                        if let currentEntry = entries.first(where: { item in
-                            calendar.component(.month, from: item.date) == monthComponent &&
-                            calendar.component(.year, from: item.date) == yearComponent
-                        }) {
-                            selectedEntry = currentEntry
-                        }
-                    } else {
-                        if let currentEntry = entries.first(where: { item in
+                .chartYScale(domain: yAxisRange())
+                .chartXScale(domain: xAxisRange())
+                .chartXAxis {}
+                .chartXSelection(value: $selectedDate)
+                .onChange(of: selectedDate) {
+                    if let selectedDate {
+                        let calendar = Calendar.current
+                        let dayComponent = calendar.component(.day, from: selectedDate)
+                        let monthComponent = calendar.component(.month, from: selectedDate)
+                        let yearComponent = calendar.component(.year, from: selectedDate)
+                        if let currentEntry = filteredSteps.first(where: { item in
                             calendar.component(.day, from: item.date) == dayComponent &&
                             calendar.component(.month, from: item.date) == monthComponent &&
                             calendar.component(.year, from: item.date) == yearComponent
                         }) {
                             selectedEntry = currentEntry
                         }
+                    } else {
+                        selectedEntry = nil
                     }
-                } else {
-                    selectedEntry = nil
                 }
+                .frame(height: 250)
+                
+                HStack {
+                    Text(xAxisRange().lowerBound, format: .dateTime.month(.abbreviated).day().year())
+                    Spacer()
+                    Text("Today")
+                        .padding(.trailing, 45)
+                }
+                .textScale(.secondary)
+                .foregroundStyle(.secondary)
+                
+                Picker("Time Range", selection: $selectedRange) {
+                    Text("W").tag(GraphRanges.week)
+                    Text("M").tag(GraphRanges.month)
+                    Text("6M").tag(GraphRanges.sixMonths)
+                    Text("Y").tag(GraphRanges.year)
+                    Text("All").tag(GraphRanges.all)
+                }
+                .pickerStyle(.segmented)
+                .padding(.top)
+            }
+            .padding()
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            
+            if filteredSteps.count > 1 {
+                HStack {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Daily Average")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                        Text("\(averageSteps) Steps")
+                            .font(.title2)
+                    }
+                    Spacer()
+                    if previousFilteredSteps.count > 1 {
+                        VStack(alignment: .trailing, spacing: 0) {
+                            Text("Previous \(selectedRange.rawValue)")
+                                .foregroundStyle(.secondary)
+                                .textScale(.secondary)
+                            Text("\(previousAverageSteps) Steps")
+                                .font(.title2)
+                        }
+                    }
+                }
+                .fontWeight(.semibold)
+                .padding()
+                .background(.ultraThinMaterial, in: .rect(cornerRadius: 12, style: .continuous))
             }
         }
+        .padding(.horizontal)
+        .navigationTitle("Steps")
+        .navigationBarTitleDisplayMode(.large)
+        .vSpacing(.top)
     }
 }
 
 #Preview {
     NavigationView {
         StepsView()
-    }
-}
-
-extension Array where Element == HealthSteps {
-    func groupedByMonth() -> [GroupedSteps] {
-        let calendar = Calendar.current
-        var groupedObjects = [Date: [HealthSteps]]()
-        
-        for entry in self {
-            let startOfMonth = calendar.date(from: calendar.dateComponents([.month, .year], from: entry.date))!
-            if groupedObjects[startOfMonth] == nil {
-                groupedObjects[startOfMonth] = [entry]
-            } else {
-                groupedObjects[startOfMonth]?.append(entry)
-            }
-        }
-        return groupedObjects.keys.sorted().map { key in
-            GroupedSteps(entries: groupedObjects[key]!, startDate: key, previousEntries: [])
-        }
     }
 }

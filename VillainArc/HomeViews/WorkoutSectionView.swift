@@ -2,9 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct WorkoutSectionView: View {
-    @Query(filter: #Predicate<Workout> { workout in
-        !workout.template
-    }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var workouts: [Workout]
+    @Query(filter: #Predicate<Workout> { $0.template == false }, sort: \Workout.startTime, order: .reverse, animation: .smooth) private var workouts: [Workout]
     @Environment(\.modelContext) private var context
     @State private var workoutStarted = false
     @State private var existingWorkout: Workout? = nil

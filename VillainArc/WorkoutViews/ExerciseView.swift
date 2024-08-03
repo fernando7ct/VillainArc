@@ -67,27 +67,29 @@ struct ExerciseView: View {
                     if !exercise.sets.isEmpty {
                         HStack {
                             Text("Set")
-                            Spacer()
+                                .padding(.trailing)
                             Text("Reps")
                             Spacer()
                             Text("Weight")
                             Spacer()
+                            Text("Previous")
+                                .padding(.trailing, 7)
                         }
                         .fontWeight(.semibold)
                         .font(.title2)
                     }
                     ForEach(exercise.sets.indices, id: \.self) { setIndex in
-                        HStack {
+                        HStack(spacing: 5) {
                             Text("\(setIndex + 1)")
                                 .padding(.horizontal)
-                                .padding(.vertical, 7)
+                                .padding(.vertical, 9)
                                 .background(BlurView())
                                 .cornerRadius(12)
                                 .strikethrough(exercise.sets[setIndex].completed)
                             TextField("", value: $exercise.sets[setIndex].reps, format: .number)
                                 .keyboardType(.numberPad)
-                                .padding(.horizontal)
-                                .padding(.vertical, 7)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 9)
                                 .background(BlurView())
                                 .cornerRadius(12)
                                 .strikethrough(exercise.sets[setIndex].completed)
@@ -95,10 +97,15 @@ struct ExerciseView: View {
                                 .onChange(of: exercise.sets[setIndex].reps) {
                                     updateLiveActivity()
                                 }
+                                .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
+                                    if let textField = obj.object as? UITextField {
+                                        textField.selectAll(nil)
+                                    }
+                                }
                             TextField("", value: $exercise.sets[setIndex].weight, format: .number)
                                 .keyboardType(.decimalPad)
-                                .padding(.horizontal)
-                                .padding(.vertical, 7)
+                                .padding(.horizontal, 9)
+                                .padding(.vertical, 9)
                                 .background(BlurView())
                                 .cornerRadius(12)
                                 .strikethrough(exercise.sets[setIndex].completed)
@@ -106,6 +113,27 @@ struct ExerciseView: View {
                                 .onChange(of: exercise.sets[setIndex].weight) {
                                     updateLiveActivity()
                                 }
+                                .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
+                                    if let textField = obj.object as? UITextField {
+                                        textField.selectAll(nil)
+                                    }
+                                }
+                            if setIndex < exercise.latestSets.count {
+                                Text("\(exercise.latestSets[setIndex].reps)x\(formattedDouble(exercise.latestSets[setIndex].weight)) lbs")
+                                    .frame(maxWidth: .infinity)
+                                    .lineLimit(1)
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 9)
+                                    .background(BlurView())
+                                    .cornerRadius(12)
+                                    .minimumScaleFactor(0.7)
+                            } else {
+                                Text("-")
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 9)
+                                    .background(BlurView())
+                                    .cornerRadius(12)
+                            }
                         }
                         .font(.title2)
                         .foregroundStyle(exercise.sets[setIndex].completed ? .secondary : .primary)

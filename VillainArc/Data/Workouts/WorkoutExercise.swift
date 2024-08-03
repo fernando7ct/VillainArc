@@ -60,25 +60,29 @@ struct TempExercise: Identifiable {
     var notes: String
     var sameRestTimes: Bool
     var sets: [TempSet]
+    var latestSets: [TempSet]
     
-    init(name: String, category: String, repRange: String, notes: String, sameRestTimes: Bool, sets: [TempSet]) {
+    init(name: String, category: String, repRange: String, notes: String, sameRestTimes: Bool, sets: [TempSet], latestSets: [TempSet] = []) {
         self.name = name
         self.category = category
         self.repRange = repRange
         self.notes = notes
         self.sameRestTimes = sameRestTimes
         self.sets = sets
+        self.latestSets = latestSets
     }
     
-    init(from exercise: WorkoutExercise) {
+    init(from exercise: WorkoutExercise, latestSets: [TempSet] = []) {
         self.name = exercise.name
         self.category = exercise.category
         self.repRange = exercise.repRange
         self.notes = exercise.notes
         self.sameRestTimes = exercise.sameRestTimes
         self.sets = exercise.sets.sorted(by: { $0.order < $1.order }).map { TempSet(from: $0) }
+        self.latestSets = latestSets
     }
 }
+
 struct ExerciseInfo {
     var name: String
     var category: String

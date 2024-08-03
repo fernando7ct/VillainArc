@@ -1,8 +1,6 @@
-import Foundation
 import SwiftData
 import FirebaseFirestore
 import FirebaseAuth
-import FirebaseStorage
 import SwiftUI
 
 extension DataManager {
@@ -26,7 +24,7 @@ extension DataManager {
         db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData)
         print(update ? "Health Steps updated in Firebase" : "Health Steps saved to Firebase")
     }
-    func saveHealthActiveEnergy(activeEnergy: HealthActiveEnergy, context: ModelContext, update: Bool) {
+    func saveHealthEnergy(energy: HealthEnergy, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
@@ -34,57 +32,17 @@ extension DataManager {
         if update {
             do {
                 try context.save()
-                print("Health Active Energy updated in SwiftData")
+                print("Health Energy updated in SwiftData")
             } catch {
-                print("Error updating Health Active Energy in SwiftData: \(error.localizedDescription)")
+                print("Error updating Health Energy in SwiftData: \(error.localizedDescription)")
             }
         } else {
-            context.insert(activeEnergy)
-            print("Health Active Energy saved to SwiftData")
+            context.insert(energy)
+            print("Health Energy saved to SwiftData")
         }
-        let healthActiveEnergy = activeEnergy.toDictionary()
-        db.collection("users").document(userID).collection("HealthActiveEnergy").document(activeEnergy.id).setData(healthActiveEnergy)
-        print(update ? "Health Active Energy updated in Firebase" : "Health Active Energy saved to Firebase")
-    }
-    func saveHealthRestingEnergy(restingEnergy: HealthRestingEnergy, context: ModelContext, update: Bool) {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            print("No user is signed in.")
-            return
-        }
-        if update {
-            do {
-                try context.save()
-                print("Health Resting Energy updated in SwiftData")
-            } catch {
-                print("Error updating Health Resting Energy in SwiftData: \(error.localizedDescription)")
-            }
-        } else {
-            context.insert(restingEnergy)
-            print("Health Resting Energy saved to SwiftData")
-        }
-        let healthRestingEnergy = restingEnergy.toDictionary()
-        db.collection("users").document(userID).collection("HealthRestingEnergy").document(restingEnergy.id).setData(healthRestingEnergy)
-        print(update ? "Health Resting Energy updated in Firebase" : "Health Resting Energy saved to Firebase")
-    }
-    func saveHealthWalkingRunningDistance(healthDistance: HealthWalkingRunningDistance, context: ModelContext, update: Bool) {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            print("No user is signed in.")
-            return
-        }
-        if update {
-            do {
-                try context.save()
-                print("Health Walking Running Distance updated in SwiftData")
-            } catch {
-                print("Error updating Health Walking Running Distance in SwiftData: \(error.localizedDescription)")
-            }
-        } else {
-            context.insert(healthDistance)
-            print("Health Walking Running Distance saved to SwiftData")
-        }
-        let healthDistanceData = healthDistance.toDictionary()
-        db.collection("users").document(userID).collection("HealthWalkingRunningDistance").document(healthDistance.id).setData(healthDistanceData)
-        print(update ? "Health Walking Running Distance updated in Firebase" : "Health Walking Running Distance saved to Firebase")
+        let healthEnergy = energy.toDictionary()
+        db.collection("users").document(userID).collection("HealthEnergy").document(energy.id).setData(healthEnergy)
+        print(update ? "Health Energy updated in Firebase" : "Health Energy saved to Firebase")
     }
     func downloadHealthSteps(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).collection("HealthSteps").getDocuments { snapshot, error in
@@ -102,50 +60,18 @@ extension DataManager {
             }
         }
     }
-    func downloadHealthActiveEnergy(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
-        db.collection("users").document(userID).collection("HealthActiveEnergy").getDocuments { snapshot, error in
+    func downloadHealthEnergy(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
+        db.collection("users").document(userID).collection("HealthEnergy").getDocuments { snapshot, error in
             if let snapshot = snapshot {
                 for document in snapshot.documents {
-                    if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let activeEnergy = document.data()["activeEnergy"] as? Double {
-                        let newHealthActiveEnergy = HealthActiveEnergy(id: id, date: date, activeEnergy: activeEnergy)
-                        context.insert(newHealthActiveEnergy)
+                    if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let activeEnergy = document.data()["activeEnergy"] as? Double, let restingEnergy = document.data()["restingEnergy"] as? Double {
+                        let newHealthEnergy = HealthEnergy(id: id, date: date, restingEnergy: restingEnergy, activeEnergy: activeEnergy)
+                        context.insert(newHealthEnergy)
                     }
                 }
                 completion(true)
             } else {
-                print("Error downloading health active energy: \(error?.localizedDescription ?? "Unknown error")")
-                completion(false)
-            }
-        }
-    }
-    func downloadHealthRestingEnergy(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
-        db.collection("users").document(userID).collection("HealthRestingEnergy").getDocuments { snapshot, error in
-            if let snapshot = snapshot {
-                for document in snapshot.documents {
-                    if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let restingEnergy = document.data()["restingEnergy"] as? Double {
-                        let newHealthRestingEnergy = HealthRestingEnergy(id: id, date: date, restingEnergy: restingEnergy)
-                        context.insert(newHealthRestingEnergy)
-                    }
-                }
-                completion(true)
-            } else {
-                print("Error downloading health resting energy: \(error?.localizedDescription ?? "Unknown error")")
-                completion(false)
-            }
-        }
-    }
-    func downloadHealthWalkingRunningDistance(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
-        db.collection("users").document(userID).collection("HealthWalkingRunningDistance").getDocuments { snapshot, error in
-            if let snapshot = snapshot {
-                for document in snapshot.documents {
-                    if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let distance = document.data()["distance"] as? Double {
-                        let newHealthDistance = HealthWalkingRunningDistance(id: id, date: date, distance: distance)
-                        context.insert(newHealthDistance)
-                    }
-                }
-                completion(true)
-            } else {
-                print("Error downloading health walking running distance: \(error?.localizedDescription ?? "Unknown error")")
+                print("Error downloading health energy: \(error?.localizedDescription ?? "Unknown error")")
                 completion(false)
             }
         }

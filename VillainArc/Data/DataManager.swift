@@ -76,29 +76,29 @@ class DataManager {
     }
     func createSampleData(context: ModelContext) {
         let incline = TempExercise(name: "Smith Machine Incline Bench Press", category: "Chest", repRange: "3-7", notes: "", sameRestTimes: false, sets: [
-                TempSet(reps: 0, weight: 0, restMinutes: 1, restSeconds: 30),
-                TempSet(reps: 0, weight: 0, restMinutes: 2, restSeconds: 00),
-                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 00),
-                TempSet(reps: 0, weight: 0, restMinutes: 4, restSeconds: 00),
-                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 00)
+            TempSet(reps: 0, weight: 0, restMinutes: 1, restSeconds: 30),
+            TempSet(reps: 0, weight: 0, restMinutes: 2, restSeconds: 00),
+            TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 00),
+            TempSet(reps: 0, weight: 0, restMinutes: 4, restSeconds: 00),
+            TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 00)
         ])
         let machineLaterals = TempExercise(name: "Machine Lateral Raise", category: "Shoulders", repRange: "8-12", notes: "", sameRestTimes: false, sets: [
-                TempSet(reps: 0, weight: 0, restMinutes: 2, restSeconds: 0),
-                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
-                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
-                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+            TempSet(reps: 0, weight: 0, restMinutes: 2, restSeconds: 0),
+            TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+            TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+            TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
         ])
         let inclinePress = TempExercise(name: "Incline Machine Press", category: "Chest", repRange: "8-12", notes: "", sameRestTimes: false, sets: [
-                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
-                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+            TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+            TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
         ])
         let cableLaterals = TempExercise(name: "Cable Lateral Raise", category: "Shoulders", repRange: "12-15", notes: "", sameRestTimes: false, sets: [
-                TempSet(reps: 0, weight: 0, restMinutes: 1, restSeconds: 30),
-                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+            TempSet(reps: 0, weight: 0, restMinutes: 1, restSeconds: 30),
+            TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
         ])
         let benchPress = TempExercise(name: "Bench Press", category: "Chest", repRange: "3-7", notes: "", sameRestTimes: false, sets: [
-                TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
-                TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
+            TempSet(reps: 0, weight: 0, restMinutes: 3, restSeconds: 0),
+            TempSet(reps: 0, weight: 0, restMinutes: 0, restSeconds: 0)
         ])
         saveWorkout(exercises: [incline, machineLaterals, inclinePress, cableLaterals, benchPress], title: "Fernando's Chest & Side Delts Workout", notes: "", startTime: Date(), endTime: Date(), isTemplate: true, context: context)
     }
@@ -129,7 +129,6 @@ class DataManager {
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
         print("Workout saved to Firebase")
     }
-    
     func updateWorkout(exercises: [TempExercise], title: String, notes: String, startTime: Date, endTime: Date, workout: Workout?, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
@@ -228,13 +227,20 @@ class DataManager {
         }
         db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).delete()
         print("Weight Entry deleted from Firebase")
+        HealthManager.shared.deleteWeightFromHealthKit(weightEntry: weightEntry) { success, error in
+            if success {
+                print("Weight Entry deleted from HealthKit")
+            } else {
+                print("Error deleting Weight Entry from HealthKit: \(String(describing: error))")
+            }
+        }
     }
     func saveHomeGym(gym: MKMapItem, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
         }
-
+        
         let fetch = FetchDescriptor<Gym>()
         guard let gyms = try? context.fetch(fetch) else { return }
         
@@ -336,9 +342,7 @@ class DataManager {
             try context.delete(model: WorkoutExercise.self)
             try context.delete(model: ExerciseSet.self)
             try context.delete(model: HealthSteps.self)
-            try context.delete(model: HealthActiveEnergy.self)
-            try context.delete(model: HealthRestingEnergy.self)
-            try context.delete(model: HealthWalkingRunningDistance.self)
+            try context.delete(model: HealthEnergy.self)
             try context.delete(model: NutritionHub.self)
             try context.delete(model: NutritionEntry.self)
             try context.delete(model: NutritionFood.self)
@@ -364,9 +368,7 @@ class DataManager {
                 self.downloadWorkouts(userID: userID, context: context, completion: completion)
                 self.downloadHomeGym(userId: userID, context: context, completion: completion)
                 self.downloadHealthSteps(userID: userID, context: context, completion: completion)
-                self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
-                self.downloadHealthRestingEnergy(userID: userID, context: context, completion: completion)
-                self.downloadHealthWalkingRunningDistance(userID: userID, context: context, completion: completion)
+                self.downloadHealthEnergy(userID: userID, context: context, completion: completion)
                 self.downloadNutritionHub(userID: userID, context: context, completion: completion)
                 self.downloadNutritionEntries(userID: userID, context: context, completion: completion)
                 self.downloadNutritionFoods(userID: userID, context: context, completion: completion)
@@ -391,9 +393,7 @@ class DataManager {
                     self.downloadWorkouts(userID: userID, context: context, completion: completion)
                     self.downloadHomeGym(userId: userID, context: context, completion: completion)
                     self.downloadHealthSteps(userID: userID, context: context, completion: completion)
-                    self.downloadHealthActiveEnergy(userID: userID, context: context, completion: completion)
-                    self.downloadHealthRestingEnergy(userID: userID, context: context, completion: completion)
-                    self.downloadHealthWalkingRunningDistance(userID: userID, context: context, completion: completion)
+                    self.downloadHealthEnergy(userID: userID, context: context, completion: completion)
                     self.downloadNutritionHub(userID: userID, context: context, completion: completion)
                     self.downloadNutritionEntries(userID: userID, context: context, completion: completion)
                     self.downloadNutritionFoods(userID: userID, context: context, completion: completion)
@@ -503,7 +503,7 @@ class DataManager {
             if let snapshot = snapshot {
                 for document in snapshot.documents {
                     if let id = document.data()["id"] as? String,
-                        let title = document.data()["title"] as? String,
+                       let title = document.data()["title"] as? String,
                        let startTime = (document.data()["startTime"] as? Timestamp)?.dateValue(), let endTime = (document.data()["endTime"] as? Timestamp)?.dateValue(), let notes = document.data()["notes"] as? String, let template = document.data()["template"] as? Bool, let exercisesData = document.data()["exercises"] as? [[String: Any]] {
                         let newWorkout = Workout(id: id, title: title, startTime: startTime, endTime: endTime, notes: notes, template: template, exercises: [])
                         context.insert(newWorkout)

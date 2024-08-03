@@ -2,155 +2,201 @@ import SwiftUI
 import Charts
 import SwiftData
 
-enum GraphRanges {
-    case week
-    case month
-    case sixMonths
-}
-
-struct GroupedWeight {
-    var entries: [WeightEntry]
-    var startDate: Date
-    var previousEntries: [WeightEntry]
-    
-    init(entries: [WeightEntry], startDate: Date, previousEntries: [WeightEntry]) {
-        self.entries = entries
-        self.startDate = startDate
-        self.previousEntries = previousEntries
-    }
-}
-
 struct WeightView: View {
     @State private var addWeightSheetActive = false
     @Query(sort: \WeightEntry.date, order: .reverse) private var weightEntries: [WeightEntry]
-    @State private var selectedWeightRange: GraphRanges = .week
+    @State private var selectedRange: GraphRanges = .month
+    @State private var selectedDate: Date? = nil
+    @State private var selectedEntry: WeightEntry? = nil
     
-    var groupedWeights: [GroupedWeight] {
+    private func yAxisRange() -> ClosedRange<Double> {
+        guard let minWeight = filteredEntries.map({ $0.weight }).min(),
+              let maxWeight = filteredEntries.map({ $0.weight }).max() else {
+            return 0...100
+        }
+        return (minWeight < 5 ? 0 : minWeight - 5)...(maxWeight + 5)
+    }
+    
+    private func xAxisRange() -> ClosedRange<Date> {
         let calendar = Calendar.current
-        var groupedObjects = [Date: [WeightEntry]]()
+        let endDate = Date.now
+        let startDate: Date
         
-        for weight in weightEntries {
-            switch selectedWeightRange {
+        if weightEntries.isEmpty {
+            startDate = endDate.startOfDay
+        } else {
+            let oldestEntryDate = weightEntries.map { $0.date }.min()!
+            switch selectedRange {
             case .week:
-                let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: weight.date))!
-                if groupedObjects[startOfWeek] == nil {
-                    groupedObjects[startOfWeek] = [weight]
-                } else {
-                    groupedObjects[startOfWeek]?.append(weight)
-                }
+                let weekStartDate = calendar.date(byAdding: .day, value: -7, to: endDate.startOfDay)!
+                startDate = max(weekStartDate, oldestEntryDate)
             case .month:
-                let startOfMonth = calendar.date(from: calendar.dateComponents([.month, .year], from: weight.date))!
-                if groupedObjects[startOfMonth] == nil {
-                    groupedObjects[startOfMonth] = [weight]
-                } else {
-                    groupedObjects[startOfMonth]?.append(weight)
-                }
+                let monthStartDate = calendar.date(byAdding: .month, value: -1, to: endDate.startOfDay)!
+                startDate = max(monthStartDate, oldestEntryDate)
             case .sixMonths:
-                let components = calendar.dateComponents([.year, .month], from: weight.date)
-                let month = components.month!
-                let year = components.year!
-                let startOfPeriod: Date
-                if month <= 6 {
-                    startOfPeriod = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
-                } else {
-                    startOfPeriod = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
-                }
-                if groupedObjects[startOfPeriod] == nil {
-                    groupedObjects[startOfPeriod] = [weight]
-                } else {
-                    groupedObjects[startOfPeriod]?.append(weight)
-                }
+                let sixMonthsStartDate = calendar.date(byAdding: .month, value: -6, to: endDate.startOfDay)!
+                startDate = max(sixMonthsStartDate, oldestEntryDate)
+            case .year:
+                let yearStartDate = calendar.date(byAdding: .year, value: -1, to: endDate.startOfDay)!
+                startDate = max(yearStartDate, oldestEntryDate)
+            case .all:
+                startDate = oldestEntryDate
             }
         }
-        let sortedObjects = groupedObjects.keys.sorted()
-        let groupedWeights = sortedObjects.enumerated().map { index, key in
-            let previousEntries = index > 0 ? groupedObjects[sortedObjects[index - 1]]! : []
-            return GroupedWeight(entries: groupedObjects[key]!, startDate: key, previousEntries: previousEntries)
-        }.sorted(by: { $0.startDate < $1.startDate })
-        
-        var newGrouped = groupedWeights
-        
-        for i in 0..<newGrouped.count {
-            if i > 0 {
-                newGrouped[i].entries.insert(groupedWeights[i - 1].entries.sorted(by: { $0.date < $1.date }).last!, at: 0)
-            }
-            if i < groupedWeights.count - 1 {
-                newGrouped[i].entries.append(groupedWeights[i + 1].entries.sorted(by: { $0.date < $1.date }).first!)
-            }
+        return startDate...endDate
+    }
+    
+    var filteredEntries: [WeightEntry] {
+        let calendar = Calendar.current
+        switch selectedRange {
+        case .week:
+            let startDate = calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
+            return weightEntries.filter({ $0.date >= startDate})
+        case .month:
+            let startDate = calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+            return weightEntries.filter({ $0.date >= startDate})
+        case .sixMonths:
+            let startDate = calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
+            return weightEntries.filter({ $0.date >= startDate})
+        case .year:
+            let startDate = calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
+            return weightEntries.filter({ $0.date >= startDate})
+        case .all:
+            return weightEntries
         }
-        if newGrouped.isEmpty {
-            let startDate: Date
-            switch selectedWeightRange {
-            case .week:
-                startDate = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
-            case .month:
-                startDate = calendar.date(from: calendar.dateComponents([.month, .year], from: Date()))!
-            case .sixMonths:
-                let components = calendar.dateComponents([.year, .month], from: Date())
-                let month = components.month!
-                let year = components.year!
-                if month <= 6 {
-                    startDate = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
-                } else {
-                    startDate = calendar.date(from: DateComponents(year: year, month: 7, day: 1))!
-                }
-            }
-            newGrouped.append(GroupedWeight(entries: [], startDate: startDate, previousEntries: []))
-        }
-        return newGrouped.sorted(by: { $0.startDate < $1.startDate })
     }
     
     var body: some View {
-        ZStack {
-            BackgroundView()
+        VStack {
             VStack {
-                Picker("Time Range", selection: $selectedWeightRange) {
-                    Text("Week").tag(GraphRanges.week)
-                    Text("Month").tag(GraphRanges.month)
-                    Text("6 Months").tag(GraphRanges.sixMonths)
-                }
-                .pickerStyle(.segmented)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ForEach(groupedWeights, id: \.startDate) { group in
-                            WeightGraphView(weights: group.entries, previousWeights: group.previousEntries, startDate: group.startDate, selectedRange: selectedWeightRange)
-                                .containerRelativeFrame(.horizontal)
-                                .frame(height: 500)
-                                .scrollTransition { content, phase in
-                                    content
-                                        .opacity(phase.isIdentity ? 1.0 : 0)
-                                        .offset(y: phase.isIdentity ? 0 : 70)
-                                }
+                HStack {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if !weightEntries.isEmpty {
+                            if let today = weightEntries.first(where: { $0.date.isSameDayAs(.now) }) {
+                                Text("Today")
+                                    .foregroundStyle(.secondary)
+                                    .textScale(.secondary)
+                                Text("\(formattedDouble(today.weight)) lbs")
+                                    .font(.title)
+                            } else if let mostRecent = weightEntries.first {
+                                Text(mostRecent.date, format: .dateTime.month().day().year())
+                                    .foregroundStyle(.secondary)
+                                    .textScale(.secondary)
+                                Text("\(formattedDouble(mostRecent.weight)) lbs")
+                                    .font(.title)
+                            }
+                        } else {
+                            Text("No Data")
+                                .font(.title)
                         }
                     }
-                    .scrollTargetLayout()
+                    .fontWeight(.semibold)
                 }
-                .defaultScrollAnchor(.trailing)
-                .scrollTargetBehavior(.viewAligned)
-                .contentMargins(.horizontal, 8, for: .scrollContent)
+                .hSpacing(.leading)
+                .padding(.bottom)
                 
-                NavigationLink(value: 3) {
-                    HStack {
-                        Text("All Weight Entries")
-                            .fontWeight(.semibold)
+                Chart(filteredEntries) { weight in
+                    AreaMark(x: .value("Date", weight.date), yStart: .value("Weight", yAxisRange().lowerBound), yEnd: .value("Weight", weight.weight))
+                        .foregroundStyle(Color.blue.opacity(0.4))
+                        .interpolationMethod(.monotone)
+                    LineMark(x: .value("Date", weight.date), y: .value("Weight", weight.weight))
+                        .foregroundStyle(Color.blue)
+                        .interpolationMethod(.monotone)
+                        .lineStyle(StrokeStyle(lineWidth: 1.5))
+                    if let selectedEntry {
+                        PointMark(x: .value("Date", selectedEntry.date), y: .value("Weight", selectedEntry.weight))
+                            .foregroundStyle(Color.blue)
+                        RuleMark(x: .value("Date", selectedEntry.date))
+                            .foregroundStyle(Color.blue)
+                            .lineStyle(StrokeStyle(lineWidth: 1.5))
+                            .annotation(position: .top, overflowResolution: .init(x: .fit(to: .plot), y: .fit(to: .chart))) {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("\(selectedEntry.date.formatted(.dateTime.month().day().year()))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    HStack(alignment: .bottom, spacing: 3) {
+                                        Text("\(formattedDouble(selectedEntry.weight))")
+                                            .font(.title3)
+                                            .foregroundStyle(.white)
+                                        Text("lbs")
+                                            .foregroundStyle(.secondary)
+                                            .padding(.bottom, 1)
+                                    }
+                                }
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background {
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(Color.blue.gradient)
+                                }
+                            }
                     }
-                    .hSpacing(.leading)
                 }
-                .padding()
-                .background {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(.ultraThinMaterial)
+                .chartYScale(domain: yAxisRange())
+                .chartXScale(domain: xAxisRange())
+                .chartXAxis {}
+                .chartXSelection(value: $selectedDate)
+                .onChange(of: selectedDate) {
+                    if let selectedDate {
+                        let calendar = Calendar.current
+                        let dayComponent = calendar.component(.day, from: selectedDate)
+                        let monthComponent = calendar.component(.month, from: selectedDate)
+                        let yearComponent = calendar.component(.year, from: selectedDate)
+                        if let currentEntry = filteredEntries.first(where: { item in
+                            calendar.component(.day, from: item.date) == dayComponent &&
+                            calendar.component(.month, from: item.date) == monthComponent &&
+                            calendar.component(.year, from: item.date) == yearComponent
+                        }) {
+                            selectedEntry = currentEntry
+                        }
+                    } else {
+                        selectedEntry = nil
+                    }
                 }
-                .padding(.top)
+                .frame(height: 250)
                 
-                Spacer()
+                HStack {
+                    Text(xAxisRange().lowerBound, format: .dateTime.month(.abbreviated).day().year())
+                    Spacer()
+                    Text("Today")
+                        .padding(.trailing, 30)
+                }
+                .textScale(.secondary)
+                .foregroundStyle(.secondary)
+                
+                Picker("Time Range", selection: $selectedRange) {
+                    Text("W").tag(GraphRanges.week)
+                    Text("M").tag(GraphRanges.month)
+                    Text("6M").tag(GraphRanges.sixMonths)
+                    Text("Y").tag(GraphRanges.year)
+                    Text("All").tag(GraphRanges.all)
+                }
+                .pickerStyle(.segmented)
+                .padding(.top)
             }
-            .padding(.horizontal)
-            .navigationTitle("Weight")
-            .navigationBarTitleDisplayMode(.large)
+            .padding()
+            .background {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            }
+            
+            NavigationLink(value: 3) {
+                HStack {
+                    Text("All Weight Entries")
+                        .fontWeight(.semibold)
+                }
+                .hSpacing(.leading)
+            }
+            .padding()
+            .background {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            }
         }
+        .padding(.horizontal)
         .navigationTitle("Weight")
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -164,181 +210,10 @@ struct WeightView: View {
                 }
             }
         }
+        .vSpacing(.top)
     }
 }
 
-struct WeightGraphView: View {
-    var weights: [WeightEntry]
-    var previousWeights: [WeightEntry]
-    var startDate: Date
-    var selectedRange: GraphRanges
-    @State private var selectedDate: Date? = nil
-    @State private var selectedEntry: WeightEntry? = nil
-    
-    private func yAxisRange() -> ClosedRange<Double> {
-        guard let minWeight = weights.map({ $0.weight }).min(),
-              let maxWeight = weights.map({ $0.weight }).max() else {
-            return 0...100
-        }
-        return (minWeight < 5 ? 0 : minWeight - 5)...(maxWeight + 5)
-    }
-    
-    private func averageWeight() -> Double {
-        let dateRange = xAxisRange(startDate: startDate, selectedRange: selectedRange)
-        let filteredWeights = weights.filter { dateRange.contains($0.date) }
-        
-        guard !filteredWeights.isEmpty else { return 0 }
-        
-        return filteredWeights.reduce(0) { $0 + $1.weight } / Double(filteredWeights.count)
-    }
-    private func previousAverageWeight() -> Double {
-        guard !previousWeights.isEmpty else { return 0 }
-        
-        return previousWeights.reduce(0) { $0 + $1.weight } / Double(previousWeights.count)
-    }
-    private func percentageChange(current: Double, previous: Double) -> Double {
-        guard previous != 0 else { return 0 }
-        return ((current - previous) / previous) * 100
-    }
-    private func weightChange(current: Double, previous: Double) -> Double {
-        return current - previous
-    }
-    private func trend() -> String {
-        let current = averageWeight()
-        let previous = previousAverageWeight()
-        let change = percentageChange(current: current, previous: previous)
-        
-        return change > 0 ? "↑ \(String(format: "%.1f", change))%" : (change < 0 ? "↓ \(String(format: "%.1f", abs(change)))%" : "→ 0%")
-    }
-    private func weightChangeText() -> String {
-        let current = averageWeight()
-        let previous = previousAverageWeight()
-        let change = percentageChange(current: current, previous: previous)
-        return change > 0 ? "+\(formattedDouble(change)) lbs" : (change < 0 ? "\(formattedDouble(change)) lbs" : "Same Weight")
-    }
-    
-    var body: some View {
-        VStack {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(weights.count > 1 ? "Average" : " ")
-                        .foregroundStyle(.secondary)
-                        .textScale(.secondary)
-                    HStack(alignment: .bottom, spacing: 3) {
-                        if averageWeight() != 0 {
-                            Text("\(formattedDouble(averageWeight()))")
-                                .font(.largeTitle)
-                            Text("lbs")
-                                .foregroundStyle(.secondary)
-                                .offset(y: -4.0)
-                        } else {
-                            Text("No Data")
-                                .font(.largeTitle)
-                        }
-                    }
-                    Text(dateRange(startDate: startDate, selectedRange: selectedRange))
-                        .foregroundStyle(.secondary)
-                        .textScale(.secondary)
-                }
-                Spacer()
-                if !previousWeights.isEmpty {
-                    VStack(alignment: .trailing) {
-                        Text("Trend")
-                            .foregroundStyle(.secondary)
-                            .textScale(.secondary)
-                        Text(trend())
-                            .font(.title)
-                            .foregroundStyle(trend().contains("↓") ? .red : .green)
-                        Text(weightChangeText())
-                            .textScale(.secondary)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .fontWeight(.medium)
-            Chart(weights.sorted(by: { $0.date < $1.date })) { weight in
-                AreaMark(x: .value("Date", weight.date), yStart: .value("Weight", yAxisRange().lowerBound), yEnd: .value("Weight", weight.weight))
-                    .foregroundStyle(Color.blue.opacity(0.4))
-                    .interpolationMethod(.monotone)
-                LineMark(x: .value("Date", weight.date), y: .value("Weight", weight.weight))
-                    .foregroundStyle(Color.blue)
-                    .interpolationMethod(.monotone)
-                    .lineStyle(StrokeStyle(lineWidth: 1.5))
-                if let selectedEntry, xAxisRange(startDate: startDate, selectedRange: selectedRange).contains(selectedEntry.date) {
-                    PointMark(x: .value("Date", selectedEntry.date), y: .value("Weight", selectedEntry.weight))
-                        .foregroundStyle(Color.blue)
-                    RuleMark(x: .value("Date", selectedEntry.date))
-                        .foregroundStyle(Color.blue)
-                        .lineStyle(StrokeStyle(lineWidth: 2))
-                        .annotation(position: .top, overflowResolution: .init(x: .fit(to: .plot), y: .fit(to: .chart))) {
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("\(selectedEntry.date.formatted(.dateTime.month().day().year()))")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                HStack(alignment: .bottom, spacing: 3) {
-                                    Text("\(formattedDouble(selectedEntry.weight))")
-                                        .font(.title3)
-                                    Text("lbs")
-                                        .foregroundStyle(.secondary)
-                                        .padding(.bottom, 1)
-                                }
-                            }
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background {
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .fill(Color(uiColor: UIColor.secondarySystemBackground))
-                            }
-                        }
-                }
-            }
-            .animation(.easeIn, value: selectedRange)
-            .chartYScale(domain: yAxisRange())
-            .chartXScale(domain: xAxisRange(startDate: startDate, selectedRange: selectedRange))
-            .chartXAxis {
-                switch selectedRange {
-                case .week:
-                    AxisMarks(values: .automatic(desiredCount: 7)) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.weekday(.abbreviated), centered: true)
-                    }
-                case .month:
-                    AxisMarks(values: .stride(by: .day, count: 8)) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.month().day())
-                    }
-                case .sixMonths:
-                    AxisMarks(values: .stride(by: .month, count: 1)) { value in
-                        AxisGridLine()
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.month(), centered: true)
-                    }
-                }
-            }
-            .chartXSelection(value: $selectedDate)
-            .onChange(of: selectedDate) {
-                if let selectedDate {
-                    let calendar = Calendar.current
-                    let dayComponent = calendar.component(.day, from: selectedDate)
-                    let monthComponent = calendar.component(.month, from: selectedDate)
-                    let yearComponent = calendar.component(.year, from: selectedDate)
-                    if let currentEntry = weights.first(where: { item in
-                        calendar.component(.day, from: item.date) == dayComponent &&
-                        calendar.component(.month, from: item.date) == monthComponent &&
-                        calendar.component(.year, from: item.date) == yearComponent
-                    }) {
-                        selectedEntry = currentEntry
-                    }
-                } else {
-                    selectedEntry = nil
-                }
-            }
-        }
-    }
-}
 #Preview {
     NavigationView {
         WeightView()

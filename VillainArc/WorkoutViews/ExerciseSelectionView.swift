@@ -143,6 +143,9 @@ struct ExerciseSelectionView: View {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button {
                             dismiss()
+                            if exerciseToReplaceIndex != nil {
+                                exerciseToReplaceIndex = nil
+                            }
                         } label: {
                             Text("Cancel")
                                 .fontWeight(.semibold)
