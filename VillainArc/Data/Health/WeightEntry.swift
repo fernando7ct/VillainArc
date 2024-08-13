@@ -18,3 +18,9 @@ class WeightEntry: Identifiable {
         self.photoData = photoData
     }
 }
+
+extension WeightEntry {
+    static func -(lhs: WeightEntry, rhs: WeightEntry) -> Double {
+        return lhs.weight - rhs.weight
+    }
+}

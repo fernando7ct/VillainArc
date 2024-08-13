@@ -3,26 +3,31 @@ import SwiftData
 
 struct NutritionEntryView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \NutritionEntry.date, animation: .smooth) private var entries: [NutritionEntry]
-    @State private var date = Calendar.current.startOfDay(for: Date())
+    @Query(sort: \NutritionEntry.date, order: .reverse) private var entries: [NutritionEntry]
+    @Binding var date: Date
     @Binding var path: NavigationPath
+    @State private var updateMealNames = false
+    @State private var updateGoals = false
     
-    private var firstDate: Date? {
+    var firstDate: Date? {
         entries.map { $0.date }.sorted().first
     }
-    private var lastDate: Date? {
+    var lastDate: Date? {
         entries.map { $0.date }.sorted().last
+    }
+    var selectedEntry: NutritionEntry {
+        entries.first(where: { $0.date == date }) ?? entries.first!
+    }
+    var todaysEntry: NutritionEntry {
+        entries.first(where: { $0.date == .now.startOfDay })!
     }
     
     private func changeDate(by days: Int) {
         guard !entries.isEmpty else { return }
         
         let sortedDates = entries.map { $0.date }.sorted()
-        
         guard let currentIndex = sortedDates.firstIndex(of: date) else { return }
-        
         let newIndex = currentIndex + days
-        
         if newIndex >= 0 && newIndex < sortedDates.count {
             date = sortedDates[newIndex]
         } else if newIndex < 0 {
@@ -36,34 +41,8 @@ struct NutritionEntryView: View {
         NavigationStack(path: $path) {
             ZStack {
                 BackgroundView()
-                TabView(selection: $date) {
-                    ForEach(entries) { entry in
-                        NutritionEntryDataView(entry: entry)
-                            .tag(entry.date)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
+                NutritionEntryDataView(entry: selectedEntry)
             }
-            .navigationTitle("\(date.formatted(.dateTime.month().day().year()))")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        changeDate(by: -1)
-                    } label: {
-                        Image(systemName: "chevron.left")
-                    }
-                    .disabled(date == firstDate)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { 
-                        changeDate(by: 1)
-                    } label: {
-                        Image(systemName: "chevron.right")
-                    }
-                    .disabled(date == lastDate)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: FoodCategory.self) { value in
                 AddFoodView(entry: value.entry, category: value.category)
             }
@@ -72,6 +51,64 @@ struct NutritionEntryView: View {
             }
             .navigationDestination(for: FoodEntryCategoryFirebase.self) { value in
                 FoodToEntryView(food: value.food, entry: value.entry, category: value.category, isFirebaseFood: value.firebase)
+            }
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    Text(date, format: .dateTime.month().day().year())
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    Spacer()
+                    Button {
+                        withAnimation(.snappy) {
+                            changeDate(by: -1)
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .padding(7)
+                            .background(.ultraThinMaterial, in: .circle)
+                    }
+                    .disabled(date == firstDate)
+                    .padding(.trailing, 5)
+                    Button {
+                        withAnimation(.snappy) {
+                            changeDate(by: 1)
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .padding(7)
+                            .background(.ultraThinMaterial, in: .circle)
+                    }
+                    .disabled(date == lastDate)
+                    Menu {
+                        Button {
+                            updateGoals.toggle()
+                        } label: {
+                            Label("Update Goals", systemImage: "chart.pie.fill")
+                        }
+                        Button {
+                            updateMealNames.toggle()
+                        } label: {
+                            Label("Change Meal Names", systemImage: "square.fill.text.grid.1x2")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .padding(10)
+                            .background(.ultraThinMaterial, in: .circle)
+                    }
+                }
+                .padding()
+                .sheet(isPresented: $updateMealNames) {
+                    UpdateMealNamesView(entry: todaysEntry)
+                }
+                .sheet(isPresented: $updateGoals) {
+                    NutritionSetupView(nutritionEntry: todaysEntry)
+                }
             }
         }
     }
@@ -112,8 +149,6 @@ struct FoodEntryCategoryFirebase: Hashable {
 struct NutritionEntryDataView: View {
     @Environment(\.modelContext) private var context
     @State private var showNotes = false
-    @State private var updateMealNames = false
-    @State private var updateGoals = false
     @State private var tempNotes = ""
     
     enum DisplayedMacros: String {
@@ -178,6 +213,11 @@ struct NutritionEntryDataView: View {
                     selectedMacro = .cals
                 }
             }
+            .scrollTransition { content, phase in
+                content
+                    .blur(radius: phase.isIdentity ? 0 : 1.5)
+                    .opacity(phase.isIdentity ? 1 : 0.7)
+            }
             HStack {
                 VStack(alignment: .center, spacing: 0) {
                     Text("Protein")
@@ -200,7 +240,7 @@ struct NutritionEntryDataView: View {
                 VStack(alignment: .center, spacing: 0) {
                     Text("Carbs")
                         .foregroundStyle(selectedMacro == .carbs ? Color.green : Color.secondary)
-                    Text("\(Int(entry.carbsConsumed)) / \(Int(entry.proteinGoal)) g")
+                    Text("\(Int(entry.carbsConsumed)) / \(Int(entry.carbsGoal)) g")
                 }
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity)
@@ -235,6 +275,11 @@ struct NutritionEntryDataView: View {
                 }
             }
             .padding(.horizontal)
+            .scrollTransition { content, phase in
+                content
+                    .blur(radius: phase.isIdentity ? 0 : 1.5)
+                    .opacity(phase.isIdentity ? 1 : 0.7)
+            }
             ForEach(entry.mealCategories, id: \.self) { category in
                 if !category.isEmpty {
                     VStack(spacing: 0) {
@@ -291,6 +336,11 @@ struct NutritionEntryDataView: View {
                         .customStyle()
                     }
                     .padding(.vertical, 10)
+                    .scrollTransition { content, phase in
+                        content
+                            .blur(radius: phase.isIdentity ? 0 : 1.5)
+                            .opacity(phase.isIdentity ? 1 : 0.7)
+                    }
                 }
             }
             Button {
@@ -304,32 +354,13 @@ struct NutritionEntryDataView: View {
                 .hSpacing(.leading)
                 .customStyle()
             }
-            if Calendar.current.startOfDay(for: Date()) == entry.date {
-                HStack {
-                    Button {
-                        updateGoals.toggle()
-                    } label: {
-                        Text("Update Goals")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(.thickMaterial, in: .rect(cornerRadius: 12))
-                    }
-                    Button {
-                        updateMealNames.toggle()
-                    } label: {
-                        Text("Change Meal Names")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(.thickMaterial, in: .rect(cornerRadius: 12))
-                        
-                    }
-                }
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
+            .scrollTransition { content, phase in
+                content
+                    .blur(radius: phase.isIdentity ? 0 : 1.5)
+                    .opacity(phase.isIdentity ? 1 : 0.7)
             }
         }
+        .scrollIndicators(.hidden)
         .sheet(isPresented: $showNotes, onDismiss: updateEntryNotes) {
             NavigationView {
                 ZStack {
@@ -367,11 +398,5 @@ struct NutritionEntryDataView: View {
             .presentationDragIndicator(.visible)
         }
         .scrollContentBackground(.hidden)
-        .sheet(isPresented: $updateMealNames) {
-            UpdateMealNamesView(entry: entry)
-        }
-        .sheet(isPresented: $updateGoals) {
-            NutritionSetupView(nutritionEntry: entry)
-        }
     }
 }

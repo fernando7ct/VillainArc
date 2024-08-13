@@ -6,6 +6,7 @@ struct AllWeightEntriesView: View {
     @Query(sort: \WeightEntry.date, order: .reverse) private var weightEntries: [WeightEntry]
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
+    @Namespace private var animation
     
     private func deleteWeightEntry(offsets: IndexSet) {
         withAnimation {
@@ -64,8 +65,6 @@ struct AllWeightEntriesView: View {
                 }
             }
             .navigationTitle("All Weight Entries")
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing && !weightEntries.isEmpty)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -74,7 +73,10 @@ struct AllWeightEntriesView: View {
                             showDeleteAllAlert = true
                         } label: {
                             Text("Delete All")
-                                .foregroundColor(.red)
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 9)
+                                .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
                         }
                     }
                 }
@@ -86,6 +88,11 @@ struct AllWeightEntriesView: View {
                             }
                         } label: {
                             Text(isEditing ? "Done" : "Edit")
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 9)
+                                .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
+                                .matchedGeometryEffect(id: "EDITMODE", in: animation)
                         }
                     }
                 }

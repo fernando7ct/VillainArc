@@ -33,10 +33,15 @@ struct ExercisesSectionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("Top Exercises")
-                    .fontWeight(.semibold)
-                    .font(.title2)
+            NavigationLink(value: 2) {
+                HStack(spacing: 3) {
+                    Text("Exercises")
+                        .font(.title2)
+                    Image(systemName: "chevron.right")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }
+                .fontWeight(.semibold)
             }
             .hSpacing(.leading)
             .padding(.horizontal)
@@ -52,16 +57,6 @@ struct ExercisesSectionView: View {
                 ForEach(topExercises, id: \.name) { item in
                     ExerciseRow(item: item)
                         .customStyle()
-                }
-            }
-            if workouts.flatMap({ $0.exercises }).count > 5 {
-                NavigationLink(value: 2) {
-                    HStack {
-                        Text("All Exercises")
-                            .fontWeight(.semibold)
-                    }
-                    .hSpacing(.leading)
-                    .customStyle()
                 }
             }
         }

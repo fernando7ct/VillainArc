@@ -17,9 +17,16 @@ struct WorkoutSectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Past Workouts")
+                NavigationLink(value: 1) {
+                    HStack(spacing: 3) {
+                        Text("Workouts")
+                            .font(.title2)
+                        Image(systemName: "chevron.right")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
                     .fontWeight(.semibold)
-                    .font(.title2)
+                }
                 Spacer()
                 Button(action: {
                     workoutStarted.toggle()
@@ -44,7 +51,7 @@ struct WorkoutSectionView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 0) {
-                        ForEach(workouts.prefix(3)) { workout in
+                        ForEach(workouts.prefix(10)) { workout in
                             WorkoutHomeRow(workout: workout)
                                 .contextMenu {
                                     Button {
@@ -74,17 +81,6 @@ struct WorkoutSectionView: View {
                     WorkoutView(existingWorkout: workout)
                 }
             }
-            if workouts.count > 2 {
-                NavigationLink(value: 1) {
-                    HStack {
-                        Text("All Workouts")
-                            .fontWeight(.semibold)
-                    }
-                    .hSpacing(.leading)
-                    .customStyle()
-                }
-            }
-            
         }
         .padding(.horizontal)
     }

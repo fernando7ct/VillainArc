@@ -110,7 +110,7 @@ class DataManager {
         let newWorkout = Workout(id: UUID().uuidString, title: title, startTime: startTime, endTime: endTime, notes: notes, template: isTemplate, exercises: [])
         context.insert(newWorkout)
         for (exerciseIndex, exercise) in exercises.enumerated() {
-            let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: Date(), order: exerciseIndex, workout: newWorkout, sets: [])
+            let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: startTime, order: exerciseIndex, workout: newWorkout, sets: [])
             context.insert(newExercise)
             for (setIndex, set) in exercise.sets.enumerated() {
                 let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)
@@ -153,7 +153,7 @@ class DataManager {
             print("Failed to update workout data, and clearing exercises: \(error.localizedDescription)")
         }
         for (exerciseIndex, exercise) in exercises.enumerated() {
-            let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: workout.endTime, order: exerciseIndex, workout: workout, sets: [])
+            let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: workout.startTime, order: exerciseIndex, workout: workout, sets: [])
             context.insert(newExercise)
             for (setIndex, set) in exercise.sets.enumerated() {
                 let newSet = ExerciseSet(id: UUID().uuidString, order: setIndex, tempSet: set, exercise: newExercise)

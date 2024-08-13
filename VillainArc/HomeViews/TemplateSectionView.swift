@@ -17,9 +17,16 @@ struct TemplateSectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Templates")
+                NavigationLink(value: 0) {
+                    HStack(spacing: 3) {
+                        Text("Templates")
+                            .font(.title2)
+                        Image(systemName: "chevron.right")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
                     .fontWeight(.semibold)
-                    .font(.title2)
+                }
                 Spacer()
                 Button(action: {
                     creatingTemplate.toggle()
@@ -43,7 +50,7 @@ struct TemplateSectionView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 0) {
-                        ForEach(templates.prefix(5)) { template in
+                        ForEach(templates.prefix(10)) { template in
                             WorkoutHomeRow(workout: template)
                                 .contextMenu {
                                     Button {
@@ -71,16 +78,6 @@ struct TemplateSectionView: View {
                 .scrollTargetBehavior(.viewAligned)
                 .fullScreenCover(item: $existingWorkout) {
                     WorkoutView(existingWorkout: $0)
-                }
-            }
-            if templates.count > 2 {
-                NavigationLink(value: 0) {
-                    HStack {
-                        Text("All Templates")
-                            .fontWeight(.semibold)
-                    }
-                    .hSpacing(.leading)
-                    .customStyle()
                 }
             }
         }

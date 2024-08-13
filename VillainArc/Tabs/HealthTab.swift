@@ -7,9 +7,9 @@ enum HealthTabCategory: String, Identifiable, CaseIterable {
     
     var systemImage: String {
         switch self {
-        case .weight: "scalemass.fill"
-        case .steps: "figure.walk"
-        case .calories: "flame.fill"
+            case .weight: "scalemass.fill"
+            case .steps: "figure.walk"
+            case .calories: "flame.fill"
         }
     }
     
@@ -20,8 +20,7 @@ struct HealthTab: View {
     @AppStorage("healthAccess") var healthAccess = false
     @Environment(\.modelContext) private var context
     @Binding var path: NavigationPath
-    @State private var selection: HealthTabCategory = .weight
-    @Namespace private var animation
+    @AppStorage("healthTabSelection") var healthTabSelection: HealthTabCategory = .weight
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -29,13 +28,10 @@ struct HealthTab: View {
                 BackgroundView()
                 if healthAccess {
                     Group {
-                        switch selection {
-                        case .weight:
-                            WeightView()
-                        case .steps:
-                            StepsView()
-                        case .calories:
-                            CaloriesView()
+                        switch healthTabSelection {
+                            case .weight: WeightView()
+                            case .steps: StepsView()
+                            case .calories: CaloriesView()
                         }
                     }
                     .onAppear {
@@ -47,20 +43,17 @@ struct HealthTab: View {
                     HStack(spacing: 30) {
                         ForEach(HealthTabCategory.allCases) { page in
                             Button {
-                                withAnimation(.snappy) {
-                                    selection = page
-                                }
+                                healthTabSelection = page
                             } label: {
                                 Text(page.rawValue)
-                                    .foregroundStyle(selection == page ? Color.primary : Color.secondary)
+                                    .foregroundStyle(healthTabSelection == page ? Color.primary : Color.secondary)
                                     .fontWeight(.semibold)
                                     .padding(.horizontal, 15)
                                     .padding(.vertical, 6)
                                     .background {
-                                        if selection == page {
+                                        if healthTabSelection == page {
                                             Capsule()
                                                 .fill(.gray.opacity(0.3))
-                                                .matchedGeometryEffect(id: "ACTIVETAB", in: animation)
                                         }
                                     }
                             }
@@ -77,12 +70,6 @@ struct HealthTab: View {
             }
             .navigationDestination(for: Int.self) { int in
                 if int == 0 {
-                    WeightView()
-                } else if int == 1 {
-                    StepsView()
-                } else if int == 2 {
-                    CaloriesView()
-                } else if int == 3 {
                     AllWeightEntriesView()
                 }
             }

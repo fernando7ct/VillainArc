@@ -201,7 +201,6 @@ struct EditEntryFoodView: View {
         .onTapGesture {
             hideKeyboard()
         }
-        .navigationTitle(food.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)

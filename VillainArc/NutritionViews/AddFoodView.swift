@@ -232,7 +232,9 @@ struct AddFoodView: View {
         .toolbarTitleMenu {
             Picker("", selection: $category) {
                 ForEach(entry.mealCategories, id: \.self) { category in
-                    Text(category).tag(category)
+                    if !category.isEmpty {
+                        Text(category).tag(category)
+                    }
                 }
             }
         }
@@ -250,7 +252,9 @@ struct AddFoodView: View {
                         Label("Create Food", systemImage: "plus")
                     }
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: "ellipsis")
+                        .padding(10)
+                        .background(.ultraThinMaterial, in: .circle)
                 }
                 .sheet(isPresented: $createFoodSheet2) {
                     CreateFoodView(barcode: "")

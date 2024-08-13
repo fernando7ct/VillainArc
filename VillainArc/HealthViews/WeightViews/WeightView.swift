@@ -3,12 +3,34 @@ import Charts
 import SwiftData
 
 struct WeightView: View {
-    @State private var addWeightSheetActive = false
     @Query(sort: \WeightEntry.date, order: .reverse) private var weightEntries: [WeightEntry]
+    @State private var addWeightSheetActive = false
     @State private var selectedRange: GraphRanges = .month
     @State private var selectedDate: Date? = nil
     @State private var selectedEntry: WeightEntry? = nil
     
+    var filteredEntries: [WeightEntry] {
+        let calendar = Calendar.current
+        var startDate: Date {
+            switch selectedRange {
+            case .week:
+                calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
+            case .month:
+                calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+            case .sixMonths:
+                calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
+            case .year:
+                calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
+            case .all:
+                    .distantPast
+            }
+        }
+        return weightEntries.filter({ $0.date >= startDate })
+    }
+    var averageWeight: Double {
+        guard !weightEntries.isEmpty else { return 0 }
+        return filteredEntries.reduce(0) { $0 + $1.weight } / Double(filteredEntries.count)
+    }
     private func yAxisRange() -> ClosedRange<Double> {
         guard let minWeight = filteredEntries.map({ $0.weight }).min(),
               let maxWeight = filteredEntries.map({ $0.weight }).max() else {
@@ -16,7 +38,6 @@ struct WeightView: View {
         }
         return (minWeight < 5 ? 0 : minWeight - 5)...(maxWeight + 5)
     }
-    
     private func xAxisRange() -> ClosedRange<Date> {
         let calendar = Calendar.current
         let endDate = Date.now
@@ -46,54 +67,37 @@ struct WeightView: View {
         return startDate...endDate
     }
     
-    var filteredEntries: [WeightEntry] {
-        let calendar = Calendar.current
-        switch selectedRange {
-        case .week:
-            let startDate = calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
-            return weightEntries.filter({ $0.date >= startDate})
-        case .month:
-            let startDate = calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
-            return weightEntries.filter({ $0.date >= startDate})
-        case .sixMonths:
-            let startDate = calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
-            return weightEntries.filter({ $0.date >= startDate})
-        case .year:
-            let startDate = calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
-            return weightEntries.filter({ $0.date >= startDate})
-        case .all:
-            return weightEntries
-        }
-    }
-    
     var body: some View {
         VStack {
             VStack {
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        if !weightEntries.isEmpty {
-                            if let today = weightEntries.first(where: { $0.date.isSameDayAs(.now) }) {
-                                Text("Today")
-                                    .foregroundStyle(.secondary)
-                                    .textScale(.secondary)
-                                Text("\(formattedDouble(today.weight)) lbs")
-                                    .font(.title)
-                            } else if let mostRecent = weightEntries.first {
-                                Text(mostRecent.date, format: .dateTime.month().day().year())
-                                    .foregroundStyle(.secondary)
-                                    .textScale(.secondary)
-                                Text("\(formattedDouble(mostRecent.weight)) lbs")
-                                    .font(.title)
-                            }
-                        } else {
-                            Text("No Data")
+                VStack(alignment: .leading, spacing: 0) {
+                    if !weightEntries.isEmpty {
+                        if let today = weightEntries.first(where: { $0.date.isSameDayAs(.now) }) {
+                            Text("Today")
+                                .foregroundStyle(.secondary)
+                                .textScale(.secondary)
+                            Text("\(formattedDouble(today.weight)) lbs")
+                                .font(.title)
+                        } else if let mostRecent = weightEntries.first {
+                            Text(mostRecent.date, format: .dateTime.month().day().year())
+                                .foregroundStyle(.secondary)
+                                .textScale(.secondary)
+                            Text("\(formattedDouble(mostRecent.weight)) lbs")
                                 .font(.title)
                         }
+                        if filteredEntries.count > 1 {
+                            Text("Avg: \(formattedDouble(averageWeight)) lbs")
+                                .foregroundStyle(.secondary)
+                                .textScale(.secondary)
+                                .fontWeight(.none)
+                        }
+                    } else {
+                        Text("No Data")
+                            .font(.title)
                     }
-                    .fontWeight(.semibold)
                 }
+                .fontWeight(.semibold)
                 .hSpacing(.leading)
-                .padding(.bottom)
                 
                 Chart(filteredEntries) { weight in
                     AreaMark(x: .value("Date", weight.date), yStart: .value("Weight", yAxisRange().lowerBound), yEnd: .value("Weight", weight.weight))
@@ -154,7 +158,7 @@ struct WeightView: View {
                         selectedEntry = nil
                     }
                 }
-                .frame(height: 250)
+                .frame(height: 300)
                 
                 HStack {
                     Text(xAxisRange().lowerBound, format: .dateTime.month(.abbreviated).day().year())
@@ -176,41 +180,40 @@ struct WeightView: View {
                 .padding(.top)
             }
             .padding()
-            .background {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            }
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             
-            NavigationLink(value: 3) {
-                HStack {
-                    Text("All Weight Entries")
-                        .fontWeight(.semibold)
-                }
-                .hSpacing(.leading)
-            }
-            .padding()
-            .background {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            }
         }
         .padding(.horizontal)
-        .navigationTitle("Weight")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+        .vSpacing(.top)
+        .safeAreaInset(edge: .top) {
+            HStack {
+                Text("Weight")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                Spacer()
+                NavigationLink(value: 0) {
+                    Image(systemName: "clock.fill")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .padding(5)
+                        .background(.ultraThinMaterial, in: .circle)
+                }
+                .padding(.trailing, 5)
                 Button {
                     addWeightSheetActive = true
                 } label: {
                     Image(systemName: "plus")
-                        .foregroundStyle(Color.primary)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .padding(6)
+                        .background(.ultraThinMaterial, in: .circle)
                 }
                 .sheet(isPresented: $addWeightSheetActive) {
                     AddWeightEntryView()
                 }
             }
+            .padding()
         }
-        .vSpacing(.top)
     }
 }
 

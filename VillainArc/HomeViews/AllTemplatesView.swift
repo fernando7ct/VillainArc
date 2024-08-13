@@ -7,6 +7,7 @@ struct AllTemplatesView: View {
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
     @State private var existingWorkout: Workout? = nil
+    @Namespace private var animation
     
     private func deleteTemplate(at offsets: IndexSet) {
         withAnimation {
@@ -81,11 +82,14 @@ struct AllTemplatesView: View {
             .scrollContentBackground(.hidden)
             .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
             .navigationTitle("All Templates")
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing)
             .fullScreenCover(item: $existingWorkout) { workout in
                 WorkoutView(existingWorkout: workout)
+            }
+            .overlay {
+                if templates.isEmpty {
+                    ContentUnavailableView("You have no templates.", systemImage: "doc.plaintext.fill")
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -94,7 +98,10 @@ struct AllTemplatesView: View {
                             showDeleteAllAlert = true
                         } label: {
                             Text("Delete All")
-                                .foregroundColor(.red)
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 9)
+                                .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
                         }
                     }
                 }
@@ -106,6 +113,11 @@ struct AllTemplatesView: View {
                             }
                         } label: {
                             Text(isEditing ? "Done" : "Edit")
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 9)
+                                .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
+                                .matchedGeometryEffect(id: "EDITMODE", in: animation)
                         }
                     }
                 }

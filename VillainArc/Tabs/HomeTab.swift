@@ -11,31 +11,37 @@ struct HomeTab: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         GymSectionView()
-                            .padding(.vertical)
+                            .padding(.bottom)
                             .scrollTransition { content, phase in
                                 content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.1)
+                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
+                                    .opacity(phase.isIdentity ? 1 : 0.7)
                             }
                         TemplateSectionView()
                             .padding(.vertical)
                             .scrollTransition { content, phase in
                                 content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.1)
+                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
+                                    .opacity(phase.isIdentity ? 1 : 0.7)
                             }
                         WorkoutSectionView()
                             .padding(.vertical)
                             .scrollTransition { content, phase in
                                 content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.1)
+                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
+                                    .opacity(phase.isIdentity ? 1 : 0.7)
                             }
                         ExercisesSectionView()
                             .padding(.vertical)
                             .scrollTransition { content, phase in
                                 content
-                                    .opacity(phase.isIdentity ? 1.0 : 0.1)
+                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
+                                    .opacity(phase.isIdentity ? 1 : 0.7)
                             }
                     }
                 }
+                .vSpacing(.top)
+                .scrollIndicators(.hidden)
             }
             .navigationDestination(for: Int.self) { int in
                 if int == 0 {
@@ -51,7 +57,15 @@ struct HomeTab: View {
             .navigationDestination(for: Workout.self) {
                 WorkoutDetailView(workout: $0)
             }
-            .navigationTitle(Tab.home.rawValue)
+            .safeAreaInset(edge: .top) {
+                HStack {
+                    Text(Tab.home.rawValue)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    Spacer()
+                }
+                .padding()
+            }
         }
     }
 }

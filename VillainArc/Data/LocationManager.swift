@@ -54,7 +54,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             let response = try? await search.start()
             DispatchQueue.main.sync {
                 retrievedGyms = response?.mapItems ?? []
-                filterGyms()
+                filteredGyms = retrievedGyms
             }
         }
     }

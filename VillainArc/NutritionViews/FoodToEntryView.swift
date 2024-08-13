@@ -191,7 +191,6 @@ struct FoodToEntryView: View {
         .onTapGesture {
             hideKeyboard()
         }
-        .navigationTitle(food.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .toolbarBackground(.ultraThinMaterial, for: .tabBar)
@@ -200,7 +199,7 @@ struct FoodToEntryView: View {
                 Button {
                     saveFood()
                 } label: {
-                    Text("Save")
+                    Text("Add")
                         .fontWeight(.semibold)
                         .foregroundStyle(.green)
                 }

@@ -49,8 +49,7 @@ class HealthManager {
     func fetchAndUpdateAllData(context: ModelContext) async {
         let descriptor = FetchDescriptor<User>()
         let user = try? context.fetch(descriptor).first!
-        let distantPast = user!.dateJoined.startOfDay
-        
+        let distantPast = user?.dateJoined.startOfDay ?? Date()
         let endDate = Date()
         
         let mostRecentStepsDate = getMostRecentHealthSteps(context: context)?.date
@@ -93,32 +92,20 @@ class HealthManager {
         let entries = try? context.fetch(fetchDescriptor)
         return entries?.first
     }
-    func fetchAllHealthSteps(context: ModelContext) -> [HealthSteps] {
-        let fetchDescriptor = FetchDescriptor<HealthSteps>()
-        do {
-            return try context.fetch(fetchDescriptor)
-        } catch {
-            print("Error fetching Health Steps: \(error.localizedDescription)")
-            return []
-        }
+    func fetchAllHealthSteps(context: ModelContext, startDate: Date) -> [HealthSteps] {
+        let fetchDescriptor = FetchDescriptor<HealthSteps>(predicate: #Predicate { $0.date >= startDate })
+        let steps = try? context.fetch(fetchDescriptor)
+        return steps ?? []
     }
-    func fetchAllHealthEnergy(context: ModelContext) -> [HealthEnergy] {
-        let fetchDescriptor = FetchDescriptor<HealthEnergy>()
-        do {
-            return try context.fetch(fetchDescriptor)
-        } catch {
-            print("Error fetching Health Energy: \(error.localizedDescription)")
-            return []
-        }
+    func fetchAllHealthEnergy(context: ModelContext, startDate: Date) -> [HealthEnergy] {
+        let fetchDescriptor = FetchDescriptor<HealthEnergy>(predicate: #Predicate { $0.date >= startDate })
+        let energy = try? context.fetch(fetchDescriptor)
+        return energy ?? []
     }
-    func fetchAllWeightEntries(context: ModelContext) -> [WeightEntry] {
-        let fetchDescriptor = FetchDescriptor<WeightEntry>()
-        do {
-            return try context.fetch(fetchDescriptor)
-        } catch {
-            print("Error fetching Weight Entries: \(error.localizedDescription)")
-            return []
-        }
+    func fetchAllWeightEntries(context: ModelContext, startDate: Date) -> [WeightEntry] {
+        let fetchDescriptor = FetchDescriptor<WeightEntry>(predicate: #Predicate { $0.date >= startDate })
+        let entries = try? context.fetch(fetchDescriptor)
+        return entries ?? []
     }
     func fetchAndSaveSteps(context: ModelContext, startDate: Date, endDate: Date) {
         let steps = HKQuantityType(.stepCount)
@@ -135,7 +122,7 @@ class HealthManager {
                 print("Error fetching steps: \(String(describing: error))")
                 return
             }
-            let existingHealthSteps = self.fetchAllHealthSteps(context: context)
+            let existingHealthSteps = self.fetchAllHealthSteps(context: context, startDate: startDate)
             result.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
                 let steps = statistics.sumQuantity()?.doubleValue(for: .count()) ?? 0
                 let date = statistics.startDate
@@ -171,7 +158,7 @@ class HealthManager {
                 print("Error fetching active energy: \(String(describing: error))")
                 return
             }
-            let existingEnergy = self.fetchAllHealthEnergy(context: context)
+            let existingEnergy = self.fetchAllHealthEnergy(context: context, startDate: startDate)
             result.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
                 let activeEnergy = statistics.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
                 let date = statistics.startDate
@@ -208,7 +195,7 @@ class HealthManager {
                 print("Error fetching resting energy: \(String(describing: error))")
                 return
             }
-            let existingRestingEnergy = self.fetchAllHealthEnergy(context: context)
+            let existingRestingEnergy = self.fetchAllHealthEnergy(context: context, startDate: startDate)
             result.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
                 let restingEnergy = statistics.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
                 let date = statistics.startDate
@@ -240,7 +227,7 @@ class HealthManager {
                 print("Error fetching weight data: \(String(describing: error))")
                 return
             }
-            let existingWeightEntries = self.fetchAllWeightEntries(context: context)
+            let existingWeightEntries = self.fetchAllWeightEntries(context: context, startDate: startDate)
             for sample in samples {
                 let weightInKilograms = sample.quantity.doubleValue(for: .gramUnit(with: .kilo))
                 let weightInPounds = weightInKilograms / 0.45359237

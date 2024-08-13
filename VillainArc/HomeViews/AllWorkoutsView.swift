@@ -7,6 +7,7 @@ struct AllWorkoutsView: View {
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
     @State private var existingWorkout: Workout? = nil
+    @Namespace private var animation
     
     var totalWorkoutTime: TimeInterval {
         workouts.reduce(0) { $0 + $1.totalTime }
@@ -115,11 +116,14 @@ struct AllWorkoutsView: View {
             .scrollContentBackground(.hidden)
             .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
             .navigationTitle("All Workouts")
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .navigationBarBackButtonHidden(isEditing)
             .fullScreenCover(item: $existingWorkout) { workout in
                 WorkoutView(existingWorkout: workout)
+            }
+            .overlay {
+                if workouts.isEmpty {
+                    ContentUnavailableView("You have no past workouts.", systemImage: "figure.strengthtraining.traditional")
+                }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -128,7 +132,10 @@ struct AllWorkoutsView: View {
                             showDeleteAllAlert = true
                         } label: {
                             Text("Delete All")
-                                .foregroundColor(.red)
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 9)
+                                .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
                         }
                     }
                 }
@@ -140,6 +147,11 @@ struct AllWorkoutsView: View {
                             }
                         } label: {
                             Text(isEditing ? "Done" : "Edit")
+                                .fontWeight(.semibold)
+                                .padding(.vertical, 5)
+                                .padding(.horizontal, 9)
+                                .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
+                                .matchedGeometryEffect(id: "EDITMODE", in: animation)
                         }
                     }
                 }

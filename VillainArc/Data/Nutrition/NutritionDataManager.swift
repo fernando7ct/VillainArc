@@ -35,6 +35,7 @@ extension DataManager {
         hub.caloriesGoal = caloriesGoal
         hub.proteinPercentage = proteinPercentage
         hub.carbsPercentage = carbsPercentage
+        hub.fatPercentage = fatPercentage
         hub.activityLevel = activityLevel
         entry.proteinGoal = proteinGoal
         entry.carbsGoal = carbsGoal

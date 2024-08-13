@@ -27,7 +27,6 @@ struct WorkoutView: View {
         if let workout = existingWorkout {
             self._title = State(initialValue: workout.title)
             self._notes = State(initialValue: workout.notes)
-            self._isTemplate = State(initialValue: workout.template)
             if isEditing != nil {
                 self._startTime = State(initialValue: workout.startTime)
                 self._endTime = State(initialValue: workout.endTime)

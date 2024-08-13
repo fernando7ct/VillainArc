@@ -20,9 +20,11 @@ extension DataManager {
             context.insert(healthSteps)
             print("Health Steps saved to SwiftData")
         }
-        let healthStepsData = healthSteps.toDictionary()
-        db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData)
-        print(update ? "Health Steps updated in Firebase" : "Health Steps saved to Firebase")
+        if healthSteps.date != .now.startOfDay {
+            let healthStepsData = healthSteps.toDictionary()
+            db.collection("users").document(userID).collection("HealthSteps").document(healthSteps.id).setData(healthStepsData)
+            print(update ? "Health Steps updated in Firebase" : "Health Steps saved to Firebase")
+        }
     }
     func saveHealthEnergy(energy: HealthEnergy, context: ModelContext, update: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -40,9 +42,11 @@ extension DataManager {
             context.insert(energy)
             print("Health Energy saved to SwiftData")
         }
-        let healthEnergy = energy.toDictionary()
-        db.collection("users").document(userID).collection("HealthEnergy").document(energy.id).setData(healthEnergy)
-        print(update ? "Health Energy updated in Firebase" : "Health Energy saved to Firebase")
+        if energy.date != .now.startOfDay {
+            let healthEnergy = energy.toDictionary()
+            db.collection("users").document(userID).collection("HealthEnergy").document(energy.id).setData(healthEnergy)
+            print(update ? "Health Energy updated in Firebase" : "Health Energy saved to Firebase")
+        }
     }
     func downloadHealthSteps(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userID).collection("HealthSteps").getDocuments { snapshot, error in

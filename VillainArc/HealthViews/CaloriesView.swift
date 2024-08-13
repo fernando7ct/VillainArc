@@ -8,6 +8,28 @@ struct CaloriesView: View {
     @State private var selectedDate: Date? = nil
     @State private var selectedEntry: HealthEnergy? = nil
     
+    var filteredCalories: [HealthEnergy] {
+        let calendar = Calendar.current
+        var startDate: Date {
+            switch selectedRange {
+            case .week:
+                calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
+            case .month:
+                calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+            case .sixMonths:
+                calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
+            case .year:
+                calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
+            case .all:
+                    .distantPast
+            }
+        }
+        return healthEnergy.filter({ $0.date >= startDate })
+    }
+    var averageCalories: Int {
+        guard !healthEnergy.isEmpty else { return 0 }
+        return Int(filteredCalories.reduce(0) { $0 + $1.total } / Double(filteredCalories.count))
+    }
     private func yAxisRange() -> ClosedRange<Double> {
         guard let maxCalories = filteredCalories.map({ $0.total }).max() else {
             return 0...2000
@@ -20,7 +42,7 @@ struct CaloriesView: View {
         let startDate: Date
         
         if healthEnergy.isEmpty {
-            startDate = endDate.startOfDay
+            startDate = endDate
         } else {
             let oldestEntryDate = healthEnergy.map { $0.date }.min()!
             switch selectedRange {
@@ -42,85 +64,38 @@ struct CaloriesView: View {
         }
         return startDate...endDate
     }
-    var filteredCalories: [HealthEnergy] {
-        let calendar = Calendar.current
-        switch selectedRange {
-        case .week:
-            let startDate = calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
-            return healthEnergy.filter({ $0.date >= startDate})
-        case .month:
-            let startDate = calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
-            return healthEnergy.filter({ $0.date >= startDate})
-        case .sixMonths:
-            let startDate = calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
-            return healthEnergy.filter({ $0.date >= startDate})
-        case .year:
-            let startDate = calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
-            return healthEnergy.filter({ $0.date >= startDate})
-        case .all:
-            return healthEnergy
-        }
-    }
-    var previousFilteredCalories: [HealthEnergy] {
-        let calendar = Calendar.current
-        switch selectedRange {
-        case .week:
-            let originalStartDate = calendar.date(byAdding: .day, value: -7, to: .now.startOfDay)!
-            let newStartDate = calendar.date(byAdding: .day, value: -7, to: originalStartDate)!
-            return healthEnergy.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
-        case .month:
-            let originalStartDate = calendar.date(byAdding: .month, value: -1, to: .now.startOfDay)!
-            let newStartDate = calendar.date(byAdding: .month, value: -1, to: originalStartDate)!
-            return healthEnergy.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
-        case .sixMonths:
-            let originalStartDate = calendar.date(byAdding: .month, value: -6, to: .now.startOfDay)!
-            let newStartDate = calendar.date(byAdding: .month, value: -6, to: originalStartDate)!
-            return healthEnergy.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
-        case .year:
-            let originalStartDate = calendar.date(byAdding: .year, value: -1, to: .now.startOfDay)!
-            let newStartDate = calendar.date(byAdding: .year, value: -1, to: originalStartDate)!
-            return healthEnergy.filter({ $0.date < originalStartDate && $0.date >= newStartDate })
-        case .all:
-            return []
-        }
-    }
-    var averageCalories: Int {
-        guard !healthEnergy.isEmpty else { return 0 }
-        return Int(filteredCalories.reduce(0) { $0 + $1.total } / Double(filteredCalories.count))
-    }
-    var previousAverageCalories: Int {
-        guard !healthEnergy.isEmpty else { return 0 }
-        return Int(previousFilteredCalories.reduce(0) { $0 + $1.total } / Double(previousFilteredCalories.count))
-    }
     
     var body: some View {
         VStack {
             VStack {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        if !healthEnergy.isEmpty {
-                            if let today = healthEnergy.first(where: { $0.date == .now.startOfDay }) {
-                                Text("Today")
-                                    .foregroundStyle(.secondary)
-                                    .textScale(.secondary)
-                                Text("\(Int(today.total)) Calories")
-                                    .font(.title)
-                            } else if let mostRecent = healthEnergy.first {
-                                Text(mostRecent.date, format: .dateTime.month().day().year())
-                                    .foregroundStyle(.secondary)
-                                    .textScale(.secondary)
-                                Text("\(Int(mostRecent.total)) Calories")
-                                    .font(.title)
-                            }
-                        } else {
-                            Text("No Data")
+                VStack(alignment: .leading, spacing: 0) {
+                    if !healthEnergy.isEmpty {
+                        if let today = healthEnergy.first(where: { $0.date == .now.startOfDay }) {
+                            Text("Today")
+                                .foregroundStyle(.secondary)
+                                .textScale(.secondary)
+                            Text("\(Int(today.total)) Calories")
+                                .font(.title)
+                        } else if let mostRecent = healthEnergy.first {
+                            Text(mostRecent.date, format: .dateTime.month().day().year())
+                                .foregroundStyle(.secondary)
+                                .textScale(.secondary)
+                            Text("\(Int(mostRecent.total)) Calories")
                                 .font(.title)
                         }
+                        if filteredCalories.count > 1 {
+                            Text("Avg: \(averageCalories) calories")
+                                .foregroundStyle(.secondary)
+                                .textScale(.secondary)
+                                .fontWeight(.none)
+                        }
+                    } else {
+                        Text("No Data")
+                            .font(.title)
                     }
                 }
                 .hSpacing(.leading)
                 .fontWeight(.semibold)
-                .padding(.bottom)
                 
                 Chart(filteredCalories) { day in
                     AreaMark(x: .value("Date", day.date), yStart: .value("Calories", 0), yEnd: .value("Calories", day.total))
@@ -189,7 +164,7 @@ struct CaloriesView: View {
                         selectedEntry = nil
                     }
                 }
-                .frame(height: 250)
+                .frame(height: 300)
                 
                 HStack {
                     Text(xAxisRange().lowerBound, format: .dateTime.month(.abbreviated).day().year())
@@ -212,36 +187,18 @@ struct CaloriesView: View {
             }
             .padding()
             .background(.ultraThinMaterial, in: .rect(cornerRadius: 12, style: .continuous))
-            
-            if filteredCalories.count > 1 {
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Daily Average")
-                            .foregroundStyle(.secondary)
-                            .textScale(.secondary)
-                        Text("\(averageCalories) Calories")
-                            .font(.title2)
-                    }
-                    Spacer()
-                    if previousFilteredCalories.count > 1 {
-                        VStack(alignment: .trailing, spacing: 0) {
-                            Text("Previous \(selectedRange.rawValue)")
-                                .foregroundStyle(.secondary)
-                                .textScale(.secondary)
-                            Text("\(previousAverageCalories) Calories")
-                                .font(.title2)
-                        }
-                    }
-                }
-                .fontWeight(.semibold)
-                .padding()
-                .background(.ultraThinMaterial, in: .rect(cornerRadius: 12, style: .continuous))
-            }
         }
         .padding(.horizontal)
-        .navigationTitle("Calories Burned")
-        .navigationBarTitleDisplayMode(.large)
         .vSpacing(.top)
+        .safeAreaInset(edge: .top) {
+            HStack {
+                Text("Calories Burned")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                Spacer()
+            }
+            .padding()
+        }
     }
 }
 #Preview {

@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var homeStack: NavigationPath = .init()
     @State private var healthStack: NavigationPath = .init()
     @State private var nutritionStack: NavigationPath = .init()
+    @State private var date: Date = .now.startOfDay
     
     var tabSelection: Binding<Tab> {
         return .init {
@@ -28,9 +29,17 @@ struct ContentView: View {
         } set: { newValue in
             if newValue == activeTab {
                 switch newValue {
-                case .home: homeStack = .init()
+                case .home: 
+                    homeStack = .init()
                 case .health: healthStack = .init()
-                case .nutrition: nutritionStack = .init()
+                case .nutrition: 
+                    if nutritionStack.isEmpty {
+                        withAnimation(.snappy) {
+                            date = .now.startOfDay
+                        }
+                    } else {
+                        nutritionStack = .init()
+                    }
                 }
             }
             activeTab = newValue
@@ -40,7 +49,7 @@ struct ContentView: View {
     var body: some View {
         if isSignedIn {
             TabView(selection: tabSelection) {
-                NutritionTab(path: $nutritionStack)
+                NutritionTab(path: $nutritionStack, date: $date)
                     .tabItem {
                         Label(Tab.nutrition.rawValue, systemImage: Tab.nutrition.systemImage)
                     }
