@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct WorkoutDetailView: View {
     @State var workout: Workout
@@ -156,7 +155,6 @@ struct WorkoutDetailView: View {
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
-        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .alert(isPresented: $showDeleteAlert) {
             Alert(
                 title: Text("Delete \(workout.template ? "Template" : "Workout")"),

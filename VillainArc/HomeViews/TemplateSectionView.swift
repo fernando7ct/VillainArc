@@ -87,5 +87,5 @@ struct TemplateSectionView: View {
 
 #Preview {
     TemplateSectionView()
-        .modelContainer(for: Workout.self)
+        .tint(.primary)
 }

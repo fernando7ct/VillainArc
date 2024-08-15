@@ -87,6 +87,7 @@ struct WorkoutSectionView: View {
 }
 #Preview {
     WorkoutSectionView()
+        .tint(.primary)
 }
 
 struct WorkoutHomeRow: View {

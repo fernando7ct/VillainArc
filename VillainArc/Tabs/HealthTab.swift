@@ -7,9 +7,9 @@ enum HealthTabCategory: String, Identifiable, CaseIterable {
     
     var systemImage: String {
         switch self {
-            case .weight: "scalemass.fill"
-            case .steps: "figure.walk"
-            case .calories: "flame.fill"
+        case .weight: "scalemass.fill"
+        case .steps: "figure.walk"
+        case .calories: "flame.fill"
         }
     }
     
@@ -23,23 +23,22 @@ struct HealthTab: View {
     @AppStorage("healthTabSelection") var healthTabSelection: HealthTabCategory = .weight
     
     var body: some View {
-        NavigationStack(path: $path) {
-            ZStack {
-                BackgroundView()
-                if healthAccess {
-                    Group {
-                        switch healthTabSelection {
-                            case .weight: WeightView()
-                            case .steps: StepsView()
-                            case .calories: CaloriesView()
-                        }
+        if healthAccess {
+            NavigationStack(path: $path) {
+                Group {
+                    switch healthTabSelection {
+                    case .weight: WeightView()
+                    case .steps: StepsView()
+                    case .calories: CaloriesView()
                     }
-                    .onAppear {
-                        Task {
-                            await HealthManager.shared.fetchAndUpdateAllData(context: context)
-                        }
+                }
+                .onAppear {
+                    Task {
+                        await HealthManager.shared.fetchAndUpdateAllData(context: context)
                     }
-                    
+                }
+                .background(BackgroundView())
+                .overlay(alignment: .bottom) {
                     HStack(spacing: 30) {
                         ForEach(HealthTabCategory.allCases) { page in
                             Button {
@@ -61,41 +60,40 @@ struct HealthTab: View {
                     }
                     .padding(4)
                     .background(.ultraThickMaterial, in: .capsule)
-                    .vSpacing(.bottom)
-                    .padding([.bottom, .horizontal])
-                    
-                } else {
-                    unavailableView
+                    .padding(.bottom)
+                }
+                .navigationDestination(for: Int.self) { int in
+                    if int == 0 {
+                        AllWeightEntriesView()
+                    }
                 }
             }
-            .navigationDestination(for: Int.self) { int in
-                if int == 0 {
-                    AllWeightEntriesView()
-                }
-            }
-        }
-    }
-    
-    var unavailableView: some View {
-        ContentUnavailableView(label: {
-            Label("Health Access", systemImage: "heart.text.square.fill")
-        }, description: {
-            Text("You haven't allowed access to health data.")
-        }, actions: {
-            Button {
-                HealthManager.shared.requestHealthData { granted in
-                    if granted {
-                        HealthManager.shared.accessGranted { success in
-                            if success {
-                                healthAccess = true
+        } else {
+            ContentUnavailableView {
+                Label("Health Access", systemImage: "heart.text.square.fill")
+            } description: {
+                Text("You haven't allowed access to health data.")
+            } actions: {
+                Button {
+                    HealthManager.shared.requestHealthData { granted in
+                        if granted {
+                            HealthManager.shared.accessGranted { success in
+                                if success {
+                                    healthAccess = true
+                                }
                             }
                         }
                     }
+                } label:  {
+                    Text("Update Access")
+                        .fontWeight(.semibold)
                 }
-            } label:  {
-                Text("Update Access")
-                    .fontWeight(.semibold)
             }
-        })
+            .background(BackgroundView())
+        }
     }
+}
+
+#Preview {
+    HealthTab(path: .constant(.init()))
 }

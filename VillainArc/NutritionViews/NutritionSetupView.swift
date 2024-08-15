@@ -100,157 +100,153 @@ struct NutritionSetupView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                Form {
-                    Section {
-                        HStack {
-                            Text("Weight")
-                                .foregroundStyle(Color.secondary)
-                                .fontWeight(.semibold)
-                            Spacer()
-                            TextField("Current Weight", value: $currentWeight, format: .number)
-                                .keyboardType(.decimalPad)
-                                .onChange(of: currentWeight) {
-                                    updateData()
-                                }
-                                .frame(width: 50)
-                        }
-                        .listRowBackground(BlurView())
-                    }
-                    Section {
-                        Picker("Goal", selection: $goal) {
-                            Text("Lose 2 lbs per week").tag(-2.0)
-                            Text("Lose 1.5 lbs per week").tag(-1.5)
-                            Text("Lose 1 lb per week").tag(-1.0)
-                            Text("Lose 0.5 lbs per week").tag(-0.5)
-                            Text("Maintain Weight").tag(0.0)
-                            Text("Gain 0.5 lbs per week").tag(0.5)
-                            Text("Gain 1 lb per week").tag(1.0)
-                        }
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Color.secondary)
-                        .pickerStyle(.menu)
-                        .onChange(of: goal) {
-                            updateData()
-                        }
-                        
-                    }
-                    .listRowBackground(BlurView())
-                    Section {
-                        Picker("Activity Level", selection: $activityLevel) {
-                            Text("Little or no exercise").tag(1.2)
-                            Text("Lightly Active").tag(1.375)
-                            Text("Moderately Active").tag(1.55)
-                            Text("Active").tag(1.725)
-                            Text("Very Active").tag(1.9)
-                        }
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Color.secondary)
-                        .pickerStyle(.menu)
-                        .onChange(of: activityLevel) {
-                            updateData()
-                        }
-                    }
-                    .listRowBackground(BlurView())
-                    Section {
-                        HStack {
-                            Text("Calories")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                            Spacer()
-                            Text("\(calories)")
-                        }
-                    }
-                    .listRowBackground(BlurView())
-                    Section {
-                        HStack {
-                            HStack(alignment: .bottom, spacing: 5) {
-                                Text("Protein")
-                                Text("\(protein) g")
-                                    .font(.caption)
-                                    .offset(y: -1)
-                            }
+            Form {
+                Section {
+                    HStack {
+                        Text("Weight")
                             .foregroundStyle(Color.secondary)
                             .fontWeight(.semibold)
-                            Spacer()
-                            Picker("Protein", selection: $proteinPercentage) {
-                                ForEach(0...20, id: \.self) { index in
-                                    let value = index * 5
-                                    Text("\(value)%").tag(Double(value) * 0.01)
-                                        .foregroundStyle(hundredPercent() ? Color.green : Color.red)
-                                }
-                            }
-                            .frame(width: 100, height: 45)
-                            .pickerStyle(.wheel)
-                            .onChange(of: proteinPercentage) {
+                        Spacer()
+                        TextField("Current Weight", value: $currentWeight, format: .number)
+                            .keyboardType(.decimalPad)
+                            .onChange(of: currentWeight) {
                                 updateData()
                             }
-                        }
-                        HStack {
-                            HStack(alignment: .bottom, spacing: 5) {
-                                Text("Carbs")
-                                Text("\(carbs) g")
-                                    .font(.caption)
-                                    .offset(y: -1)
-                            }
-                            .foregroundStyle(Color.secondary)
-                            .fontWeight(.semibold)
-                            Spacer()
-                            Picker("Carbs", selection: $carbsPercentage) {
-                                ForEach(0...20, id: \.self) { index in
-                                    let value = index * 5
-                                    Text("\(value)%").tag(Double(value) * 0.01)
-                                        .foregroundStyle(hundredPercent() ? Color.green : Color.red)
-                                }
-                            }
-                            .frame(width: 100, height: 45)
-                            .pickerStyle(.wheel)
-                            .onChange(of: carbsPercentage) {
-                                updateData()
-                            }
-                        }
-                        HStack {
-                            HStack(alignment: .bottom, spacing: 5) {
-                                Text("Fat")
-                                Text("\(fat) g")
-                                    .font(.caption)
-                                    .offset(y: -1)
-                            }
-                            .foregroundStyle(Color.secondary)
-                            .fontWeight(.semibold)
-                            Spacer()
-                            Picker("Fat", selection: $fatPercentage) {
-                                ForEach(0...20, id: \.self) { index in
-                                    let value = index * 5
-                                    Text("\(value)%").tag(Double(value) * 0.01)
-                                        .foregroundStyle(hundredPercent() ? Color.green : Color.red)
-                                }
-                            }
-                            .frame(width: 100, height: 45)
-                            .pickerStyle(.wheel)
-                            .onChange(of: fatPercentage) {
-                                updateData()
-                            }
-                        }
-                    } header: {
-                        HStack {
-                            HStack(spacing: 3) {
-                                Text("Total:")
-                                Text("\(Int((proteinPercentage + carbsPercentage + fatPercentage) * 100))%")
-                                    .foregroundStyle(hundredPercent() ? Color.green : Color.red)
-                            }
-                            .fontWeight(.semibold)
-                        }
-                        .hSpacing(.trailing)
+                            .frame(width: 50)
                     }
                     .listRowBackground(BlurView())
                 }
-                .scrollContentBackground(.hidden)
+                Section {
+                    Picker("Goal", selection: $goal) {
+                        Text("Lose 2 lbs per week").tag(-2.0)
+                        Text("Lose 1.5 lbs per week").tag(-1.5)
+                        Text("Lose 1 lb per week").tag(-1.0)
+                        Text("Lose 0.5 lbs per week").tag(-0.5)
+                        Text("Maintain Weight").tag(0.0)
+                        Text("Gain 0.5 lbs per week").tag(0.5)
+                        Text("Gain 1 lb per week").tag(1.0)
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.secondary)
+                    .pickerStyle(.menu)
+                    .onChange(of: goal) {
+                        updateData()
+                    }
+                    
+                }
+                .listRowBackground(BlurView())
+                Section {
+                    Picker("Activity Level", selection: $activityLevel) {
+                        Text("Little or no exercise").tag(1.2)
+                        Text("Lightly Active").tag(1.375)
+                        Text("Moderately Active").tag(1.55)
+                        Text("Active").tag(1.725)
+                        Text("Very Active").tag(1.9)
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.secondary)
+                    .pickerStyle(.menu)
+                    .onChange(of: activityLevel) {
+                        updateData()
+                    }
+                }
+                .listRowBackground(BlurView())
+                Section {
+                    HStack {
+                        Text("Calories")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                        Spacer()
+                        Text("\(calories)")
+                    }
+                }
+                .listRowBackground(BlurView())
+                Section {
+                    HStack {
+                        HStack(alignment: .bottom, spacing: 5) {
+                            Text("Protein")
+                            Text("\(protein) g")
+                                .font(.caption)
+                                .offset(y: -1)
+                        }
+                        .foregroundStyle(Color.secondary)
+                        .fontWeight(.semibold)
+                        Spacer()
+                        Picker("Protein", selection: $proteinPercentage) {
+                            ForEach(0...20, id: \.self) { index in
+                                let value = index * 5
+                                Text("\(value)%").tag(Double(value) * 0.01)
+                                    .foregroundStyle(hundredPercent() ? Color.green : Color.red)
+                            }
+                        }
+                        .frame(width: 100, height: 45)
+                        .pickerStyle(.wheel)
+                        .onChange(of: proteinPercentage) {
+                            updateData()
+                        }
+                    }
+                    HStack {
+                        HStack(alignment: .bottom, spacing: 5) {
+                            Text("Carbs")
+                            Text("\(carbs) g")
+                                .font(.caption)
+                                .offset(y: -1)
+                        }
+                        .foregroundStyle(Color.secondary)
+                        .fontWeight(.semibold)
+                        Spacer()
+                        Picker("Carbs", selection: $carbsPercentage) {
+                            ForEach(0...20, id: \.self) { index in
+                                let value = index * 5
+                                Text("\(value)%").tag(Double(value) * 0.01)
+                                    .foregroundStyle(hundredPercent() ? Color.green : Color.red)
+                            }
+                        }
+                        .frame(width: 100, height: 45)
+                        .pickerStyle(.wheel)
+                        .onChange(of: carbsPercentage) {
+                            updateData()
+                        }
+                    }
+                    HStack {
+                        HStack(alignment: .bottom, spacing: 5) {
+                            Text("Fat")
+                            Text("\(fat) g")
+                                .font(.caption)
+                                .offset(y: -1)
+                        }
+                        .foregroundStyle(Color.secondary)
+                        .fontWeight(.semibold)
+                        Spacer()
+                        Picker("Fat", selection: $fatPercentage) {
+                            ForEach(0...20, id: \.self) { index in
+                                let value = index * 5
+                                Text("\(value)%").tag(Double(value) * 0.01)
+                                    .foregroundStyle(hundredPercent() ? Color.green : Color.red)
+                            }
+                        }
+                        .frame(width: 100, height: 45)
+                        .pickerStyle(.wheel)
+                        .onChange(of: fatPercentage) {
+                            updateData()
+                        }
+                    }
+                } header: {
+                    HStack {
+                        HStack(spacing: 3) {
+                            Text("Total:")
+                            Text("\(Int((proteinPercentage + carbsPercentage + fatPercentage) * 100))%")
+                                .foregroundStyle(hundredPercent() ? Color.green : Color.red)
+                        }
+                        .fontWeight(.semibold)
+                    }
+                    .hSpacing(.trailing)
+                }
+                .listRowBackground(BlurView())
             }
+            .scrollContentBackground(.hidden)
+            .background(BackgroundView())
             .navigationTitle(nutritionEntry == nil ? "Nutrition Setup" : "Update Goals")
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -275,8 +271,4 @@ struct NutritionSetupView: View {
             }
         }
     }
-}
-
-#Preview {
-    NutritionSetupView()
 }

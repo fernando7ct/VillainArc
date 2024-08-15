@@ -34,166 +34,163 @@ struct FoodToEntryView: View {
     }
     
     var body: some View {
-        ZStack {
-            BackgroundView()
-            Form {
-                Section {
-                    VStack(alignment: .center, spacing: 0) {
-                        HStack {
-                            TextField("# of Servings", value: $servingsCount, format: .number)
+        
+        Form {
+            Section {
+                VStack(alignment: .center, spacing: 0) {
+                    HStack {
+                        TextField("# of Servings", value: $servingsCount, format: .number)
+                            .keyboardType(.decimalPad)
+                            .onChange(of: servingsCount) {
+                                totalServings = servingsCount * food.servingSizeDigit
+                                totalServings2 = servingsCount * food.servingSizeDigit2
+                            }
+                        Spacer()
+                        Text("Number of Servings")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    Text("-or-")
+                        .foregroundStyle(Color.secondary)
+                        .fontWeight(.semibold)
+                    HStack {
+                        if servingSizeSelected == 1 {
+                            TextField("Total Servings", value: $totalServings, format: .number)
                                 .keyboardType(.decimalPad)
-                                .onChange(of: servingsCount) {
-                                    totalServings = servingsCount * food.servingSizeDigit
+                                .onChange(of: totalServings) {
+                                    servingsCount = totalServings / food.servingSizeDigit
                                     totalServings2 = servingsCount * food.servingSizeDigit2
                                 }
-                            Spacer()
-                            Text("Number of Servings")
+                        } else {
+                            TextField("Total Servings", value: $totalServings2, format: .number)
+                                .keyboardType(.decimalPad)
+                                .onChange(of: totalServings2) {
+                                    servingsCount = totalServings2 / food.servingSizeDigit2
+                                    totalServings = servingsCount * food.servingSizeDigit
+                                }
+                        }
+                        Spacer()
+                        if servingSizeSelected == 1 {
+                            Text(food.servingSizeUnit)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Color.secondary)
-                        }
-                        Text("-or-")
-                            .foregroundStyle(Color.secondary)
-                            .fontWeight(.semibold)
-                        HStack {
-                            if servingSizeSelected == 1 {
-                                TextField("Total Servings", value: $totalServings, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .onChange(of: totalServings) {
-                                        servingsCount = totalServings / food.servingSizeDigit
-                                        totalServings2 = servingsCount * food.servingSizeDigit2
-                                    }
-                            } else {
-                                TextField("Total Servings", value: $totalServings2, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .onChange(of: totalServings2) {
-                                        servingsCount = totalServings2 / food.servingSizeDigit2
-                                        totalServings = servingsCount * food.servingSizeDigit
-                                    }
-                            }
-                            Spacer()
-                            if servingSizeSelected == 1 {
-                                Text(food.servingSizeUnit)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(Color.secondary)
-                                    .onTapGesture {
-                                        if !food.servingSizeUnit2.isEmpty {
-                                            withAnimation {
-                                                servingSizeSelected = 2
-                                            }
-                                        }
-                                    }
-                            } else {
-                                Text(food.servingSizeUnit2)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(Color.secondary)
-                                    .onTapGesture {
-                                        withAnimation {
-                                            servingSizeSelected = 1
-                                        }
-                                    }
-                            }
-                        }
-                    }
-                }
-                .listRowBackground(BlurView())
-                .listRowSeparator(.hidden)
-                Section {
-                    HStack {
-                        Text(food.name)
-                        Spacer()
-                        Text("Name")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .fontWeight(.semibold)
-                    HStack {
-                        Text(food.brand)
-                        Spacer()
-                        Text("Brand")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .fontWeight(.semibold)
-                    HStack {
-                        if !showingServingSize2 {
-                            Text("\(formattedDouble(food.servingSizeDigit)) \(food.servingSizeUnit)")
                                 .onTapGesture {
-                                    if food.servingSizeDigit2 != 0 && food.servingSizeUnit2 != "" {
+                                    if !food.servingSizeUnit2.isEmpty {
                                         withAnimation {
-                                            showingServingSize2.toggle()
+                                            servingSizeSelected = 2
                                         }
                                     }
                                 }
                         } else {
-                            Text("\(formattedDouble(food.servingSizeDigit2)) \(food.servingSizeUnit2)")
+                            Text(food.servingSizeUnit2)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Color.secondary)
                                 .onTapGesture {
+                                    withAnimation {
+                                        servingSizeSelected = 1
+                                    }
+                                }
+                        }
+                    }
+                }
+            }
+            .listRowBackground(BlurView())
+            .listRowSeparator(.hidden)
+            Section {
+                HStack {
+                    Text(food.name)
+                    Spacer()
+                    Text("Name")
+                        .foregroundStyle(Color.secondary)
+                }
+                .fontWeight(.semibold)
+                HStack {
+                    Text(food.brand)
+                    Spacer()
+                    Text("Brand")
+                        .foregroundStyle(Color.secondary)
+                }
+                .fontWeight(.semibold)
+                HStack {
+                    if !showingServingSize2 {
+                        Text("\(formattedDouble(food.servingSizeDigit)) \(food.servingSizeUnit)")
+                            .onTapGesture {
+                                if food.servingSizeDigit2 != 0 && food.servingSizeUnit2 != "" {
                                     withAnimation {
                                         showingServingSize2.toggle()
                                     }
                                 }
-                        }
-                        Spacer()
-                        Text("Serving Size\(food.servingSizeDigit2 != 0 && food.servingSizeUnit2 != "" ? "(s)" : "")")
-                            .foregroundStyle(Color.secondary)
+                            }
+                    } else {
+                        Text("\(formattedDouble(food.servingSizeDigit2)) \(food.servingSizeUnit2)")
+                            .onTapGesture {
+                                withAnimation {
+                                    showingServingSize2.toggle()
+                                }
+                            }
                     }
-                    .fontWeight(.semibold)
-                    HStack {
-                        Text(formattedDouble(food.servingsPerContainer))
-                        Spacer()
-                        Text("Servings Per Container")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .fontWeight(.semibold)
+                    Spacer()
+                    Text("Serving Size\(food.servingSizeDigit2 != 0 && food.servingSizeUnit2 != "" ? "(s)" : "")")
+                        .foregroundStyle(Color.secondary)
                 }
-                .listRowBackground(BlurView())
-                .listRowSeparator(.hidden)
-                Section {
-                    HStack {
-                        Text(formattedDouble(pickerDisplay == "1 Serving" ? food.calories: food.calories * servingsCount))
-                        Spacer()
-                        Text("Calories")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .fontWeight(.semibold)
-                    HStack {
-                        Text(formattedDouble(pickerDisplay == "1 Serving" ? food.protein: food.protein * servingsCount))
-                        Spacer()
-                        Text("Protein (g)")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .fontWeight(.semibold)
-                    HStack {
-                        Text(formattedDouble(pickerDisplay == "1 Serving" ?  food.carbs : food.carbs * servingsCount))
-                        Spacer()
-                        Text("Carbs (g)")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .fontWeight(.semibold)
-                    HStack {
-                        Text(formattedDouble(pickerDisplay == "1 Serving" ? food.fat : food.fat * servingsCount))
-                        Spacer()
-                        Text("Fat (g)")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .fontWeight(.semibold)
-                } header: {
-                    Picker("", selection: $pickerDisplay) {
-                        Text("1 Serving").tag("1 Serving")
-                        Text("\(formattedDouble(servingsCount)) Servings").tag("Servings Count")
-                    }
-                    .pickerStyle(.segmented)
-                    .textCase(.none)
-                    .padding(.horizontal, -15)
+                .fontWeight(.semibold)
+                HStack {
+                    Text(formattedDouble(food.servingsPerContainer))
+                    Spacer()
+                    Text("Servings Per Container")
+                        .foregroundStyle(Color.secondary)
                 }
-                .listRowBackground(BlurView())
-                .listRowSeparator(.hidden)
+                .fontWeight(.semibold)
             }
-            .scrollContentBackground(.hidden)
+            .listRowBackground(BlurView())
+            .listRowSeparator(.hidden)
+            Section {
+                HStack {
+                    Text(formattedDouble(pickerDisplay == "1 Serving" ? food.calories: food.calories * servingsCount))
+                    Spacer()
+                    Text("Calories")
+                        .foregroundStyle(Color.secondary)
+                }
+                .fontWeight(.semibold)
+                HStack {
+                    Text(formattedDouble(pickerDisplay == "1 Serving" ? food.protein: food.protein * servingsCount))
+                    Spacer()
+                    Text("Protein (g)")
+                        .foregroundStyle(Color.secondary)
+                }
+                .fontWeight(.semibold)
+                HStack {
+                    Text(formattedDouble(pickerDisplay == "1 Serving" ?  food.carbs : food.carbs * servingsCount))
+                    Spacer()
+                    Text("Carbs (g)")
+                        .foregroundStyle(Color.secondary)
+                }
+                .fontWeight(.semibold)
+                HStack {
+                    Text(formattedDouble(pickerDisplay == "1 Serving" ? food.fat : food.fat * servingsCount))
+                    Spacer()
+                    Text("Fat (g)")
+                        .foregroundStyle(Color.secondary)
+                }
+                .fontWeight(.semibold)
+            } header: {
+                Picker("", selection: $pickerDisplay) {
+                    Text("1 Serving").tag("1 Serving")
+                    Text("\(formattedDouble(servingsCount)) Servings").tag("Servings Count")
+                }
+                .pickerStyle(.segmented)
+                .textCase(.none)
+                .padding(.horizontal, -15)
+            }
+            .listRowBackground(BlurView())
+            .listRowSeparator(.hidden)
         }
+        .scrollContentBackground(.hidden)
+        .background(BackgroundView())
         .onTapGesture {
             hideKeyboard()
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-        .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

@@ -270,12 +270,7 @@ class DataManager {
         } else {
             let newGym = Gym(id: UUID().uuidString, mapItem: gym, favorite: true)
             context.insert(newGym)
-            do {
-                try context.save()
-                print("New home gym saved in SwiftData")
-            } catch {
-                print("Error saving new home gym")
-            }
+            print("New home gym saved in SwiftData")
             let gymData = newGym.toDictionary()
             db.collection("users").document(userID).collection("Gyms").document(newGym.id).setData(gymData)
             print("New home gym saved in Firebase")

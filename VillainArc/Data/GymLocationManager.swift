@@ -2,8 +2,8 @@ import SwiftUI
 import CoreLocation
 import MapKit
 
-class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
-    static let shared = LocationManager()
+class GymLocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    static let shared = GymLocationManager()
     
     @Published var locationEnabled = false
     @Published var retrievedGyms: [MKMapItem] = []
@@ -24,7 +24,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             locationManager.requestWhenInUseAuthorization()
         case .restricted, .denied:
             locationEnabled = false
-        case .authorizedAlways, .authorizedWhenInUse, .authorized:
+        case .authorizedAlways, .authorizedWhenInUse:
             locationEnabled = true
             searchGyms()
         @unknown default:

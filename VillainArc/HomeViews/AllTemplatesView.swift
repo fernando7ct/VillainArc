@@ -28,114 +28,114 @@ struct AllTemplatesView: View {
     }
     
     var body: some View {
-        ZStack {
-            BackgroundView()
-            List {
-                ForEach(templates) { template in
-                    Section {
-                        NavigationLink(value: template) {
-                            VStack(alignment: .leading, spacing: 0) {
-                                HStack {
-                                    VStack(alignment: .trailing, spacing: 0) {
-                                        Text(template.title)
-                                        Text(exerciseCategories(for: template))
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .fontWeight(.semibold)
+        List {
+            ForEach(templates) { template in
+                Section {
+                    NavigationLink(value: template) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                VStack(alignment: .trailing, spacing: 0) {
+                                    Text(template.title)
+                                    Text(exerciseCategories(for: template))
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
                                 }
-                                .hSpacing(.trailing)
-                                .padding(.bottom, 3)
-                                ForEach(template.exercises.sorted(by: { $0.order < $1.order})) { exercise in
-                                    HStack(spacing: 1) {
-                                        Text("\(exercise.sets.count)x")
-                                        Text(exercise.name)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .lineLimit(1)
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .padding(.top, 3)
-                                }
-                            }
-                        }
-                        .contextMenu {
-                            Button {
-                                existingWorkout = template
-                            } label: {
-                                Label("Use", systemImage: "figure.strengthtraining.traditional")
-                            }
-                            Button(role: .destructive) {
-                                if let index = templates.firstIndex(where: { $0.id == template.id }) {
-                                    deleteTemplate(at: IndexSet(integer: index))
-                                }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
-                }
-                .onDelete(perform: deleteTemplate)
-                .listRowBackground(BlurView())
-                .listRowSeparator(.hidden)
-            }
-            .scrollContentBackground(.hidden)
-            .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
-            .navigationTitle("All Templates")
-            .navigationBarBackButtonHidden(isEditing)
-            .fullScreenCover(item: $existingWorkout) { workout in
-                WorkoutView(existingWorkout: workout)
-            }
-            .overlay {
-                if templates.isEmpty {
-                    ContentUnavailableView("You have no templates.", systemImage: "doc.plaintext.fill")
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if isEditing {
-                        Button {
-                            showDeleteAllAlert = true
-                        } label: {
-                            Text("Delete All")
                                 .fontWeight(.semibold)
-                                .padding(.vertical, 5)
-                                .padding(.horizontal, 9)
-                                .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
+                            }
+                            .hSpacing(.trailing)
+                            .padding(.bottom, 3)
+                            ForEach(template.exercises.sorted(by: { $0.order < $1.order})) { exercise in
+                                HStack(spacing: 1) {
+                                    Text("\(exercise.sets.count)x")
+                                    Text(exercise.name)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .lineLimit(1)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .padding(.top, 3)
+                            }
                         }
                     }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if !templates.isEmpty {
+                    .contextMenu {
                         Button {
-                            withAnimation {
-                                isEditing.toggle()
+                            existingWorkout = template
+                        } label: {
+                            Label("Use", systemImage: "figure.strengthtraining.traditional")
+                        }
+                        Button(role: .destructive) {
+                            if let index = templates.firstIndex(where: { $0.id == template.id }) {
+                                deleteTemplate(at: IndexSet(integer: index))
                             }
                         } label: {
-                            Text(isEditing ? "Done" : "Edit")
-                                .fontWeight(.semibold)
-                                .padding(.vertical, 5)
-                                .padding(.horizontal, 9)
-                                .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
-                                .matchedGeometryEffect(id: "EDITMODE", in: animation)
+                            Label("Delete", systemImage: "trash")
                         }
                     }
                 }
             }
-            .alert(isPresented: $showDeleteAllAlert) {
-                Alert(
-                    title: Text("Delete All Templates"),
-                    message: Text("Are you sure you want to delete all templates?"),
-                    primaryButton: .destructive(Text("Delete All")) {
-                        deleteAllTemplates()
-                    },
-                    secondaryButton: .cancel()
-                )
+            .onDelete(perform: deleteTemplate)
+            .listRowBackground(BlurView())
+            .listRowSeparator(.hidden)
+        }
+        .scrollContentBackground(.hidden)
+        .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
+        .navigationTitle("All Templates")
+        .navigationBarBackButtonHidden(isEditing)
+        .fullScreenCover(item: $existingWorkout) {
+            WorkoutView(existingWorkout: $0)
+        }
+        .overlay {
+            if templates.isEmpty {
+                ContentUnavailableView("You have no templates.", systemImage: "doc.plaintext.fill")
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                if isEditing {
+                    Button {
+                        showDeleteAllAlert = true
+                    } label: {
+                        Text("Delete All")
+                            .fontWeight(.semibold)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 9)
+                            .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
+                    }
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if !templates.isEmpty {
+                    Button {
+                        withAnimation {
+                            isEditing.toggle()
+                        }
+                    } label: {
+                        Text(isEditing ? "Done" : "Edit")
+                            .fontWeight(.semibold)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 9)
+                            .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
+                            .matchedGeometryEffect(id: "EDITMODE", in: animation)
+                    }
+                }
+            }
+        }
+        .alert(isPresented: $showDeleteAllAlert) {
+            Alert(
+                title: Text("Delete All Templates"),
+                message: Text("Are you sure you want to delete all templates?"),
+                primaryButton: .destructive(Text("Delete All")) {
+                    deleteAllTemplates()
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .background(BackgroundView())
     }
 }
 
 #Preview {
-    AllTemplatesView()
+    NavigationView {
+        AllTemplatesView()
+    }
 }

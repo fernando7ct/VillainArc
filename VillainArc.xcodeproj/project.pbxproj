@@ -83,8 +83,11 @@
 		FDD4FBDD2C17F8840028BADB /* WorkoutLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FDD4FBCD2C17F8820028BADB /* WorkoutLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FDD4FBE22C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */; };
 		FDD4FBE92C1A78FD0028BADB /* SetRepRangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDD4FBE82C1A78FD0028BADB /* SetRepRangeView.swift */; };
+		FDE9CD192C6D5E17006E7C9F /* RunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE9CD182C6D5E17006E7C9F /* RunView.swift */; };
+		FDE9CD1B2C6D5E33006E7C9F /* Run.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE9CD1A2C6D5E33006E7C9F /* Run.swift */; };
+		FDE9CD1D2C6D621F006E7C9F /* RunLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE9CD1C2C6D621F006E7C9F /* RunLocationManager.swift */; };
 		FDED2D5E2C4C8F4200F55A37 /* GymSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D5D2C4C8F4200F55A37 /* GymSelectionView.swift */; };
-		FDED2D602C4C937E00F55A37 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D5F2C4C937E00F55A37 /* LocationManager.swift */; };
+		FDED2D602C4C937E00F55A37 /* GymLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D5F2C4C937E00F55A37 /* GymLocationManager.swift */; };
 		FDED2D622C4CAFAF00F55A37 /* GymSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */; };
 		FDED2D642C4E4B8E00F55A37 /* Gym.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D632C4E4B8E00F55A37 /* Gym.swift */; };
 		FDED2D662C4F1AAF00F55A37 /* GymDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */; };
@@ -190,8 +193,11 @@
 		FDD4FBDA2C17F8840028BADB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FDD4FBE12C17F8FA0028BADB /* WorkoutAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutAttributes.swift; sourceTree = "<group>"; };
 		FDD4FBE82C1A78FD0028BADB /* SetRepRangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetRepRangeView.swift; sourceTree = "<group>"; };
+		FDE9CD182C6D5E17006E7C9F /* RunView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunView.swift; sourceTree = "<group>"; };
+		FDE9CD1A2C6D5E33006E7C9F /* Run.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Run.swift; sourceTree = "<group>"; };
+		FDE9CD1C2C6D621F006E7C9F /* RunLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunLocationManager.swift; sourceTree = "<group>"; };
 		FDED2D5D2C4C8F4200F55A37 /* GymSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSelectionView.swift; sourceTree = "<group>"; };
-		FDED2D5F2C4C937E00F55A37 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		FDED2D5F2C4C937E00F55A37 /* GymLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymLocationManager.swift; sourceTree = "<group>"; };
 		FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSectionView.swift; sourceTree = "<group>"; };
 		FDED2D632C4E4B8E00F55A37 /* Gym.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gym.swift; sourceTree = "<group>"; };
 		FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymDetailView.swift; sourceTree = "<group>"; };
@@ -292,7 +298,9 @@
 				FDB39EA62C0933B0008929DF /* exercises.json */,
 				FD2E77B72BF6D37200245E06 /* User.swift */,
 				FDED2D632C4E4B8E00F55A37 /* Gym.swift */,
-				FDED2D5F2C4C937E00F55A37 /* LocationManager.swift */,
+				FDE9CD1A2C6D5E33006E7C9F /* Run.swift */,
+				FDE9CD1C2C6D621F006E7C9F /* RunLocationManager.swift */,
+				FDED2D5F2C4C937E00F55A37 /* GymLocationManager.swift */,
 				FD9EB5CE2C27D551000267F2 /* Nutrition */,
 				FD9EB5C22C277C0E000267F2 /* Health */,
 				FD2E77AB2BF6AA5500245E06 /* DataManager.swift */,
@@ -378,6 +386,7 @@
 				FDED2D5D2C4C8F4200F55A37 /* GymSelectionView.swift */,
 				FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */,
 				FDED2D652C4F1AAF00F55A37 /* GymDetailView.swift */,
+				FDE9CD182C6D5E17006E7C9F /* RunView.swift */,
 				FD7C6EF52C0BFA82001453F2 /* WorkoutSectionView.swift */,
 				FDAC23222C11530F007B53B7 /* ExercisesSectionView.swift */,
 				FD7C6EF92C0BFC9B001453F2 /* AllWorkoutsView.swift */,
@@ -565,7 +574,7 @@
 				FD7C6EF42C0BB6B0001453F2 /* BackgroundView.swift in Sources */,
 				FDED2D642C4E4B8E00F55A37 /* Gym.swift in Sources */,
 				FD9EB5F42C2E6D6E000267F2 /* EditEntryFoodView.swift in Sources */,
-				FDED2D602C4C937E00F55A37 /* LocationManager.swift in Sources */,
+				FDED2D602C4C937E00F55A37 /* GymLocationManager.swift in Sources */,
 				FDED2D662C4F1AAF00F55A37 /* GymDetailView.swift in Sources */,
 				FDAC23232C11530F007B53B7 /* ExercisesSectionView.swift in Sources */,
 				FD7714C82C14F38E00FF12AF /* HealthTab.swift in Sources */,
@@ -578,6 +587,7 @@
 				FD2E77972BF57CF800245E06 /* ContentView.swift in Sources */,
 				FD7C6EF82C0BFA92001453F2 /* TemplateSectionView.swift in Sources */,
 				FD9EB5C12C262254000267F2 /* NutritionTab.swift in Sources */,
+				FDE9CD1B2C6D5E33006E7C9F /* Run.swift in Sources */,
 				FD2201C42BFF060E00487151 /* Workout.swift in Sources */,
 				FD2E77A82BF581F200245E06 /* AddWeightEntryView.swift in Sources */,
 				FD2201C82BFF084700487151 /* ExerciseSet.swift in Sources */,
@@ -606,12 +616,14 @@
 				FD2E77B82BF6D37200245E06 /* User.swift in Sources */,
 				FDB39EAE2C0A95D8008929DF /* TemplateView.swift in Sources */,
 				FD9EB5F22C2E5AA5000267F2 /* AddFirebaseFoodView.swift in Sources */,
+				FDE9CD192C6D5E17006E7C9F /* RunView.swift in Sources */,
 				FDED2D622C4CAFAF00F55A37 /* GymSectionView.swift in Sources */,
 				FD9EB5DE2C2B81E8000267F2 /* NutritionDataManager.swift in Sources */,
 				FD2E77A42BF57D6600245E06 /* WeightEntry.swift in Sources */,
 				FDD4FBE22C17F8FA0028BADB /* WorkoutAttributes.swift in Sources */,
 				FD2E77AE2BF6D03C00245E06 /* LogInView.swift in Sources */,
 				FD2E77952BF57CF800245E06 /* VillainArcApp.swift in Sources */,
+				FDE9CD1D2C6D621F006E7C9F /* RunLocationManager.swift in Sources */,
 				FD7714C42C14041B00FF12AF /* HealthManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -778,7 +790,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to Camera to scan food barcodes.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to some health data to fully understand you.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app will save your weight entries to health if you want.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show nearby gyms.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to track your run and show nearby gyms.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -789,7 +801,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -821,7 +833,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to Camera to scan food barcodes.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app requires access to some health data to fully understand you.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app will save your weight entries to health if you want.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to show nearby gyms.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs your location to track your run and show nearby gyms.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -832,7 +844,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -864,7 +876,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.6;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc.WorkoutLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -897,7 +909,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.6;
+				MARKETING_VERSION = 0.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = name.FernandoCaudilloTafoya.VillainArc.WorkoutLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

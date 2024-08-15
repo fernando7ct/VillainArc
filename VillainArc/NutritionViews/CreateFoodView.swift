@@ -75,7 +75,6 @@ struct CreateFoodView: View {
     @State private var servingSize = ""
     @State private var servingSize2 = ""
     @State private var showAlert = false
-    @State private var alertMessage = ""
     
     private func validateServingSize() -> Bool {
         let components = servingSize.split(separator: " ")
@@ -125,131 +124,108 @@ struct CreateFoodView: View {
     
     private func createFood() {
         if validateServingSize() {
-            let newFood = NutritionFood(
-                id: UUID().uuidString,
-                name: name,
-                brand: brand,
-                barcode: barcode,
-                servingSizeDigit: servingSizeDigit,
-                servingSizeUnit: servingSizeUnit.rawValue,
-                servingSizeDigit2: servingSizeDigit2,
-                servingSizeUnit2: servingSizeUnit2.rawValue,
-                servingsCount: 1,
-                servingsPerContainer: servingsPerContainer,
-                date: Date(),
-                mealCategory: "",
-                protein: protein,
-                carbs: carbs,
-                fat: fat,
-                calories: calories,
-                entry: nil
-            )
+            let newFood = NutritionFood(id: UUID().uuidString, name: name, brand: brand, barcode: barcode, servingSizeDigit: servingSizeDigit, servingSizeUnit: servingSizeUnit.rawValue, servingSizeDigit2: servingSizeDigit2, servingSizeUnit2: servingSizeUnit2.rawValue, servingsCount: 1, servingsPerContainer: servingsPerContainer, date: Date(), mealCategory: "", protein: protein, carbs: carbs, fat: fat, calories: calories, entry: nil)
             DataManager.shared.createNutritionFood(food: newFood, context: context)
             dismiss()
         } else {
-            alertMessage = "Please enter a valid serving size (e.g., '1 cup')."
             showAlert = true
         }
     }
     
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                Form {
-                    Section {
-                        HStack {
-                            TextField("Name", text: $name)
-                            Spacer()
-                            Text("Name")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
-                        HStack {
-                            TextField("Brand", text: $brand)
-                            Spacer()
-                            Text("Brand")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
+            Form {
+                Section {
+                    HStack {
+                        TextField("Name", text: $name)
+                        Spacer()
+                        Text("Name")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
                     }
-                    .listRowBackground(BlurView())
-                    .listRowSeparator(.hidden)
-                    Section {
-                        HStack {
-                            TextField("Ex: 1 cup", text: $servingSize)
-                            Spacer()
-                            Text("Serving Size")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
-                        HStack {
-                            TextField("Ex: 46 g", text: $servingSize2)
-                            Spacer()
-                            Text("Serving Size 2")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
-                        HStack {
-                            TextField("Servings Per Container", value: $servingsPerContainer, format: .number)
-                                .keyboardType(.decimalPad)
-                            Spacer()
-                            Text("Servings Per Container")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                                .multilineTextAlignment(.trailing)
-                        }
-                    } footer: {
-                        Text("Valid Serving Size Units: bag, bagel, bar, bottle, box, brownie(s), bun, cake cup, can, capsule, chip(s), cone(s), container, cookie(s), cup, egg, fl oz, g, gummy, IU, kg, lb, liter, mL, mcg, mg, mint(s), oz, packet, piece(s), pill, pouch, rope(s), scoop, serving, slice(s), softgel(s), stick, tablet, tbsp, tsp, waffle cone")
+                    HStack {
+                        TextField("Brand", text: $brand)
+                        Spacer()
+                        Text("Brand")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
                     }
-                    .listRowBackground(BlurView())
-                    .listRowSeparator(.hidden)
-                    Section {
-                        HStack {
-                            TextField("Calories", value: $calories, format: .number)
-                                .keyboardType(.decimalPad)
-                            Spacer()
-                            Text("Calories")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
-                        HStack {
-                            TextField("Protein", value: $protein, format: .number)
-                                .keyboardType(.decimalPad)
-                            Spacer()
-                            Text("Protein (g)")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
-                        HStack {
-                            TextField("Carbs", value: $carbs, format: .number)
-                                .keyboardType(.decimalPad)
-                            Spacer()
-                            Text("Carbs (g)")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
-                        HStack {
-                            TextField("Fat", value: $fat, format: .number)
-                                .keyboardType(.decimalPad)
-                            Spacer()
-                            Text("Fat (g)")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Color.secondary)
-                        }
-                    }
-                    .listRowBackground(BlurView())
-                    .listRowSeparator(.hidden)
                 }
-                .scrollContentBackground(.hidden)
+                .listRowBackground(BlurView())
+                .listRowSeparator(.hidden)
+                Section {
+                    HStack {
+                        TextField("Ex: 1 cup", text: $servingSize)
+                        Spacer()
+                        Text("Serving Size")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    HStack {
+                        TextField("Ex: 46 g", text: $servingSize2)
+                        Spacer()
+                        Text("Serving Size 2")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    HStack {
+                        TextField("Servings Per Container", value: $servingsPerContainer, format: .number)
+                            .keyboardType(.decimalPad)
+                        Spacer()
+                        Text("Servings Per Container")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                            .multilineTextAlignment(.trailing)
+                    }
+                } footer: {
+                    Text("Valid Serving Size Units: bag, bagel, bar, bottle, box, brownie(s), bun, cake cup, can, capsule, chip(s), cone(s), container, cookie(s), cup, egg, fl oz, g, gummy, IU, kg, lb, liter, mL, mcg, mg, mint(s), oz, packet, piece(s), pill, pouch, rope(s), scoop, serving, slice(s), softgel(s), stick, tablet, tbsp, tsp, waffle cone")
+                }
+                .listRowBackground(BlurView())
+                .listRowSeparator(.hidden)
+                Section {
+                    HStack {
+                        TextField("Calories", value: $calories, format: .number)
+                            .keyboardType(.decimalPad)
+                        Spacer()
+                        Text("Calories")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    HStack {
+                        TextField("Protein", value: $protein, format: .number)
+                            .keyboardType(.decimalPad)
+                        Spacer()
+                        Text("Protein (g)")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    HStack {
+                        TextField("Carbs", value: $carbs, format: .number)
+                            .keyboardType(.decimalPad)
+                        Spacer()
+                        Text("Carbs (g)")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                    }
+                    HStack {
+                        TextField("Fat", value: $fat, format: .number)
+                            .keyboardType(.decimalPad)
+                        Spacer()
+                        Text("Fat (g)")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.secondary)
+                    }
+                }
+                .listRowBackground(BlurView())
+                .listRowSeparator(.hidden)
             }
+            .scrollContentBackground(.hidden)
+            .background(BackgroundView())
             .onTapGesture {
                 hideKeyboard()
             }
             .navigationTitle("New Food")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -273,8 +249,12 @@ struct CreateFoodView: View {
                 }
             }
             .alert(isPresented: $showAlert) {
-                Alert(title: Text("Invalid Serving Size(s)"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+                Alert(title: Text("Invalid Serving Size(s)"), message: Text("Please enter a valid serving size (e.g., '1 cup')."), dismissButton: .default(Text("OK")))
             }
         }
     }
+}
+
+#Preview {
+    CreateFoodView(barcode: "")
 }

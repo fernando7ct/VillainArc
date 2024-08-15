@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import CoreLocation
 import MapKit
 
 @Model

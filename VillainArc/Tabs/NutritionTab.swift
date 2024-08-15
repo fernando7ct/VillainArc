@@ -22,3 +22,7 @@ struct NutritionTab: View {
         }
     }
 }
+
+#Preview {
+    NutritionTab(path: .constant(.init()), date: .constant(.now))
+}

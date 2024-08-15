@@ -3,46 +3,47 @@ import SwiftUI
 struct HomeTab: View {
     @Environment(\.modelContext) private var context
     @Binding var path: NavigationPath
+    @State private var runView = false
     
     var body: some View {
         NavigationStack(path: $path) {
-            ZStack {
-                BackgroundView()
-                ScrollView {
-                    VStack(spacing: 0) {
-                        GymSectionView()
-                            .padding(.bottom)
-                            .scrollTransition { content, phase in
-                                content
-                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
-                                    .opacity(phase.isIdentity ? 1 : 0.7)
-                            }
-                        TemplateSectionView()
-                            .padding(.vertical)
-                            .scrollTransition { content, phase in
-                                content
-                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
-                                    .opacity(phase.isIdentity ? 1 : 0.7)
-                            }
-                        WorkoutSectionView()
-                            .padding(.vertical)
-                            .scrollTransition { content, phase in
-                                content
-                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
-                                    .opacity(phase.isIdentity ? 1 : 0.7)
-                            }
-                        ExercisesSectionView()
-                            .padding(.vertical)
-                            .scrollTransition { content, phase in
-                                content
-                                    .blur(radius: phase.isIdentity ? 0 : 1.5)
-                                    .opacity(phase.isIdentity ? 1 : 0.7)
-                            }
+            ScrollView {
+                GymSectionView()
+                    .padding(.bottom)
+                    .scrollTransition { content, phase in
+                        content
+                            .blur(radius: phase.isIdentity ? 0 : 1.5)
+                            .opacity(phase.isIdentity ? 1 : 0.7)
                     }
+                TemplateSectionView()
+                    .padding(.vertical)
+                    .scrollTransition { content, phase in
+                        content
+                            .blur(radius: phase.isIdentity ? 0 : 1.5)
+                            .opacity(phase.isIdentity ? 1 : 0.7)
+                    }
+                WorkoutSectionView()
+                    .padding(.vertical)
+                    .scrollTransition { content, phase in
+                        content
+                            .blur(radius: phase.isIdentity ? 0 : 1.5)
+                            .opacity(phase.isIdentity ? 1 : 0.7)
+                    }
+                ExercisesSectionView()
+                    .padding(.vertical)
+                    .scrollTransition { content, phase in
+                        content
+                            .blur(radius: phase.isIdentity ? 0 : 1.5)
+                            .opacity(phase.isIdentity ? 1 : 0.7)
+                    }
+                Button {
+                    runView = true
+                } label: {
+                    Text("start run")
                 }
-                .vSpacing(.top)
-                .scrollIndicators(.hidden)
             }
+            .scrollIndicators(.hidden)
+            .background(BackgroundView())
             .navigationDestination(for: Int.self) { int in
                 if int == 0 {
                     AllTemplatesView()
@@ -66,6 +67,14 @@ struct HomeTab: View {
                 }
                 .padding()
             }
+            .fullScreenCover(isPresented: $runView) {
+                RunView()
+            }
         }
     }
+}
+
+#Preview {
+    HomeTab(path: .constant(.init()))
+        .tint(.primary)
 }

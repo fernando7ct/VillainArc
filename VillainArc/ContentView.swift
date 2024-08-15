@@ -65,7 +65,7 @@ struct ContentView: View {
                     }
                     .tag(Tab.health)
             }
-            .tint(Color.primary)
+            .tint(.primary)
             .onAppear {
                 DataManager.shared.checkUserDataComplete { success in
                     if !success {

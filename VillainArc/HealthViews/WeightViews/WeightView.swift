@@ -3,11 +3,11 @@ import Charts
 import SwiftData
 
 struct WeightView: View {
-    @Query(sort: \WeightEntry.date, order: .reverse) private var weightEntries: [WeightEntry]
+    @Query(sort: \WeightEntry.date, order: .forward) private var weightEntries: [WeightEntry]
     @State private var addWeightSheetActive = false
     @State private var selectedRange: GraphRanges = .month
     @State private var selectedDate: Date? = nil
-    @State private var selectedEntry: WeightEntry? = nil
+    @State private var selectedWeekday: String? = nil
     
     var filteredEntries: [WeightEntry] {
         let calendar = Calendar.current
@@ -31,12 +31,40 @@ struct WeightView: View {
         guard !weightEntries.isEmpty else { return 0 }
         return filteredEntries.reduce(0) { $0 + $1.weight } / Double(filteredEntries.count)
     }
+    var averageWeightChangePerWeekday: [(day: String, change: Double)] {
+        let calendar = Calendar.current
+        var changeList: [(date: Date, change: Double)] = []
+        for i in 1..<weightEntries.count {
+            changeList.append((date: weightEntries[i - 1].date, change: weightEntries[i] - weightEntries[i - 1]))
+        }
+        let groupedEntries = Dictionary(grouping: changeList) { calendar.component(.weekday, from: $0.date) }
+        return (1...7).compactMap { weekday -> (String, Double)? in
+            if let entries = groupedEntries[weekday] {
+                let averageChange = entries.reduce(0) { $0 + $1.change } / Double(entries.count)
+                return (calendar.weekdaySymbols[weekday - 1], averageChange)
+            } else {
+                return (calendar.weekdaySymbols[weekday - 1], 0)
+            }
+        }
+    }
+
+    var averageWeightChangePerWeek: Double {
+        guard !averageWeightChangePerWeekday.isEmpty else { return 0 }
+        return averageWeightChangePerWeekday.reduce(0) { $0 + $1.change }
+    }
     private func yAxisRange() -> ClosedRange<Double> {
-        guard let minWeight = filteredEntries.map({ $0.weight }).min(),
-              let maxWeight = filteredEntries.map({ $0.weight }).max() else {
+        guard let minWeight = weightEntries.map({ $0.weight }).min(),
+              let maxWeight = weightEntries.map({ $0.weight }).max() else {
             return 0...100
         }
         return (minWeight < 5 ? 0 : minWeight - 5)...(maxWeight + 5)
+    }
+    private func yAxisRange2() -> ClosedRange<Double> {
+        guard let minChange = averageWeightChangePerWeekday.map({ $0.change }).min(),
+              let maxChange = averageWeightChangePerWeekday.map({ $0.change }).max() else {
+            return -1...1
+        }
+        return (minChange - 0.5)...(maxChange + 0.5)
     }
     private func xAxisRange() -> ClosedRange<Date> {
         let calendar = Calendar.current
@@ -68,7 +96,7 @@ struct WeightView: View {
     }
     
     var body: some View {
-        VStack {
+        ScrollView {
             VStack {
                 VStack(alignment: .leading, spacing: 0) {
                     if !weightEntries.isEmpty {
@@ -98,28 +126,33 @@ struct WeightView: View {
                 }
                 .fontWeight(.semibold)
                 .hSpacing(.leading)
+                .scrollTransition { content, phase in
+                    content
+                        .blur(radius: phase.isIdentity ? 0 : 1.5)
+                        .opacity(phase.isIdentity ? 1 : 0.7)
+                }
                 
-                Chart(filteredEntries) { weight in
-                    AreaMark(x: .value("Date", weight.date), yStart: .value("Weight", yAxisRange().lowerBound), yEnd: .value("Weight", weight.weight))
-                        .foregroundStyle(Color.blue.opacity(0.4))
+                Chart(filteredEntries) { entry in
+                    AreaMark(x: .value("Date", entry.date), yStart: .value("Weight", yAxisRange().lowerBound), yEnd: .value("Weight", entry.weight))
+                        .foregroundStyle(Color.blue.opacity(0.6))
                         .interpolationMethod(.monotone)
-                    LineMark(x: .value("Date", weight.date), y: .value("Weight", weight.weight))
+                    LineMark(x: .value("Date", entry.date), y: .value("Weight", entry.weight))
                         .foregroundStyle(Color.blue)
                         .interpolationMethod(.monotone)
                         .lineStyle(StrokeStyle(lineWidth: 1.5))
-                    if let selectedEntry {
-                        PointMark(x: .value("Date", selectedEntry.date), y: .value("Weight", selectedEntry.weight))
+                    if let selectedDate, selectedDate.isSameDayAs(entry.date) {
+                        PointMark(x: .value("Date", entry.date), y: .value("Weight", entry.weight))
                             .foregroundStyle(Color.blue)
-                        RuleMark(x: .value("Date", selectedEntry.date))
+                        RuleMark(x: .value("Date", entry.date))
                             .foregroundStyle(Color.blue)
                             .lineStyle(StrokeStyle(lineWidth: 1.5))
                             .annotation(position: .top, overflowResolution: .init(x: .fit(to: .plot), y: .fit(to: .chart))) {
                                 VStack(alignment: .leading, spacing: 0) {
-                                    Text("\(selectedEntry.date.formatted(.dateTime.month().day().year()))")
+                                    Text("\(entry.date.formatted(.dateTime.month().day().year()))")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                     HStack(alignment: .bottom, spacing: 3) {
-                                        Text("\(formattedDouble(selectedEntry.weight))")
+                                        Text("\(formattedDouble(entry.weight))")
                                             .font(.title3)
                                             .foregroundStyle(.white)
                                         Text("lbs")
@@ -130,10 +163,7 @@ struct WeightView: View {
                                 .fontWeight(.semibold)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .fill(Color.blue.gradient)
-                                }
+                                .background(.blue.gradient, in: .rect(cornerRadius: 6, style: .continuous))
                             }
                     }
                 }
@@ -141,24 +171,12 @@ struct WeightView: View {
                 .chartXScale(domain: xAxisRange())
                 .chartXAxis {}
                 .chartXSelection(value: $selectedDate)
-                .onChange(of: selectedDate) {
-                    if let selectedDate {
-                        let calendar = Calendar.current
-                        let dayComponent = calendar.component(.day, from: selectedDate)
-                        let monthComponent = calendar.component(.month, from: selectedDate)
-                        let yearComponent = calendar.component(.year, from: selectedDate)
-                        if let currentEntry = filteredEntries.first(where: { item in
-                            calendar.component(.day, from: item.date) == dayComponent &&
-                            calendar.component(.month, from: item.date) == monthComponent &&
-                            calendar.component(.year, from: item.date) == yearComponent
-                        }) {
-                            selectedEntry = currentEntry
-                        }
-                    } else {
-                        selectedEntry = nil
-                    }
+                .frame(height: 250)
+                .scrollTransition { content, phase in
+                    content
+                        .blur(radius: phase.isIdentity ? 0 : 1.5)
+                        .opacity(phase.isIdentity ? 1 : 0.7)
                 }
-                .frame(height: 300)
                 
                 HStack {
                     Text(xAxisRange().lowerBound, format: .dateTime.month(.abbreviated).day().year())
@@ -168,6 +186,11 @@ struct WeightView: View {
                 }
                 .textScale(.secondary)
                 .foregroundStyle(.secondary)
+                .scrollTransition { content, phase in
+                    content
+                        .blur(radius: phase.isIdentity ? 0 : 1.5)
+                        .opacity(phase.isIdentity ? 1 : 0.7)
+                }
                 
                 Picker("Time Range", selection: $selectedRange) {
                     Text("W").tag(GraphRanges.week)
@@ -178,10 +201,81 @@ struct WeightView: View {
                 }
                 .pickerStyle(.segmented)
                 .padding(.top)
+                .scrollTransition { content, phase in
+                    content
+                        .blur(radius: phase.isIdentity ? 0 : 1.5)
+                        .opacity(phase.isIdentity ? 1 : 0.7)
+                }
             }
             .padding()
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background(.ultraThinMaterial, in: .rect(cornerRadius: 12, style: .continuous))
+            .padding(.bottom)
             
+            if weightEntries.count > 7 {
+                VStack {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Average Change Per Weekday")
+                            .font(.title3)
+                        Text("\(averageWeightChangePerWeek > 0 ? "+" : "")\(formattedDouble(averageWeightChangePerWeek)) lbs/week")
+                            .foregroundStyle(.secondary)
+                            .textScale(.secondary)
+                            .fontWeight(.none)
+                    }
+                    .fontWeight(.semibold)
+                    .hSpacing(.leading)
+                    .scrollTransition { content, phase in
+                        content
+                            .blur(radius: phase.isIdentity ? 0 : 1.5)
+                            .opacity(phase.isIdentity ? 1 : 0.7)
+                    }
+                    
+                    Chart(averageWeightChangePerWeekday, id: \.day) { day in
+                        BarMark(x: .value("Weekday", day.day), yStart: .value("Change", 0), yEnd: .value("Change", day.change))
+                            .foregroundStyle(Color.blue.opacity(0.6))
+                        if let selectedWeekday, selectedWeekday == day.day {
+                            RuleMark(x: .value("Weekday", day.day))
+                                .foregroundStyle(Color.clear)
+                                .annotation(position: .automatic, overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        Text(day.day)
+                                            .font(.caption)
+                                            .foregroundStyle(.white)
+                                        Text("\(day.change > 0 ? "+" : "")\(formattedDouble2(day.change))")
+                                            .font(.title3)
+                                            .foregroundStyle(day.change > 0 ? Color.green : Color.red)
+                                    }
+                                    .fontWeight(.semibold)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(.blue.gradient, in: .rect(cornerRadius: 6, style: .continuous))
+                                }
+                        }
+                    }
+                    .chartXSelection(value: $selectedWeekday)
+                    .chartYScale(domain: yAxisRange2())
+                    .chartXAxis {
+                        AxisMarks(values: .automatic) { value in
+                            AxisValueLabel() {
+                                if let day = value.as(String.self) {
+                                    Text(day.prefix(3))
+                                }
+                            }
+                        }
+                    }
+                    .frame(height: 250)
+                    .scrollTransition { content, phase in
+                        content
+                            .blur(radius: phase.isIdentity ? 0 : 1.5)
+                            .opacity(phase.isIdentity ? 1 : 0.7)
+                    }
+                }
+                .padding()
+                .background(.ultraThinMaterial, in: .rect(cornerRadius: 12, style: .continuous))
+                
+                Color.clear
+                    .frame(height: 60)
+            }
+
         }
         .padding(.horizontal)
         .vSpacing(.top)
@@ -214,11 +308,13 @@ struct WeightView: View {
             }
             .padding()
         }
+        .scrollIndicators(.hidden)
     }
 }
 
 #Preview {
     NavigationView {
         WeightView()
+            .tint(.primary)
     }
 }

@@ -95,8 +95,3 @@ struct TimerDisplayView: View {
 #Preview {
     TimerDisplayView(viewModel: TimerDisplayViewModel())
 }
-
-
-#Preview {
-    TimerDisplayView(viewModel: TimerDisplayViewModel())
-}

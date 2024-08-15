@@ -3,14 +3,13 @@ import MapKit
 import SwiftData
 
 struct GymSelectionView: View {
-    @StateObject var locationManager = LocationManager.shared
-    @State private var cameraPosition: MapCameraPosition = .automatic
-    @State private var selectedGym: MKMapItem?
-    @State private var viewingRegion: MKCoordinateRegion?
+    @StateObject var locationManager = GymLocationManager.shared
     @Query(filter: #Predicate<Gym> { $0.favorite }) private var gyms: [Gym]
     var homeGym: Gym? { return gyms.first }
     @Namespace private var locationSpace
-    
+    @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var selectedGym: MKMapItem?
+    @State private var viewingRegion: MKCoordinateRegion?
     @State private var sheetDetent: PresentationDetent = .height(UIScreen.main.bounds.height / 3)
     @State private var previousDetent: PresentationDetent?
     @State private var showSheet = true
@@ -23,60 +22,57 @@ struct GymSelectionView: View {
         }
     }
     var gymListView: some View {
-        ZStack {
-            BackgroundView()
-            ScrollView {
-                Section {
-                    TextField("Search", text: $locationManager.searchText, onCommit: {
-                        locationManager.searchGyms(in: viewingRegion)
-                        cameraPosition = .automatic
-                    })
-                    .customStyle()
-                    .padding(.top)
-                }
-                Section {
-                    ForEach(locationManager.filteredGyms, id: \.self) { gym in
-                        Button {
-                            selectedGym = gym
-                            let adjustedCoordinate = CLLocationCoordinate2D(latitude: gym.placemark.coordinate.latitude - 0.01, longitude: gym.placemark.coordinate.longitude)
-                            cameraPosition = .region(MKCoordinateRegion(center: adjustedCoordinate, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
-                            if sheetDetent == .large {
-                                sheetDetent = .height(UIScreen.main.bounds.height / 3)
-                                previousDetent = .large
-                            }
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text(gym.placemark.name ?? "Unknown Gym")
-                                        .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
-                                    Text(gym.placemark.title ?? "")
-                                        .foregroundStyle(.secondary)
-                                        .textScale(.secondary)
-                                        .multilineTextAlignment(.leading)
-                                }
-                                Spacer()
-                                let distance = locationManager.calculateDistance(to: gym)
-                                Text(distance == 0 ? "" : "\(formattedDouble(distance)) mi")
-                                    .font(.footnote)
-                                    .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
-                            }
-                            .fontWeight(.semibold)
-                        }
-                        .customStyle()
-                    }
-                }
+        ScrollView {
+            Section {
+                TextField("Search", text: $locationManager.searchText, onCommit: {
+                    locationManager.searchGyms(in: viewingRegion)
+                    cameraPosition = .automatic
+                })
+                .customStyle()
+                .padding(.top)
             }
-            .scrollContentBackground(.hidden)
-            .sheet(item: $selectedGym, onDismiss: { 
-                if let _ = previousDetent {
-                    sheetDetent = .large
-                    previousDetent = nil
+            Section {
+                ForEach(locationManager.filteredGyms, id: \.self) { gym in
+                    Button {
+                        selectedGym = gym
+                        let adjustedCoordinate = CLLocationCoordinate2D(latitude: gym.placemark.coordinate.latitude - 0.01, longitude: gym.placemark.coordinate.longitude)
+                        cameraPosition = .region(MKCoordinateRegion(center: adjustedCoordinate, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)))
+                        if sheetDetent == .large {
+                            sheetDetent = .height(UIScreen.main.bounds.height / 3)
+                            previousDetent = .large
+                        }
+                    } label: {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(gym.placemark.name ?? "Unknown Gym")
+                                    .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
+                                Text(gym.placemark.title ?? "")
+                                    .foregroundStyle(.secondary)
+                                    .textScale(.secondary)
+                                    .multilineTextAlignment(.leading)
+                            }
+                            Spacer()
+                            let distance = locationManager.calculateDistance(to: gym)
+                            Text(distance == 0 ? "" : "\(formattedDouble(distance)) mi")
+                                .font(.footnote)
+                                .foregroundStyle(isHomeGym(gym) ? .blue : .primary)
+                        }
+                        .fontWeight(.semibold)
+                    }
+                    .customStyle()
                 }
-            }) {
-                GymDetailView(gym: $0)
-                    .presentationDetents([.height(UIScreen.main.bounds.height / 3), .large])
             }
         }
+        .sheet(item: $selectedGym, onDismiss: {
+            if let _ = previousDetent {
+                sheetDetent = .large
+                previousDetent = nil
+            }
+        }) {
+            GymDetailView(gym: $0)
+                .presentationDetents([.height(UIScreen.main.bounds.height / 3), .large])
+        }
+        .background(BackgroundView())
     }
     var body: some View {
         Group {
@@ -121,4 +117,5 @@ extension MKMapItem: Identifiable {
 }
 #Preview {
     GymSelectionView()
+        .tint(.primary)
 }

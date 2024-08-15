@@ -103,72 +103,70 @@ struct ExerciseSelectionView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                List(filteredExercises) { exercise in
-                    Button {
-                        if let index = exerciseToReplaceIndex {
-                            onReplace(index, exercise)
-                            dismiss()
+            List(filteredExercises) { exercise in
+                Button {
+                    if let index = exerciseToReplaceIndex {
+                        onReplace(index, exercise)
+                        dismiss()
+                    } else {
+                        if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
+                            selectedExercises.remove(at: index)
                         } else {
-                            if let index = selectedExercises.firstIndex(where: { $0.id == exercise.id }) {
-                                selectedExercises.remove(at: index)
-                            } else {
-                                selectedExercises.append(exercise)
-                            }
+                            selectedExercises.append(exercise)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(exercise.name)
+                                .foregroundStyle(.primary)
+                                .font(.title3)
+                            Text(exercise.category)
+                                .textScale(.secondary)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .hSpacing(.leading)
+                }
+                .buttonStyle(BorderlessButtonStyle())
+                .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
+            }
+            .searchable(text: $searchText)
+            .searchPresentationToolbarBehavior(.avoidHidingContent)
+            .listStyle(.plain)
+            .navigationTitle("Exercises")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        dismiss()
+                        if exerciseToReplaceIndex != nil {
+                            exerciseToReplaceIndex = nil
                         }
                     } label: {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(exercise.name)
-                                    .foregroundStyle(.primary)
-                                    .font(.title3)
-                                Text(exercise.category)
-                                    .textScale(.secondary)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .hSpacing(.leading)
+                        Text("Cancel")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.red)
                     }
-                    .buttonStyle(BorderlessButtonStyle())
-                    .listRowBackground(selectedExercises.contains(where: { $0.id == exercise.id }) ? Color.blue.opacity(0.2) : Color.clear)
                 }
-                .searchable(text: $searchText)
-                .searchPresentationToolbarBehavior(.avoidHidingContent)
-                .listStyle(.plain)
-                .navigationTitle("Exercises")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
+                if exerciseToReplaceIndex == nil {
+                    ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
+                            onAdd(selectedExercises)
                             dismiss()
-                            if exerciseToReplaceIndex != nil {
-                                exerciseToReplaceIndex = nil
-                            }
                         } label: {
-                            Text("Cancel")
+                            Text("Add (\(selectedExercises.count))")
                                 .fontWeight(.semibold)
-                                .foregroundStyle(.red)
-                        }
-                    }
-                    if exerciseToReplaceIndex == nil {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button {
-                                onAdd(selectedExercises)
-                                dismiss()
-                            } label: {
-                                Text("Add (\(selectedExercises.count))")
-                                    .fontWeight(.semibold)
-                            }
                         }
                     }
                 }
             }
+            .background(BackgroundView())
         }
     }
 }
 
 #Preview {
     ExerciseSelectionView(exerciseToReplaceIndex: .constant(nil), onAdd: { _ in }, onReplace: { _, _ in })
+        .tint(.primary)
 }

@@ -39,77 +39,74 @@ struct NutritionEntryView: View {
     
     var body: some View {
         NavigationStack(path: $path) {
-            ZStack {
-                BackgroundView()
-                NutritionEntryDataView(entry: selectedEntry)
-            }
-            .navigationDestination(for: FoodCategory.self) { value in
-                AddFoodView(entry: value.entry, category: value.category)
-            }
-            .navigationDestination(for: FoodEntry.self) { value in
-                EditEntryFoodView(food: value.food, entry: value.entry)
-            }
-            .navigationDestination(for: FoodEntryCategoryFirebase.self) { value in
-                FoodToEntryView(food: value.food, entry: value.entry, category: value.category, isFirebaseFood: value.firebase)
-            }
-            .safeAreaInset(edge: .top) {
-                HStack {
-                    Text(date, format: .dateTime.month().day().year())
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    Spacer()
-                    Button {
-                        withAnimation(.snappy) {
-                            changeDate(by: -1)
-                        }
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .padding(7)
-                            .background(.ultraThinMaterial, in: .circle)
-                    }
-                    .disabled(date == firstDate)
-                    .padding(.trailing, 5)
-                    Button {
-                        withAnimation(.snappy) {
-                            changeDate(by: 1)
-                        }
-                    } label: {
-                        Image(systemName: "chevron.right")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .padding(7)
-                            .background(.ultraThinMaterial, in: .circle)
-                    }
-                    .disabled(date == lastDate)
-                    Menu {
+            NutritionEntryDataView(entry: selectedEntry)
+                .navigationDestination(for: FoodCategory.self) { value in
+                    AddFoodView(entry: value.entry, category: value.category)
+                }
+                .navigationDestination(for: FoodEntry.self) { value in
+                    EditEntryFoodView(food: value.food, entry: value.entry)
+                }
+                .navigationDestination(for: FoodEntryCategoryFirebase.self) { value in
+                    FoodToEntryView(food: value.food, entry: value.entry, category: value.category, isFirebaseFood: value.firebase)
+                }
+                .safeAreaInset(edge: .top) {
+                    HStack {
+                        Text(date, format: .dateTime.month().day().year())
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        Spacer()
                         Button {
-                            updateGoals.toggle()
+                            withAnimation(.snappy) {
+                                changeDate(by: -1)
+                            }
                         } label: {
-                            Label("Update Goals", systemImage: "chart.pie.fill")
+                            Image(systemName: "chevron.left")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .padding(7)
+                                .background(.ultraThinMaterial, in: .circle)
                         }
+                        .disabled(date == firstDate)
+                        .padding(.trailing, 5)
                         Button {
-                            updateMealNames.toggle()
+                            withAnimation(.snappy) {
+                                changeDate(by: 1)
+                            }
                         } label: {
-                            Label("Change Meal Names", systemImage: "square.fill.text.grid.1x2")
+                            Image(systemName: "chevron.right")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .padding(7)
+                                .background(.ultraThinMaterial, in: .circle)
                         }
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .padding(10)
-                            .background(.ultraThinMaterial, in: .circle)
+                        .disabled(date == lastDate)
+                        Menu {
+                            Button {
+                                updateGoals.toggle()
+                            } label: {
+                                Label("Update Goals", systemImage: "chart.pie.fill")
+                            }
+                            Button {
+                                updateMealNames.toggle()
+                            } label: {
+                                Label("Change Meal Names", systemImage: "square.fill.text.grid.1x2")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .padding(10)
+                                .background(.ultraThinMaterial, in: .circle)
+                        }
+                    }
+                    .padding()
+                    .sheet(isPresented: $updateMealNames) {
+                        UpdateMealNamesView(entry: todaysEntry)
+                    }
+                    .sheet(isPresented: $updateGoals) {
+                        NutritionSetupView(nutritionEntry: todaysEntry)
                     }
                 }
-                .padding()
-                .sheet(isPresented: $updateMealNames) {
-                    UpdateMealNamesView(entry: todaysEntry)
-                }
-                .sheet(isPresented: $updateGoals) {
-                    NutritionSetupView(nutritionEntry: todaysEntry)
-                }
-            }
         }
     }
 }
@@ -398,5 +395,6 @@ struct NutritionEntryDataView: View {
             .presentationDragIndicator(.visible)
         }
         .scrollContentBackground(.hidden)
+        .background(BackgroundView())
     }
 }

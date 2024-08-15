@@ -33,7 +33,7 @@ struct GymSectionView: View {
                         .fontWeight(.semibold)
                         Spacer()
                             Button(action: {
-                                LocationManager.shared.openMaps(latitude: homeGym.latitude, longitude: homeGym.longitude)
+                                GymLocationManager.shared.openMaps(latitude: homeGym.latitude, longitude: homeGym.longitude)
                             }) {
                                 Image(systemName: "car.fill")
                                     .font(.title2)
@@ -55,5 +55,5 @@ struct GymSectionView: View {
 
 #Preview {
     GymSectionView()
-        .modelContainer(for: User.self)
+        .tint(.primary)
 }

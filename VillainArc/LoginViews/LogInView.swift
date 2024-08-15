@@ -11,45 +11,42 @@ struct LogInView: View {
     @State private var nonce: String?
     @State private var userName: String = ""
     @State private var dateJoined: Date = Date()
-
+    
     var body: some View {
-        ZStack {
-            BackgroundView()
-
-            if !downloadingData {
-                if showCompleteProfileView {
-                    CompleteProfileView(userID: Auth.auth().currentUser?.uid ?? "", userName: userName, dateJoined: dateJoined)
-                } else {
-                    VStack {
-                        Spacer()
-                        Text("Villain Arc")
-                            .font(.largeTitle)
-                            .bold()
-                        Spacer()
-                        SignInWithAppleButton(.signIn, onRequest: { request in
-                            let nonce = randomNonceString()
-                            self.nonce = nonce
-                            request.requestedScopes = [.email, .fullName]
-                            request.nonce = sha256(nonce)
-                        }, onCompletion: { result in
-                            switch result {
-                            case .success(let authorization):
-                                loginWithFirebase(authorization)
-                            case .failure(let error):
-                                print(error.localizedDescription)
-                            }
-                        })
-                        .clipShape(Capsule())
-                        .frame(maxHeight: 50)
-                        .padding()
-                    }
-                }
+        if !downloadingData {
+            if showCompleteProfileView {
+                CompleteProfileView(userID: Auth.auth().currentUser?.uid ?? "", name: userName, dateJoined: dateJoined)
             } else {
-                ProgressView("Loading...")
+                VStack {
+                    Spacer()
+                    Text("Villain Arc")
+                        .font(.largeTitle)
+                        .bold()
+                    Spacer()
+                    SignInWithAppleButton(.signIn, onRequest: { request in
+                        let nonce = randomNonceString()
+                        self.nonce = nonce
+                        request.requestedScopes = [.email, .fullName]
+                        request.nonce = sha256(nonce)
+                    }, onCompletion: { result in
+                        switch result {
+                        case .success(let authorization):
+                            loginWithFirebase(authorization)
+                        case .failure(let error):
+                            print(error.localizedDescription)
+                        }
+                    })
+                    .clipShape(Capsule())
+                    .frame(maxHeight: 50)
+                    .padding()
+                }
+                .background(BackgroundView())
             }
+        } else {
+            ProgressView("Loading...")
         }
     }
-
+    
     func loginWithFirebase(_ authorization: ASAuthorization) {
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
             guard let nonce = self.nonce else {
@@ -94,7 +91,7 @@ struct LogInView: View {
             }
         }
     }
-
+    
     private func randomNonceString(length: Int = 32) -> String {
         precondition(length > 0)
         var randomBytes = [UInt8](repeating: 0, count: length)
@@ -109,7 +106,7 @@ struct LogInView: View {
         }
         return String(nonce)
     }
-
+    
     private func sha256(_ input: String) -> String {
         let inputData = Data(input.utf8)
         let hashedData = SHA256.hash(data: inputData)

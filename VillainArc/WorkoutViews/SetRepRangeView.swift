@@ -7,7 +7,7 @@ struct SetRepRangeView: View {
     @State private var rangeEnd: Int = 0
     @State private var originalRange: String = ""
     @State private var failure: Bool = false
-
+    
     func setProperties() {
         originalRange = exercise.repRange
         if !exercise.repRange.isEmpty {
@@ -22,43 +22,41 @@ struct SetRepRangeView: View {
             }
         }
     }
-
+    
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                VStack(spacing: 10) {
-                    Toggle("Until Failure", isOn: $failure)
-                        .padding(.horizontal)
-                        .padding(.vertical, 7)
-                        .background(BlurView())
-                        .cornerRadius(12)
-                        .font(.title2)
-                    
-                    if !failure {
-                        HStack {
-                            TextField("", value: $rangeStart, format: .number)
-                                .keyboardType(.numberPad)
-                                .padding(.horizontal)
-                                .padding(.vertical, 7)
-                                .background(BlurView())
-                                .cornerRadius(12)
-                                .font(.title2)
-                            Text("-")
-                                .font(.title)
-                            TextField("", value: $rangeEnd, format: .number)
-                                .keyboardType(.numberPad)
-                                .padding(.horizontal)
-                                .padding(.vertical, 7)
-                                .background(BlurView())
-                                .cornerRadius(12)
-                                .font(.title2)
-                        }
+            VStack(spacing: 10) {
+                Toggle("Until Failure", isOn: $failure)
+                    .padding(.horizontal)
+                    .padding(.vertical, 7)
+                    .background(BlurView())
+                    .cornerRadius(12)
+                    .font(.title2)
+                
+                if !failure {
+                    HStack {
+                        TextField("", value: $rangeStart, format: .number)
+                            .keyboardType(.numberPad)
+                            .padding(.horizontal)
+                            .padding(.vertical, 7)
+                            .background(BlurView())
+                            .cornerRadius(12)
+                            .font(.title2)
+                        Text("-")
+                            .font(.title)
+                        TextField("", value: $rangeEnd, format: .number)
+                            .keyboardType(.numberPad)
+                            .padding(.horizontal)
+                            .padding(.vertical, 7)
+                            .background(BlurView())
+                            .cornerRadius(12)
+                            .font(.title2)
                     }
                 }
-                .vSpacing(.top)
-                .padding(.horizontal)
             }
+            .vSpacing(.top)
+            .padding(.horizontal)
+            .background(BackgroundView())
             .onAppear {
                 setProperties()
             }
@@ -67,7 +65,6 @@ struct SetRepRangeView: View {
             }
             .navigationTitle("Rep Range")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -101,4 +98,8 @@ struct SetRepRangeView: View {
             }
         }
     }
+}
+
+#Preview {
+    SetRepRangeView(exercise: .constant(TempExercise(name: "", category: "", repRange: "", notes: "", sameRestTimes: false, sets: [])))
 }

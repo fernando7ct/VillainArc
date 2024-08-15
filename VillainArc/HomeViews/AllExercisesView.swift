@@ -5,7 +5,7 @@ struct AllExercisesView: View {
     @Query(filter: #Predicate<Workout> { workout in
         !workout.template
     }) private var workouts: [Workout]
-
+    
     private var topExercises: [ExerciseInfo] {
         var exerciseDict: [String: ExerciseInfo] = [:]
         for workout in workouts {
@@ -29,27 +29,23 @@ struct AllExercisesView: View {
             }
             .map { $0 }
     }
-
+    
     var body: some View {
-        ZStack {
-            BackgroundView()
-            List {
-                ForEach(topExercises, id: \.name) { item in
-                    ExerciseRow(item: item)
-                        .listRowBackground(BlurView())
-                        .listRowSeparator(.hidden)
-                }
+        List {
+            ForEach(topExercises, id: \.name) { item in
+                ExerciseRow(item: item)
+                    .listRowBackground(BlurView())
+                    .listRowSeparator(.hidden)
             }
-            .scrollContentBackground(.hidden)
-            .overlay {
-                if topExercises.isEmpty {
-                    ContentUnavailableView("No exercises found.", systemImage: "dumbbell")
-                }
-            }
-            .navigationTitle("All Exercises")
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
         }
+        .scrollContentBackground(.hidden)
+        .overlay {
+            if topExercises.isEmpty {
+                ContentUnavailableView("No exercises found.", systemImage: "dumbbell")
+            }
+        }
+        .navigationTitle("All Exercises")
+        .background(BackgroundView())
     }
 }
 struct ExerciseRow: View {
@@ -82,5 +78,7 @@ struct ExerciseRow: View {
     }
 }
 #Preview {
-    AllExercisesView()
+    NavigationView {
+        AllExercisesView()
+    }
 }

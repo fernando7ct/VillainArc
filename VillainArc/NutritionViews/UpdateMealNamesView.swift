@@ -23,23 +23,21 @@ struct UpdateMealNamesView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                Form {
-                    ForEach(mealNames.indices, id: \.self) { index in
-                        HStack {
-                            TextField("Meal \(index + 1) Name", text: $mealNames[index])
-                            Spacer()
-                            Text("Meal \(index + 1)")
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.secondary)
-                        }
-                        .listRowBackground(BlurView())
-                        .listRowSeparator(.hidden)
+            Form {
+                ForEach(mealNames.indices, id: \.self) { index in
+                    HStack {
+                        TextField("Meal \(index + 1) Name", text: $mealNames[index])
+                        Spacer()
+                        Text("Meal \(index + 1)")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
                     }
+                    .listRowBackground(BlurView())
+                    .listRowSeparator(.hidden)
                 }
-                .scrollContentBackground(.hidden)
             }
+            .scrollContentBackground(.hidden)
+            .background(BackgroundView())
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -54,8 +52,6 @@ struct UpdateMealNamesView: View {
             }
             .navigationTitle("Meal Names")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-            .toolbarBackground(.ultraThinMaterial, for: .tabBar)
             .onTapGesture {
                 hideKeyboard()
             }

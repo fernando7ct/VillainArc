@@ -12,6 +12,6 @@ struct VillainArcApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [WeightEntry.self, User.self, Workout.self, WorkoutExercise.self, ExerciseSet.self, HealthSteps.self, HealthEnergy.self, NutritionHub.self, NutritionEntry.self, NutritionFood.self, Gym.self])
+        .modelContainer(for: [WeightEntry.self, User.self, Workout.self, WorkoutExercise.self, ExerciseSet.self, HealthSteps.self, HealthEnergy.self, NutritionHub.self, NutritionEntry.self, NutritionFood.self, Gym.self, Run.self])
     }
 }

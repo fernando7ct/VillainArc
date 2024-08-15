@@ -100,114 +100,44 @@ struct WorkoutView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                List {
-                    Section {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 0) {
-                                TextField("Title", text: $title)
-                                    .font(.title)
-                                    .fontWeight(.semibold)
-                                    .onChange(of: title) {
-                                        WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
-                                    }
-                                Text(startTime, format: .dateTime.month().day().year().weekday(.wide))
-                                    .textScale(.secondary)
-                                    .foregroundStyle(.secondary)
-                                if !isEditing {
-                                    HStack(spacing: 0) {
-                                        Text("Total Time: ")
-                                        Text(startTime, style: .timer)
-                                    }
-                                    .textScale(.secondary)
-                                    .foregroundStyle(.secondary)
-                                } else {
-                                    Text("Total Time: \(totalWorkoutTime(startTime: startTime, endTime: endTime))")
-                                        .textScale(.secondary)
-                                        .foregroundStyle(.secondary)
+            List {
+                Section {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 0) {
+                            TextField("Title", text: $title)
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .onChange(of: title) {
+                                    WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
                                 }
-                            }
-                            Spacer()
-                            TimerDisplayView(viewModel: timer)
-                            if !isEditingExercises {
-                                Menu {
-                                    if !exercises.isEmpty {
-                                        Button {
-                                            showSaveSheet = true
-                                        } label: {
-                                            Label(isEditing ? "Update" : "Save", systemImage: "checkmark")
-                                        }
-                                    }
-                                    if !exercises.isEmpty {
-                                        Button {
-                                            withAnimation {
-                                                isEditingExercises.toggle()
-                                            }
-                                        } label: {
-                                            Label("Edit Exercises", systemImage: "list.bullet")
-                                        }
-                                    }
-                                    Button(role: .destructive) {
-                                        if !isEditing {
-                                            timer.endActivity()
-                                            WorkoutActivityManager.shared.endLiveActivity()
-                                        }
-                                        dismiss()
-                                    } label: {
-                                        Label("Cancel", systemImage: "xmark")
-                                    }
-                                } label: {
-                                    Image(systemName: "chevron.down.circle")
-                                        .font(.title)
-                                        .foregroundStyle(Color.primary)
+                            Text(startTime, format: .dateTime.month().day().year().weekday(.wide))
+                                .textScale(.secondary)
+                                .foregroundStyle(.secondary)
+                            if !isEditing {
+                                HStack(spacing: 0) {
+                                    Text("Total Time: ")
+                                    Text(startTime, style: .timer)
                                 }
+                                .textScale(.secondary)
+                                .foregroundStyle(.secondary)
                             } else {
-                                Button {
-                                    withAnimation {
-                                        isEditingExercises.toggle()
-                                    }
-                                } label: {
-                                    Text("Done")
-                                        .fontWeight(.semibold)
-                                        .font(.title2)
-                                }
+                                Text("Total Time: \(totalWorkoutTime(startTime: startTime, endTime: endTime))")
+                                    .textScale(.secondary)
+                                    .foregroundStyle(.secondary)
                             }
                         }
-                        .sheet(isPresented: $showSaveSheet) {
-                            SaveWorkoutSheet(title: $title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: isTemplate, isEditing: isEditing, onSave: saveWorkout)
-                                .interactiveDismissDisabled()
-                        }
-                    }
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    if !isEditingExercises {
-                        Section {
-                            TextField("Workout Notes", text: $notes, axis: .vertical)
-                                .textEditorStyle(.plain)
-                                .autocorrectionDisabled()
-                                .focused($keyboardActive)
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    }
-                    Section {
-                        ForEach(exercises.indices, id: \.self) { index in
-                            NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, isEditing: isEditing, updateLiveActivity: {
-                                WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
-                            }, deleteExercise: {
-                                deleteExercise(at: IndexSet(integer: index))
-                            })) {
-                                WorkoutExerciseRowView(exercise: exercises[index])
-                            }
-                            .contextMenu {
-                                if !isEditingExercises {
+                        Spacer()
+                        TimerDisplayView(viewModel: timer)
+                        if !isEditingExercises {
+                            Menu {
+                                if !exercises.isEmpty {
                                     Button {
-                                        exerciseToReplaceIndex = index
-                                        showExerciseSelection.toggle()
+                                        showSaveSheet = true
                                     } label: {
-                                        Label("Replace Exercise", systemImage: "arrow.triangle.2.circlepath")
+                                        Label(isEditing ? "Update" : "Save", systemImage: "checkmark")
                                     }
+                                }
+                                if !exercises.isEmpty {
                                     Button {
                                         withAnimation {
                                             isEditingExercises.toggle()
@@ -215,64 +145,126 @@ struct WorkoutView: View {
                                     } label: {
                                         Label("Edit Exercises", systemImage: "list.bullet")
                                     }
-                                    Button(role: .destructive) {
-                                        deleteExercise(at: IndexSet(integer: index))
-                                    } label: {
-                                        Label("Delete Exercise", systemImage: "trash")
-                                    }
                                 }
+                                Button(role: .destructive) {
+                                    if !isEditing {
+                                        timer.endActivity()
+                                        WorkoutActivityManager.shared.endLiveActivity()
+                                    }
+                                    dismiss()
+                                } label: {
+                                    Label("Cancel", systemImage: "xmark")
+                                }
+                            } label: {
+                                Image(systemName: "chevron.down.circle")
+                                    .font(.title)
+                                    .foregroundStyle(Color.primary)
+                            }
+                        } else {
+                            Button {
+                                withAnimation {
+                                    isEditingExercises.toggle()
+                                }
+                            } label: {
+                                Text("Done")
+                                    .fontWeight(.semibold)
+                                    .font(.title2)
                             }
                         }
-                        .onDelete(perform: deleteExercise)
-                        .onMove(perform: moveExercise)
+                    }
+                    .sheet(isPresented: $showSaveSheet) {
+                        SaveWorkoutSheet(title: $title, exercises: $exercises, notes: $notes, startTime: $startTime, endTime: $endTime, isTemplate: isTemplate, isEditing: isEditing, onSave: saveWorkout)
+                            .interactiveDismissDisabled()
+                    }
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                if !isEditingExercises {
+                    Section {
+                        TextField("Workout Notes", text: $notes, axis: .vertical)
+                            .autocorrectionDisabled()
+                            .focused($keyboardActive)
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    if !isEditingExercises {
-                        Section {
-                            Button {
-                                showExerciseSelection = true
-                            } label: {
-                                HStack {
-                                    Label("Add Exercise", systemImage: "plus")
-                                        .fontWeight(.semibold)
+                }
+                Section {
+                    ForEach(exercises.indices, id: \.self) { index in
+                        NavigationLink(destination: ExerciseView(exercise: $exercises[index], timer: timer, isEditing: isEditing, updateLiveActivity: {
+                            WorkoutActivityManager.shared.updateLiveActivity(with: exercises, title: title, startTime: startTime, timer: timer)
+                        }, deleteExercise: {
+                            deleteExercise(at: IndexSet(integer: index))
+                        })) {
+                            WorkoutExerciseRowView(exercise: exercises[index])
+                        }
+                        .contextMenu {
+                            if !isEditingExercises {
+                                Button {
+                                    exerciseToReplaceIndex = index
+                                    showExerciseSelection.toggle()
+                                } label: {
+                                    Label("Replace Exercise", systemImage: "arrow.triangle.2.circlepath")
                                 }
-                                .hSpacing(.leading)
-                                .foregroundStyle(Color.primary)
-                            }
-                            .padding()
-                            .background(BlurView())
-                            .cornerRadius(12)
-                            .sheet(isPresented: $showExerciseSelection) {
-                                ExerciseSelectionView(exerciseToReplaceIndex: $exerciseToReplaceIndex, onAdd: addSelectedExercises, onReplace: replaceExercise)
-                                    .interactiveDismissDisabled()
+                                Button {
+                                    withAnimation {
+                                        isEditingExercises.toggle()
+                                    }
+                                } label: {
+                                    Label("Edit Exercises", systemImage: "list.bullet")
+                                }
+                                Button(role: .destructive) {
+                                    deleteExercise(at: IndexSet(integer: index))
+                                } label: {
+                                    Label("Delete Exercise", systemImage: "trash")
+                                }
                             }
                         }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
                     }
+                    .onDelete(perform: deleteExercise)
+                    .onMove(perform: moveExercise)
                 }
-                .listStyle(.plain)
-                .environment(\.editMode, isEditingExercises ? .constant(.active) : .constant(.inactive))
-                VStack(alignment: .trailing) {
-                    Spacer()
-                    HStack(alignment: .bottom) {
-                        Spacer()
-                        if keyboardActive {
-                            Button {
-                                hideKeyboard()
-                                keyboardActive = false
-                            } label: {
-                                Image(systemName: "keyboard.chevron.compact.down")
-                                    .foregroundStyle(Color.primary)
-                                    .font(.title)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                if !isEditingExercises {
+                    Section {
+                        Button {
+                            showExerciseSelection = true
+                        } label: {
+                            HStack {
+                                Label("Add Exercise", systemImage: "plus")
+                                    .fontWeight(.semibold)
                             }
-                            .buttonStyle(BorderedButtonStyle())
+                            .hSpacing(.leading)
+                            .foregroundStyle(Color.primary)
+                        }
+                        .padding()
+                        .background(BlurView())
+                        .cornerRadius(12)
+                        .sheet(isPresented: $showExerciseSelection) {
+                            ExerciseSelectionView(exerciseToReplaceIndex: $exerciseToReplaceIndex, onAdd: addSelectedExercises, onReplace: replaceExercise)
+                                .interactiveDismissDisabled()
                         }
                     }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
-                .padding()
             }
+            .listStyle(.plain)
+            .environment(\.editMode, isEditingExercises ? .constant(.active) : .constant(.inactive))
+            .overlay(alignment: .bottomTrailing) {
+                if keyboardActive {
+                    Button {
+                        hideKeyboard()
+                        keyboardActive = false
+                    } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .font(.title)
+                    }
+                    .buttonStyle(BorderedButtonStyle())
+                    .padding()
+                }
+            }
+            .background(BackgroundView())
             .onAppear {
                 if !doneFirst && !isEditing {
                     let recentExercises = existingWorkout?.exercises.sorted(by: { $0.order < $1.order }).compactMap({ TempExercise(from: $0, latestSets: fetchLatestSets(for: $0.name) ?? []) })

@@ -7,9 +7,13 @@ extension View {
     }
 }
 #endif
-func formattedDouble(_ weight: Double) -> String {
-    let weightInt = Int(weight)
-    return weight.truncatingRemainder(dividingBy: 1) == 0 ? "\(weightInt)" : String(format: "%.1f", weight)
+func formattedDouble(_ double: Double) -> String {
+    let doubleInt = Int(double)
+    return double.truncatingRemainder(dividingBy: 1) == 0 ? "\(doubleInt)" : String(format: "%.1f", double)
+}
+func formattedDouble2(_ double: Double) -> String {
+    let doubleInt = Int(double)
+    return double.truncatingRemainder(dividingBy: 1) == 0 ? "\(doubleInt)" : String(format: "%.2f", double)
 }
 func exerciseCategories(for workout: Workout) -> String {
     let exercises = workout.exercises

@@ -64,80 +64,77 @@ struct SetRestTimeView: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                List {
-                    Section {
-                        Toggle("Same Rest Times", isOn: $exercise.sameRestTimes)
-                            .listRowBackground(BlurView())
+            List {
+                Section {
+                    Toggle("Same Rest Times", isOn: $exercise.sameRestTimes)
+                        .listRowBackground(BlurView())
+                }
+                .listRowSeparator(.hidden)
+                if !exercise.sameRestTimes {
+                    HStack {
+                        Text("Set")
+                        Spacer()
+                        Text("Rest Time")
                     }
+                    .fontWeight(.semibold)
+                    .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
-                    if !exercise.sameRestTimes {
+                    ForEach(exercise.sets.indices, id: \.self) { setIndex in
                         HStack {
-                            Text("Set")
+                            Text("\(setIndex + 1)")
+                                .padding(.horizontal)
+                                .padding(.vertical, 7)
+                                .background(BlurView())
+                                .cornerRadius(12)
                             Spacer()
+                            RestTimeField(minutes: $exercise.sets[setIndex].restMinutes, seconds: $exercise.sets[setIndex].restSeconds)
+                                .frame(width: 100)
+                                .onChange(of: exercise.sets[setIndex].restMinutes) {
+                                    updateGlobalRestTime(setIndex: setIndex)
+                                }
+                                .onChange(of: exercise.sets[setIndex].restSeconds) {
+                                    updateGlobalRestTime(setIndex: setIndex)
+                                }
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .font(.title2)
+                    }
+                } else {
+                    Section {
+                        HStack {
                             Text("Rest Time")
+                                .fontWeight(.semibold)
+                            Spacer()
+                            RestTimeField(minutes: $sameRestMinutes, seconds: $sameRestSeconds)
+                                .onChange(of: sameRestMinutes) {
+                                    updateAllRestTimes()
+                                }
+                                .onChange(of: sameRestSeconds) {
+                                    updateAllRestTimes()
+                                }
+                                .frame(width: 100)
                         }
-                        .fontWeight(.semibold)
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        ForEach(exercise.sets.indices, id: \.self) { setIndex in
-                            HStack {
-                                Text("\(setIndex + 1)")
-                                    .padding(.horizontal)
-                                    .padding(.vertical, 7)
-                                    .background(BlurView())
-                                    .cornerRadius(12)
-                                Spacer()
-                                RestTimeField(minutes: $exercise.sets[setIndex].restMinutes, seconds: $exercise.sets[setIndex].restSeconds)
-                                    .frame(width: 100)
-                                    .onChange(of: exercise.sets[setIndex].restMinutes) {
-                                        updateGlobalRestTime(setIndex: setIndex)
-                                    }
-                                    .onChange(of: exercise.sets[setIndex].restSeconds) {
-                                        updateGlobalRestTime(setIndex: setIndex)
-                                    }
-                            }
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .font(.title2)
-                        }
-                    } else {
-                        Section {
-                            HStack {
-                                Text("Rest Time")
-                                    .fontWeight(.semibold)
-                                Spacer()
-                                RestTimeField(minutes: $sameRestMinutes, seconds: $sameRestSeconds)
-                                    .onChange(of: sameRestMinutes) {
-                                        updateAllRestTimes()
-                                    }
-                                    .onChange(of: sameRestSeconds) {
-                                        updateAllRestTimes()
-                                    }
-                                    .frame(width: 100)
-                            }
-                        }
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
                     }
-                }
-                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-                .listStyle(.plain)
-                .navigationTitle("Set Rest Times")
-                .navigationBarTitleDisplayMode(.inline)
-                .onAppear {
-                    if let firstSet = exercise.sets.first {
-                        sameRestMinutes = firstSet.restMinutes
-                        sameRestSeconds = firstSet.restSeconds
-                    }
-                }
-                .onDisappear {
-                    if exercise.sameRestTimes {
-                        updateAllRestTimes()
-                    }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 }
             }
+            .listStyle(.plain)
+            .navigationTitle("Set Rest Times")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                if let firstSet = exercise.sets.first {
+                    sameRestMinutes = firstSet.restMinutes
+                    sameRestSeconds = firstSet.restSeconds
+                }
+            }
+            .onDisappear {
+                if exercise.sameRestTimes {
+                    updateAllRestTimes()
+                }
+            }
+            .background(BackgroundView())
             .onTapGesture {
                 hideKeyboard()
             }
@@ -156,4 +153,9 @@ struct SetRestTimeView: View {
             }
         }
     }
+}
+
+#Preview {
+    SetRestTimeView(exercise: .constant(TempExercise(name: "", category: "", repRange: "", notes: "", sameRestTimes: false, sets: [])))
+        .tint(.primary)
 }

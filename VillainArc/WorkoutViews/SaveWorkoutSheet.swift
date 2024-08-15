@@ -34,87 +34,79 @@ struct SaveWorkoutSheet: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                BackgroundView()
-                Form {
+            Form {
+                Section {
+                    TextField("Workout Title", text: $title)
+                        .focused($keyboardActive)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("Title")
+                        .foregroundStyle(Color.primary)
+                        .fontWeight(.semibold)
+                }
+                .listRowBackground(BlurView())
+                if !isTemplate {
                     Section {
-                        TextField("Workout Title", text: $title)
-                            .focused($keyboardActive)
-                            .autocorrectionDisabled()
+                        DatePicker("Start Time", selection: $startTime, in: Date.distantPast...endTime, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("End Time", selection: $endTime, in: startTime...Date() , displayedComponents: [.date, .hourAndMinute])
                     } header: {
-                        Text("Title")
+                        Text("Time")
                             .foregroundStyle(Color.primary)
                             .fontWeight(.semibold)
                     }
                     .listRowBackground(BlurView())
-                    if !isTemplate {
-                        Section {
-                            DatePicker("Start Time", selection: $startTime, in: Date.distantPast...endTime, displayedComponents: [.date, .hourAndMinute])
-                            DatePicker("End Time", selection: $endTime, in: startTime...Date() , displayedComponents: [.date, .hourAndMinute])
-                        } header: {
-                            Text("Time")
-                                .foregroundStyle(Color.primary)
+                }
+                Section {
+                    TextField("Workout Notes", text: $notes, axis: .vertical)
+                        .focused($keyboardActive)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("Notes")
+                        .foregroundStyle(Color.primary)
+                        .fontWeight(.semibold)
+                }
+                .listRowBackground(BlurView())
+                Section {
+                    ForEach(exercises) { exercise in
+                        VStack(alignment: .leading) {
+                            Text(exercise.name)
+                                .font(.title3)
                                 .fontWeight(.semibold)
-                        }
-                        .listRowBackground(BlurView())
-                    }
-                    Section {
-                        TextEditor(text: $notes)
-                            .focused($keyboardActive)
-                            .autocorrectionDisabled()
-                    } header: {
-                        Text("Notes")
-                            .foregroundStyle(Color.primary)
-                            .fontWeight(.semibold)
-                    }
-                    .listRowBackground(BlurView())
-                    Section {
-                        ForEach(exercises) { exercise in
-                            VStack(alignment: .leading) {
-                                Text(exercise.name)
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(Color.primary)
-                                if !exercise.notes.isEmpty {
-                                    Text("Notes: \(exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines))")
-                                        .lineLimit(2)
-                                        .multilineTextAlignment(.leading)
-                                }
-                                Text(exercise.category)
-                                Text("\(exercise.sets.count) \(exercise.sets.count == 1 ? "set" : "sets")")
+                                .foregroundStyle(Color.primary)
+                            if !exercise.notes.isEmpty {
+                                Text("Notes: \(exercise.notes.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
                             }
-                            .font(.subheadline)
-                            .foregroundStyle(Color.secondary)
+                            Text(exercise.category)
+                            Text("\(exercise.sets.count) \(exercise.sets.count == 1 ? "set" : "sets")")
                         }
-                    } header: {
-                        Text("Exercises")
-                            .foregroundStyle(Color.primary)
-                            .fontWeight(.semibold)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.secondary)
                     }
-                    .listRowBackground(BlurView())
+                } header: {
+                    Text("Exercises")
+                        .foregroundStyle(Color.primary)
+                        .fontWeight(.semibold)
                 }
-                .scrollContentBackground(.hidden)
-                VStack(alignment: .trailing) {
-                    Spacer()
-                    HStack(alignment: .bottom) {
-                        Spacer()
-                        if keyboardActive {
-                            Button {
-                                hideKeyboard()
-                                keyboardActive = false
-                            } label: {
-                                Image(systemName: "keyboard.chevron.compact.down")
-                                    .foregroundStyle(Color.primary)
-                                    .font(.title)
-                            }
-                            .buttonStyle(BorderedButtonStyle())
-                        }
-                    }
-                }
-                .padding()
+                .listRowBackground(BlurView())
             }
+            .scrollContentBackground(.hidden)
+            .overlay(alignment: .bottomTrailing) {
+                if keyboardActive {
+                    Button {
+                        hideKeyboard()
+                        keyboardActive = false
+                    } label: {
+                        Image(systemName: "keyboard.chevron.compact.down")
+                            .font(.title)
+                    }
+                    .buttonStyle(BorderedButtonStyle())
+                    .padding()
+                }
+            }
+            .background(BackgroundView())
             .navigationTitle("\(isEditing ? "Update" : "Save") \(isTemplate ? "Template" : "Workout")")
-            .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 if !isEditing {

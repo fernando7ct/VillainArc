@@ -31,9 +31,8 @@ struct AllWorkoutsView: View {
     }
     
     var body: some View {
-        ZStack {
-            BackgroundView()
-            List {
+        List {
+            if workouts.isEmpty {
                 HStack(spacing: 10) {
                     VStack(alignment: .center, spacing: 0) {
                         Text("# of Workouts")
@@ -64,112 +63,115 @@ struct AllWorkoutsView: View {
                 }
                 .listRowBackground(Color.clear)
                 .padding(.horizontal, -20)
-                ForEach(workouts) { workout in
-                    Section {
-                        NavigationLink(value: workout) {
-                            VStack(alignment: .leading, spacing: 0) {
-                                HStack {
-                                    VStack(alignment: .trailing, spacing: 0) {
-                                        Text(workout.title)
-                                        Text(workout.startTime, format: .dateTime.month().day().year())
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .fontWeight(.semibold)
-                                }
-                                .hSpacing(.trailing)
-                                .padding(.bottom, 3)
-                                ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
-                                    HStack(spacing: 1) {
-                                        Text("\(exercise.sets.count)x")
-                                            .foregroundStyle(Color.primary)
-                                        Text(exercise.name)
-                                            .foregroundStyle(Color.secondary)
-                                    }
-                                    .lineLimit(1)
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .padding(.top, 3)
-                                }
-                            }
-                        }
-                        .contextMenu {
-                            Button {
-                                existingWorkout = workout
-                            } label: {
-                                Label("Use", systemImage: "figure.strengthtraining.traditional")
-                            }
-                            Button(role: .destructive) {
-                                if let index = workouts.firstIndex(where: { $0.id == workout.id }) {
-                                    deleteWorkout(at: IndexSet(integer: index))
-                                }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
-                }
-                .onDelete(perform: deleteWorkout)
-                .listRowBackground(BlurView())
-                .listRowSeparator(.hidden)
             }
-            .scrollContentBackground(.hidden)
-            .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
-            .navigationTitle("All Workouts")
-            .navigationBarBackButtonHidden(isEditing)
-            .fullScreenCover(item: $existingWorkout) { workout in
-                WorkoutView(existingWorkout: workout)
-            }
-            .overlay {
-                if workouts.isEmpty {
-                    ContentUnavailableView("You have no past workouts.", systemImage: "figure.strengthtraining.traditional")
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    if isEditing {
-                        Button {
-                            showDeleteAllAlert = true
-                        } label: {
-                            Text("Delete All")
+            ForEach(workouts) { workout in
+                Section {
+                    NavigationLink(value: workout) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                VStack(alignment: .trailing, spacing: 0) {
+                                    Text(workout.title)
+                                    Text(workout.startTime, format: .dateTime.month().day().year())
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
                                 .fontWeight(.semibold)
-                                .padding(.vertical, 5)
-                                .padding(.horizontal, 9)
-                                .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
+                            }
+                            .hSpacing(.trailing)
+                            .padding(.bottom, 3)
+                            ForEach(workout.exercises.sorted(by: { $0.order < $1.order})) { exercise in
+                                HStack(spacing: 1) {
+                                    Text("\(exercise.sets.count)x")
+                                        .foregroundStyle(Color.primary)
+                                    Text(exercise.name)
+                                        .foregroundStyle(Color.secondary)
+                                }
+                                .lineLimit(1)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .padding(.top, 3)
+                            }
                         }
                     }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if !workouts.isEmpty {
+                    .contextMenu {
                         Button {
-                            withAnimation {
-                                isEditing.toggle()
+                            existingWorkout = workout
+                        } label: {
+                            Label("Use", systemImage: "figure.strengthtraining.traditional")
+                        }
+                        Button(role: .destructive) {
+                            if let index = workouts.firstIndex(where: { $0.id == workout.id }) {
+                                deleteWorkout(at: IndexSet(integer: index))
                             }
                         } label: {
-                            Text(isEditing ? "Done" : "Edit")
-                                .fontWeight(.semibold)
-                                .padding(.vertical, 5)
-                                .padding(.horizontal, 9)
-                                .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
-                                .matchedGeometryEffect(id: "EDITMODE", in: animation)
+                            Label("Delete", systemImage: "trash")
                         }
                     }
                 }
             }
-            .alert(isPresented: $showDeleteAllAlert) {
-                Alert(
-                    title: Text("Delete All Workouts"),
-                    message: Text("Are you sure you want to delete all workouts?"),
-                    primaryButton: .destructive(Text("Delete All")) {
-                        deleteAllWorkouts()
-                    },
-                    secondaryButton: .cancel()
-                )
+            .onDelete(perform: deleteWorkout)
+            .listRowBackground(BlurView())
+            .listRowSeparator(.hidden)
+        }
+        .scrollContentBackground(.hidden)
+        .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
+        .navigationTitle("All Workouts")
+        .navigationBarBackButtonHidden(isEditing)
+        .fullScreenCover(item: $existingWorkout) {
+            WorkoutView(existingWorkout: $0)
+        }
+        .overlay {
+            if workouts.isEmpty {
+                ContentUnavailableView("You have no past workouts.", systemImage: "figure.strengthtraining.traditional")
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                if isEditing {
+                    Button {
+                        showDeleteAllAlert = true
+                    } label: {
+                        Text("Delete All")
+                            .fontWeight(.semibold)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 9)
+                            .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
+                    }
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if !workouts.isEmpty {
+                    Button {
+                        withAnimation {
+                            isEditing.toggle()
+                        }
+                    } label: {
+                        Text(isEditing ? "Done" : "Edit")
+                            .fontWeight(.semibold)
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 9)
+                            .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
+                            .matchedGeometryEffect(id: "EDITMODE", in: animation)
+                    }
+                }
+            }
+        }
+        .alert(isPresented: $showDeleteAllAlert) {
+            Alert(
+                title: Text("Delete All Workouts"),
+                message: Text("Are you sure you want to delete all workouts?"),
+                primaryButton: .destructive(Text("Delete All")) {
+                    deleteAllWorkouts()
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .background(BackgroundView())
     }
 }
 
 #Preview {
-    AllWorkoutsView()
+    NavigationView {
+        AllWorkoutsView()
+    }
 }
