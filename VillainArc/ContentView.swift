@@ -15,6 +15,7 @@ enum Tab: String {
 }
 
 struct ContentView: View {
+    @AppStorage("healthAccess") var healthAccess = false
     @Environment(\.modelContext) private var context
     @AppStorage("isSignedIn") var isSignedIn: Bool = false
     @AppStorage("activeTab") var activeTab: Tab = .home
@@ -71,6 +72,9 @@ struct ContentView: View {
                     if !success {
                         DataManager.shared.deleteDataAndSignOut(context: context)
                     }
+                }
+                if healthAccess {
+                    HealthManager.shared.enableBackgroundDelivery(context: context)
                 }
             }
         } else {

@@ -106,7 +106,7 @@ struct WeightView: View {
                                 .textScale(.secondary)
                             Text("\(formattedDouble(today.weight)) lbs")
                                 .font(.title)
-                        } else if let mostRecent = weightEntries.first {
+                        } else if let mostRecent = weightEntries.last {
                             Text(mostRecent.date, format: .dateTime.month().day().year())
                                 .foregroundStyle(.secondary)
                                 .textScale(.secondary)

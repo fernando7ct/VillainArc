@@ -37,7 +37,14 @@ func totalWorkoutTime(startTime: Date, endTime: Date) -> String {
     let hours = Int(timeInterval) / 3600
     let minutes = (Int(timeInterval) % 3600) / 60
     let seconds = Int(timeInterval) % 60
-    return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    
+    if hours > 0 {
+        return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+    } else if minutes > 0 {
+        return String(format: "%d:%02d", minutes, seconds)
+    } else {
+        return String(format: "0:%02d", seconds)
+    }
 }
 func formattedTotalTime(_ timeInterval: TimeInterval) -> String {
     let secondsInYear: Double = 60 * 60 * 24 * 365

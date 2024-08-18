@@ -9,7 +9,6 @@ struct BackgroundView: View {
         } else {
             RadialGradient(colors: [.black, Color(uiColor: .darkGray)], center: .center, startRadius: 0, endRadius: 600)
                 .ignoresSafeArea()
-                .blur(radius: 100)
         }
     }
 }

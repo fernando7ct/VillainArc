@@ -7,11 +7,6 @@ struct AllWorkoutsView: View {
     @State private var isEditing = false
     @State private var showDeleteAllAlert = false
     @State private var existingWorkout: Workout? = nil
-    @Namespace private var animation
-    
-    var totalWorkoutTime: TimeInterval {
-        workouts.reduce(0) { $0 + $1.totalTime }
-    }
     
     private func deleteWorkout(at offsets: IndexSet) {
         withAnimation {
@@ -27,43 +22,12 @@ struct AllWorkoutsView: View {
             for workout in workouts {
                 DataManager.shared.deleteWorkout(workout: workout, context: context)
             }
+            HapticManager.instance.impact(style: .heavy)
         }
     }
     
     var body: some View {
         List {
-            if workouts.isEmpty {
-                HStack(spacing: 10) {
-                    VStack(alignment: .center, spacing: 0) {
-                        Text("# of Workouts")
-                            .textScale(.secondary)
-                            .foregroundStyle(.secondary)
-                        Text("\(workouts.count)")
-                            .fontWeight(.semibold)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.ultraThickMaterial)
-                    }
-                    VStack(alignment: .center, spacing: 0) {
-                        Text("Total Workout Time")
-                            .textScale(.secondary)
-                            .foregroundStyle(.secondary)
-                        Text(formattedTotalTime(totalWorkoutTime))
-                            .fontWeight(.semibold)
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(.ultraThickMaterial)
-                    }
-                }
-                .listRowBackground(Color.clear)
-                .padding(.horizontal, -20)
-            }
             ForEach(workouts) { workout in
                 Section {
                     NavigationLink(value: workout) {
@@ -115,7 +79,7 @@ struct AllWorkoutsView: View {
         }
         .scrollContentBackground(.hidden)
         .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
-        .navigationTitle("All Workouts")
+        .navigationTitle("Workouts")
         .navigationBarBackButtonHidden(isEditing)
         .fullScreenCover(item: $existingWorkout) {
             WorkoutView(existingWorkout: $0)
@@ -135,7 +99,8 @@ struct AllWorkoutsView: View {
                             .fontWeight(.semibold)
                             .padding(.vertical, 5)
                             .padding(.horizontal, 9)
-                            .background(Color.red, in: .rect(cornerRadius: 30, style: .continuous))
+                            .foregroundStyle(.white)
+                            .background(.red, in: .capsule)
                     }
                 }
             }
@@ -150,8 +115,7 @@ struct AllWorkoutsView: View {
                             .fontWeight(.semibold)
                             .padding(.vertical, 5)
                             .padding(.horizontal, 9)
-                            .background(.ultraThinMaterial, in: .rect(cornerRadius: 30, style: .continuous))
-                            .matchedGeometryEffect(id: "EDITMODE", in: animation)
+                            .background(.ultraThinMaterial, in: .capsule)
                     }
                 }
             }
@@ -167,6 +131,7 @@ struct AllWorkoutsView: View {
             )
         }
         .background(BackgroundView())
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

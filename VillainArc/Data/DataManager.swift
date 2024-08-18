@@ -15,22 +15,14 @@ class DataManager {
     let db = Firestore.firestore()
     let storageRef = Storage.storage().reference()
     
-    func saveWeightEntry(weightEntry: WeightEntry, context: ModelContext, update: Bool, saveToHealthKit: Bool) {
+    func saveWeightEntry(weightEntry: WeightEntry, context: ModelContext, saveToHealthKit: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user is signed in.")
             return
         }
-        if update {
-            do {
-                try context.save()
-                print("Weight Entry updated in SwiftData")
-            } catch {
-                print("Error updating Weight Entry in SwiftData: \(error.localizedDescription)")
-            }
-        } else {
-            context.insert(weightEntry)
-            print("Weight Entry saved to SwiftData")
-        }
+        context.insert(weightEntry)
+        print("Weight Entry saved to SwiftData")
+        
         var weightEntryData: [String: Any] = [
             "id": weightEntry.id,
             "weight": weightEntry.weight,
@@ -58,11 +50,12 @@ class DataManager {
                     }
                     weightEntryData["photoURL"] = photoURL.absoluteString
                     self.db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).setData(weightEntryData)
+                    print("Weight Entry saved to Firebase")
                 }
             }
         } else {
             db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).setData(weightEntryData)
-            print(update ? "Weight Entry updated in Firebase": "Weight Entry saved to Firebase")
+            print("Weight Entry saved to Firebase")
         }
         if saveToHealthKit {
             HealthManager.shared.saveWeightToHealthKit(weight: weightEntry.weight, date: weightEntry.date) { success, error in
@@ -119,12 +112,8 @@ class DataManager {
             }
             newWorkout.exercises.append(newExercise)
         }
-        do {
-            try context.save()
-            print("Workout saved to SwiftData")
-        } catch {
-            print("Failed to save workout: \(error.localizedDescription)")
-        }
+        print("Workout saved to SwiftData")
+        
         let workoutData = newWorkout.toDictionary()
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
         print("Workout saved to Firebase")
@@ -146,12 +135,8 @@ class DataManager {
             context.delete(exercise)
         }
         workout.exercises = []
-        do {
-            try context.save()
-            print("Workout data updated, exercises cleared.")
-        } catch {
-            print("Failed to update workout data, and clearing exercises: \(error.localizedDescription)")
-        }
+        print("Workout data updated, exercises cleared.")
+        
         for (exerciseIndex, exercise) in exercises.enumerated() {
             let newExercise = WorkoutExercise(id: UUID().uuidString, tempExercise: exercise, date: workout.startTime, order: exerciseIndex, workout: workout, sets: [])
             context.insert(newExercise)
@@ -162,12 +147,8 @@ class DataManager {
             }
             workout.exercises.append(newExercise)
         }
-        do {
-            try context.save()
-            print("Updated Workout in SwiftData")
-        } catch {
-            print("Failed to update workout: \(error.localizedDescription)")
-        }
+        print("Updated Workout in SwiftData")
+        
         let workoutData = workout.toDictionary()
         db.collection("users").document(userID).collection("Workouts").document(workout.id).setData(workoutData)
         print("Workout saved to Firebase")
@@ -189,12 +170,8 @@ class DataManager {
             }
             newWorkout.exercises.append(newExercise)
         }
-        do {
-            try context.save()
-            print("Workout saved as Template in SwiftData")
-        } catch {
-            print("Failed to save workout: \(error.localizedDescription)")
-        }
+        print("Workout saved as Template in SwiftData")
+        
         let workoutData = newWorkout.toDictionary()
         db.collection("users").document(userID).collection("Workouts").document(newWorkout.id).setData(workoutData)
         print("Workout saved as Template in SwiftData")
@@ -227,13 +204,6 @@ class DataManager {
         }
         db.collection("users").document(userID).collection("WeightEntries").document(weightEntry.id).delete()
         print("Weight Entry deleted from Firebase")
-        HealthManager.shared.deleteWeightFromHealthKit(weightEntry: weightEntry) { success, error in
-            if success {
-                print("Weight Entry deleted from HealthKit")
-            } else {
-                print("Error deleting Weight Entry from HealthKit: \(String(describing: error))")
-            }
-        }
     }
     func saveHomeGym(gym: MKMapItem, context: ModelContext) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -246,24 +216,14 @@ class DataManager {
         
         if let existingHomeGym = gyms.first(where: { $0.favorite }) {
             existingHomeGym.favorite = false
-            do {
-                try context.save()
-                print("Previous home gym unset in SwiftData")
-            } catch {
-                print("Error unsetting previous home gym")
-            }
+            print("Previous home gym unset in SwiftData")
             let gymData = existingHomeGym.toDictionary()
             db.collection("users").document(userID).collection("Gyms").document(existingHomeGym.id).setData(gymData)
             print("Previous home gym unset in Firebase")
         }
         if let existingGym = gyms.first(where: { $0.latitude == gym.placemark.coordinate.latitude && $0.longitude == gym.placemark.coordinate.longitude }) {
             existingGym.favorite = true
-            do {
-                try context.save()
-                print("Existing Gym set as home gym in SwiftData")
-            } catch {
-                print("Error changing existing gym as home gym")
-            }
+            print("Existing Gym set as home gym in SwiftData")
             let gymData = existingGym.toDictionary()
             db.collection("users").document(userID).collection("Gyms").document(existingGym.id).setData(gymData)
             print("Existing gym set as home gym in Firebase")
@@ -282,15 +242,23 @@ class DataManager {
             return
         }
         gym.favorite = false
-        do {
-            try context.save()
-            print("Home Gym changed in SwiftData")
-        } catch {
-            print("Error changing home gym in SwiftData")
-        }
+        print("Home Gym changed in SwiftData")
         let gymData = gym.toDictionary()
         db.collection("users").document(userID).collection("Gyms").document(gym.id).setData(gymData)
         print("Home Gym changed in Firebase")
+    }
+    func saveRun(distance: Double, startTime: Date, endTime: Date, averagePace: Double, mileSplits: [[Double]], context: ModelContext) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user is signed in.")
+            return
+        }
+        let newRun = Run(id: UUID().uuidString, startTime: startTime, endTime: endTime, distance: distance, averagePace: averagePace, mileSplits: mileSplits)
+        context.insert(newRun)
+        print("Run saved to Swiftdata")
+            
+        let runData = newRun.toDictionary()
+        db.collection("users").document(userID).collection("Runs").document(newRun.id).setData(runData)
+        print("Run saved to Firebase")
     }
     func checkUserDataComplete(completion: @escaping (Bool) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
@@ -367,6 +335,7 @@ class DataManager {
                 self.downloadNutritionHub(userID: userID, context: context, completion: completion)
                 self.downloadNutritionEntries(userID: userID, context: context, completion: completion)
                 self.downloadNutritionFoods(userID: userID, context: context, completion: completion)
+                self.downloadRuns(userID: userID, context: context, completion: completion)
                 completion(true)
             }
         }
@@ -392,6 +361,7 @@ class DataManager {
                     self.downloadNutritionHub(userID: userID, context: context, completion: completion)
                     self.downloadNutritionEntries(userID: userID, context: context, completion: completion)
                     self.downloadNutritionFoods(userID: userID, context: context, completion: completion)
+                    self.downloadRuns(userID: userID, context: context, completion: completion)
                     
                     print("User data successfully downloaded")
                     completion(true)
@@ -534,6 +504,34 @@ class DataManager {
                 completion(true)
             } else {
                 print("Error downloading workouts: \(error?.localizedDescription ?? "Unknown error")")
+                completion(false)
+            }
+        }
+    }
+    func downloadRuns(userID: String, context: ModelContext, completion: @escaping (Bool) -> Void) {
+        db.collection("users").document(userID).collection("Runs").getDocuments { snapshot, error in
+            if let snapshot = snapshot {
+                for document in snapshot.documents {
+                    if let id = document.data()["id"] as? String,
+                       let startTime = (document.data()["startTime"] as? Timestamp)?.dateValue(),
+                       let endTime = (document.data()["endTime"] as? Timestamp)?.dateValue(),
+                       let distance = document.data()["distance"] as? Double,
+                       let averagePace = document.data()["averagePace"] as? Double,
+                       let mileSplitsData = document.data()["mileSplits"] as? [[String: Any]] {
+                        
+                        let mileSplits: [[Double]] = mileSplitsData.compactMap { splitData in
+                            if let mile = splitData["mile"] as? Double,
+                               let pace = splitData["pace"] as? Double {
+                                return [mile, pace]
+                            }
+                            return nil
+                        }
+                        let newRun = Run(id: id, startTime: startTime, endTime: endTime, distance: distance, averagePace: averagePace, mileSplits: mileSplits)
+                        context.insert(newRun)
+                    }
+                }
+            } else {
+                print("Error downloading runs: \(error?.localizedDescription ?? "Unknown error")")
                 completion(false)
             }
         }

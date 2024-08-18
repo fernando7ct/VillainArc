@@ -10,12 +10,7 @@ extension DataManager {
             return
         }
         if update {
-            do {
-                try context.save()
-                print("Health Steps updated in SwiftData")
-            } catch {
-                print("Error updating Health Steps in SwiftData: \(error.localizedDescription)")
-            }
+            print("Health Steps updated in SwiftData")
         } else {
             context.insert(healthSteps)
             print("Health Steps saved to SwiftData")
@@ -32,12 +27,7 @@ extension DataManager {
             return
         }
         if update {
-            do {
-                try context.save()
-                print("Health Energy updated in SwiftData")
-            } catch {
-                print("Error updating Health Energy in SwiftData: \(error.localizedDescription)")
-            }
+            print("Health Energy updated in SwiftData")
         } else {
             context.insert(energy)
             print("Health Energy saved to SwiftData")

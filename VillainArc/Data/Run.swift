@@ -1,6 +1,5 @@
-import SwiftData
 import SwiftUI
-import CoreLocation
+import SwiftData
 
 @Model
 class Run {
@@ -8,14 +7,16 @@ class Run {
     var startTime: Date = Date()
     var endTime: Date = Date()
     var distance: Double = 0
-    var locations: [[Double]] = []
-    
-    init(id: String, startTime: Date, endTime: Date, distance: Double, locations: [[Double]]) {
+    var averagePace: Double = 0
+    var mileSplits: [[Double]] = []
+
+    init(id: String, startTime: Date, endTime: Date, distance: Double, averagePace: Double, mileSplits: [[Double]]) {
         self.id = id
         self.startTime = startTime
         self.endTime = endTime
         self.distance = distance
-        self.locations = locations
+        self.averagePace = averagePace
+        self.mileSplits = mileSplits
     }
 }
 extension Run {
@@ -25,7 +26,8 @@ extension Run {
             "startTime": self.startTime,
             "endTime": self.endTime,
             "distance": self.distance,
-            "locations": self.locations
+            "averagePace": self.averagePace,
+            "mileSplits": self.mileSplits.map { ["mile": $0[0], "pace": $0[1]] }
         ]
     }
 }

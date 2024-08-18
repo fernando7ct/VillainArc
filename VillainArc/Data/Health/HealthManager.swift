@@ -17,65 +17,85 @@ class HealthManager {
         }
     }
     
-    func accessGranted(success: @escaping (Bool) -> Void) {
-        let predicate = HKQuery.predicateForSamples(withStart: .distantPast, end: .now)
+    func accessGranted(context: ModelContext, success: @escaping (Bool) -> Void) {
+        let distantPast = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+        let predicate = HKQuery.predicateForSamples(withStart: distantPast, end: .now)
         
         let query = HKStatisticsQuery(quantityType: HKQuantityType(.stepCount), quantitySamplePredicate: predicate) { _, result, error in
-            guard let _ = result?.sumQuantity(), error == nil else {
+            guard let _ = result, error == nil else {
                 success(false)
                 return
             }
+            print("Access to Steps")
         }
         healthStore.execute(query)
         
         let query2 = HKStatisticsQuery(quantityType: HKQuantityType(.activeEnergyBurned), quantitySamplePredicate: predicate) { _, result, error in
-            guard let _ = result?.sumQuantity(), error == nil else {
+            guard let _ = result, error == nil else {
                 success(false)
                 return
             }
+            print("Access to Active Energy")
         }
         healthStore.execute(query2)
         
         let query3 = HKStatisticsQuery(quantityType: HKQuantityType(.basalEnergyBurned), quantitySamplePredicate: predicate) { _, result, error in
-            guard let _ = result?.sumQuantity(), error == nil else {
+            guard let _ = result, error == nil else {
                 success(false)
                 return
             }
-            success(true)
+            print("Access to Resting Energy")
         }
         healthStore.execute(query3)
+        
+        let query4 = HKStatisticsQuery(quantityType: HKQuantityType(.bodyMass), quantitySamplePredicate: predicate) { _, result, error in
+            guard let _ = result, error == nil else {
+                success(false)
+                return
+            }
+            print("Access to Weight")
+            self.enableBackgroundDelivery(context: context)
+            self.fetchAndSaveWeightData(context: context)
+            success(true)
+        }
+        healthStore.execute(query4)
     }
-    
-    func fetchAndUpdateAllData(context: ModelContext) async {
-        let descriptor = FetchDescriptor<User>()
-        let user = try? context.fetch(descriptor).first!
-        let distantPast = user?.dateJoined.startOfDay ?? Date()
-        let endDate = Date()
+    func enableBackgroundDelivery(context: ModelContext) {
+        let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned)]
         
-        let mostRecentStepsDate = getMostRecentHealthSteps(context: context)?.date
-        var secondToLast: Date? = nil
-        if let mostRecentStepsDate {
-            secondToLast = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentStepsDate)
+        for dataType in healthTypes {
+            healthStore.enableBackgroundDelivery(for: dataType, frequency: .immediate) { success, error in
+                if let error = error {
+                    print("Error enabling background delivery for \(dataType): \(error.localizedDescription)")
+                    return
+                } else {
+                    print("Background delivery enabled for \(dataType)")
+                }
+            }
         }
-        let startDate = secondToLast ?? distantPast
-        fetchAndSaveSteps(context: context, startDate: startDate, endDate: endDate)
+        self.setUpObserverQueries(context: context)
+    }
+    func setUpObserverQueries(context: ModelContext) {
+        let stepType = HKQuantityType(.stepCount)
+        let activeEnergyType = HKQuantityType(.activeEnergyBurned)
+        let restingEnergyType = HKQuantityType(.basalEnergyBurned)
         
-        let mostRecentCaloriesDate = getMostRecentHealthEnergy(context: context)?.date
-        var secondToLast2: Date? = nil
-        if let mostRecentCaloriesDate {
-            secondToLast2 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentCaloriesDate)
+        let stepQuery = HKObserverQuery(sampleType: stepType, predicate: nil) { [weak self] query, completionHandler, error in
+            self?.fetchAndSaveSteps(context: context)
+            completionHandler()
         }
-        let startDate2 = secondToLast2 ?? distantPast
-        fetchAndSaveActiveEnergy(context: context, startDate: startDate2, endDate: endDate)
-        fetchAndSaveRestingEnergy(context: context, startDate: startDate2, endDate: endDate)
         
-        let mostRecentWeightEntry = getMostRecentWeightEntry(context: context)?.date
-        var secondToLast3: Date? = nil
-        if let mostRecentWeightEntry {
-            secondToLast3 = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentWeightEntry)
+        let energyQuery = HKObserverQuery(sampleType: activeEnergyType, predicate: nil) { [weak self] query, completionHandler, error in
+            self?.fetchAndSaveActiveEnergy(context: context)
+            completionHandler()
         }
-        let startDate3 = secondToLast3 ?? distantPast
-        fetchAndSaveWeightData(context: context, startDate: startDate3, endDate: endDate)
+        let energyQuery2 = HKObserverQuery(sampleType: restingEnergyType, predicate: nil) { [weak self] query, completionHandler, error in
+            self?.fetchAndSaveRestingEnergy(context: context)
+            completionHandler()
+        }
+        healthStore.execute(stepQuery)
+        healthStore.execute(energyQuery)
+        healthStore.execute(energyQuery2)
     }
     private func getMostRecentHealthSteps(context: ModelContext) -> HealthSteps? {
         let fetchDescriptor = FetchDescriptor<HealthSteps>(sortBy: [SortDescriptor(\.date, order: .reverse)])
@@ -107,7 +127,17 @@ class HealthManager {
         let entries = try? context.fetch(fetchDescriptor)
         return entries ?? []
     }
-    func fetchAndSaveSteps(context: ModelContext, startDate: Date, endDate: Date) {
+    func fetchAndSaveSteps(context: ModelContext) {
+        let distantPast = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+        let endDate = Date()
+        
+        let mostRecentStepsDate = getMostRecentHealthSteps(context: context)?.date
+        var secondToLast: Date? = nil
+        if let mostRecentStepsDate {
+            secondToLast = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentStepsDate)
+        }
+        let startDate = secondToLast ?? distantPast
+        
         let steps = HKQuantityType(.stepCount)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
         let query = HKStatisticsCollectionQuery(
@@ -143,7 +173,17 @@ class HealthManager {
         }
         healthStore.execute(query)
     }
-    func fetchAndSaveActiveEnergy(context: ModelContext, startDate: Date, endDate: Date) {
+    func fetchAndSaveActiveEnergy(context: ModelContext) {
+        let distantPast = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+        let endDate = Date()
+        
+        let mostRecentCaloriesDate = getMostRecentHealthEnergy(context: context)?.date
+        var secondToLast: Date? = nil
+        if let mostRecentCaloriesDate {
+            secondToLast = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentCaloriesDate)
+        }
+        let startDate = secondToLast ?? distantPast
+        
         let activeEnergyType = HKQuantityType(.activeEnergyBurned)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
         let query = HKStatisticsCollectionQuery(
@@ -179,8 +219,17 @@ class HealthManager {
         }
         healthStore.execute(query)
     }
-    
-    func fetchAndSaveRestingEnergy(context: ModelContext, startDate: Date, endDate: Date) {
+    func fetchAndSaveRestingEnergy(context: ModelContext) {
+        let distantPast = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+        let endDate = Date()
+        
+        let mostRecentCaloriesDate = getMostRecentHealthEnergy(context: context)?.date
+        var secondToLast: Date? = nil
+        if let mostRecentCaloriesDate {
+            secondToLast = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentCaloriesDate)
+        }
+        let startDate = secondToLast ?? distantPast
+        
         let restingEnergyType = HKQuantityType(.basalEnergyBurned)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate)
         let query = HKStatisticsCollectionQuery(
@@ -216,11 +265,17 @@ class HealthManager {
         }
         healthStore.execute(query)
     }
-    func fetchAndSaveWeightData(context: ModelContext, startDate: Date, endDate: Date) {
-        guard let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass) else {
-            print("Weight type is not available in HealthKit")
-            return
+    func fetchAndSaveWeightData(context: ModelContext) {
+        let distantPast = Calendar.current.date(byAdding: .month, value: -1, to: .now.startOfDay)!
+        let endDate = Date()
+        
+        let mostRecentWeightEntry = getMostRecentWeightEntry(context: context)?.date
+        var secondToLast: Date? = nil
+        if let mostRecentWeightEntry {
+            secondToLast = Calendar.current.date(byAdding: .day, value: -1, to: mostRecentWeightEntry)
         }
+        let startDate = secondToLast ?? distantPast
+        let weightType = HKQuantityType(.bodyMass)
         let predicate = HKQuery.predicateForSamples(withStart: startDate, end: endDate, options: .strictStartDate)
         let query = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { [weak self] _, samples, error in
             guard let self = self, let samples = samples as? [HKQuantitySample], error == nil else {
@@ -237,13 +292,13 @@ class HealthManager {
                     if existingEntry.weight != weightInPounds {
                         existingEntry.weight = weightInPounds
                         DispatchQueue.main.async {
-                            DataManager.shared.saveWeightEntry(weightEntry: existingEntry, context: context, update: true, saveToHealthKit: false)
+                            DataManager.shared.saveWeightEntry(weightEntry: existingEntry, context: context, saveToHealthKit: false)
                         }
                     }
                 } else {
                     let newWeightEntry = WeightEntry(id: UUID().uuidString, weight: weightInPounds, notes: "", date: date, photoData: nil)
                     DispatchQueue.main.async {
-                        DataManager.shared.saveWeightEntry(weightEntry: newWeightEntry, context: context, update: false, saveToHealthKit: false)
+                        DataManager.shared.saveWeightEntry(weightEntry: newWeightEntry, context: context, saveToHealthKit: false)
                     }
                 }
             }
@@ -251,10 +306,7 @@ class HealthManager {
         healthStore.execute(query)
     }
     func saveWeightToHealthKit(weight: Double, date: Date, completion: @escaping (Bool, Error?) -> Void) {
-        guard let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass) else {
-            completion(false, nil)
-            return
-        }
+        let weightType = HKQuantityType(.bodyMass)
         let weightInKilograms = weight * 0.45359237
         let weightQuantity = HKQuantity(unit: HKUnit.gramUnit(with: .kilo), doubleValue: weightInKilograms)
         let weightSample = HKQuantitySample(type: weightType, quantity: weightQuantity, start: date, end: date)
@@ -262,28 +314,5 @@ class HealthManager {
         healthStore.save(weightSample) { success, error in
             completion(success, error)
         }
-    }
-    func deleteWeightFromHealthKit(weightEntry: WeightEntry, completion: @escaping (Bool, Error?) -> Void) {
-        guard let weightType = HKObjectType.quantityType(forIdentifier: .bodyMass) else {
-            completion(false, nil)
-            return
-        }
-        let predicate = HKQuery.predicateForSamples(withStart: weightEntry.date, end: weightEntry.date, options: .strictStartDate)
-        let sampleQuery = HKSampleQuery(sampleType: weightType, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { query, samples, error in
-            guard let samples = samples, let sampleToDelete = samples.first(where: { sample in
-                if let quantitySample = sample as? HKQuantitySample {
-                    let weightInKilograms = weightEntry.weight * 0.45359237
-                    return quantitySample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo)) == weightInKilograms
-                }
-                return false
-            }) else {
-                completion(false, error)
-                return
-            }
-            self.healthStore.delete(sampleToDelete) { success, error in
-                completion(success, error)
-            }
-        }
-        healthStore.execute(sampleQuery)
     }
 }

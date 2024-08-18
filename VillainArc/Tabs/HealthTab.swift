@@ -32,11 +32,6 @@ struct HealthTab: View {
                     case .calories: CaloriesView()
                     }
                 }
-                .onAppear {
-                    Task {
-                        await HealthManager.shared.fetchAndUpdateAllData(context: context)
-                    }
-                }
                 .background(BackgroundView())
                 .overlay(alignment: .bottom) {
                     HStack(spacing: 30) {
@@ -77,7 +72,7 @@ struct HealthTab: View {
                 Button {
                     HealthManager.shared.requestHealthData { granted in
                         if granted {
-                            HealthManager.shared.accessGranted { success in
+                            HealthManager.shared.accessGranted(context: context) { success in
                                 if success {
                                     healthAccess = true
                                 }
