@@ -90,7 +90,7 @@ struct CaloriesView: View {
     
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
                     if !healthEnergy.isEmpty {
                         if let today = healthEnergy.first(where: { $0.date == .now.startOfDay }) {

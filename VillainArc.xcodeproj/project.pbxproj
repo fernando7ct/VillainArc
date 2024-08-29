@@ -86,6 +86,7 @@
 		FDE9CD192C6D5E17006E7C9F /* RunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE9CD182C6D5E17006E7C9F /* RunView.swift */; };
 		FDE9CD1D2C6D621F006E7C9F /* RunLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE9CD1C2C6D621F006E7C9F /* RunLocationManager.swift */; };
 		FDE9CD212C710CCB006E7C9F /* Run.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE9CD202C710CCB006E7C9F /* Run.swift */; };
+		FDE9CD232C71C74F006E7C9F /* SetStepsGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDE9CD222C71C74F006E7C9F /* SetStepsGoalView.swift */; };
 		FDED2D5E2C4C8F4200F55A37 /* GymSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D5D2C4C8F4200F55A37 /* GymSelectionView.swift */; };
 		FDED2D602C4C937E00F55A37 /* GymLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D5F2C4C937E00F55A37 /* GymLocationManager.swift */; };
 		FDED2D622C4CAFAF00F55A37 /* GymSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */; };
@@ -196,6 +197,7 @@
 		FDE9CD182C6D5E17006E7C9F /* RunView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunView.swift; sourceTree = "<group>"; };
 		FDE9CD1C2C6D621F006E7C9F /* RunLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunLocationManager.swift; sourceTree = "<group>"; };
 		FDE9CD202C710CCB006E7C9F /* Run.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Run.swift; sourceTree = "<group>"; };
+		FDE9CD222C71C74F006E7C9F /* SetStepsGoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetStepsGoalView.swift; sourceTree = "<group>"; };
 		FDED2D5D2C4C8F4200F55A37 /* GymSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSelectionView.swift; sourceTree = "<group>"; };
 		FDED2D5F2C4C937E00F55A37 /* GymLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymLocationManager.swift; sourceTree = "<group>"; };
 		FDED2D612C4CAFAF00F55A37 /* GymSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSectionView.swift; sourceTree = "<group>"; };
@@ -429,6 +431,7 @@
 			children = (
 				FD2201C22BFF03F600487151 /* WeightViews */,
 				FDD4FB662C1564190028BADB /* StepsView.swift */,
+				FDE9CD222C71C74F006E7C9F /* SetStepsGoalView.swift */,
 				FDD4FB6E2C16A1B30028BADB /* CaloriesView.swift */,
 			);
 			path = HealthViews;
@@ -596,6 +599,7 @@
 				FD7C6F062C0E874D001453F2 /* SetRestTimeView.swift in Sources */,
 				FD2E77AC2BF6AA5500245E06 /* DataManager.swift in Sources */,
 				FD7C6EF62C0BFA82001453F2 /* WorkoutSectionView.swift in Sources */,
+				FDE9CD232C71C74F006E7C9F /* SetStepsGoalView.swift in Sources */,
 				FD2E77A62BF57ED700245E06 /* WeightView.swift in Sources */,
 				FD59AD622C4645F60017AFD1 /* UpdateMealNamesView.swift in Sources */,
 				FD9EB5DF2C2B82A4000267F2 /* NutritionHub.swift in Sources */,
@@ -814,7 +818,7 @@
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -861,7 +865,7 @@
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

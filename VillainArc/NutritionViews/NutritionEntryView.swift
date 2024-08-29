@@ -61,9 +61,9 @@ struct NutritionEntryView: View {
                             }
                         } label: {
                             Image(systemName: "chevron.left")
-                                .font(.title3)
+                                .font(.title2)
                                 .fontWeight(.semibold)
-                                .padding(7)
+                                .padding(8)
                                 .background(.ultraThinMaterial, in: .circle)
                         }
                         .disabled(date == firstDate)
@@ -74,9 +74,9 @@ struct NutritionEntryView: View {
                             }
                         } label: {
                             Image(systemName: "chevron.right")
-                                .font(.title3)
+                                .font(.title2)
                                 .fontWeight(.semibold)
-                                .padding(7)
+                                .padding(8)
                                 .background(.ultraThinMaterial, in: .circle)
                         }
                         .disabled(date == lastDate)
@@ -95,7 +95,7 @@ struct NutritionEntryView: View {
                             Image(systemName: "ellipsis")
                                 .font(.title3)
                                 .fontWeight(.semibold)
-                                .padding(10)
+                                .padding(12)
                                 .background(.ultraThinMaterial, in: .circle)
                         }
                     }

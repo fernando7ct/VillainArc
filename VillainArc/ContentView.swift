@@ -76,6 +76,7 @@ struct ContentView: View {
                 if healthAccess {
                     HealthManager.shared.enableBackgroundDelivery(context: context)
                 }
+                NotificationManager.shared.requestAuthorization()
             }
         } else {
             LogInView()

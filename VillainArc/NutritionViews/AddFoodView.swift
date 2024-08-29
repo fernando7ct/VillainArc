@@ -249,7 +249,8 @@ struct AddFoodView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
-                        .padding(10)
+                        .fontWeight(.semibold)
+                        .padding(12)
                         .background(.ultraThinMaterial, in: .circle)
                 }
                 .sheet(isPresented: $createFoodSheet2) {

@@ -43,7 +43,9 @@ extension DataManager {
             if let snapshot = snapshot {
                 for document in snapshot.documents {
                     if let id = document.data()["id"] as? String, let date = (document.data()["date"] as? Timestamp)?.dateValue(), let steps = document.data()["steps"] as? Double {
-                        let newHealthSteps = HealthSteps(id: id, date: date, steps: steps)
+                        let goal = document.data()["goal"] as? Double ?? 0
+                        let goalMet = document.data()["goalMet"] as? Bool ?? false
+                        let newHealthSteps = HealthSteps(id: id, date: date, steps: steps, goal: goal, goalMet: goalMet)
                         context.insert(newHealthSteps)
                     }
                 }

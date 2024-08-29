@@ -7,6 +7,7 @@ struct StepsView: View {
     @State private var selectedRange: GraphRanges = .month
     @State private var selectedDate: Date? = nil
     @State private var selectedWeekday: String? = nil
+    @State private var updateGoal = false
     
     var filteredSteps: [HealthSteps] {
         let calendar = Calendar.current
@@ -90,7 +91,7 @@ struct StepsView: View {
     
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
                     if !healthSteps.isEmpty {
                         if let today = healthSteps.first(where: { $0.date == .now.startOfDay }) {
@@ -283,8 +284,22 @@ struct StepsView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 Spacer()
+                Button {
+                    updateGoal = true
+                } label: {
+                    Image(systemName: "figure.walk")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .padding(8)
+                        .background(.ultraThinMaterial, in: .circle)
+                }
             }
             .padding()
+            .sheet(isPresented: $updateGoal) {
+                SetStepsGoalView()
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+            }
         }
         .scrollIndicators(.hidden)
     }

@@ -6,6 +6,10 @@ class HealthManager {
     static let shared = HealthManager()
     let healthStore = HKHealthStore()
     
+    var stepQuery: HKObserverQuery?
+    var activeEnergyQuery: HKObserverQuery?
+    var restingEnergyQuery: HKObserverQuery?
+    
     func requestHealthData(completion: @escaping (Bool) -> Void) {
         if HKHealthStore.isHealthDataAvailable() {
             let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned), HKQuantityType(.bodyMass)]
@@ -64,39 +68,75 @@ class HealthManager {
         let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned)]
         
         for dataType in healthTypes {
-            healthStore.enableBackgroundDelivery(for: dataType, frequency: .immediate) { success, error in
+            healthStore.enableBackgroundDelivery(for: dataType, frequency: .hourly) { success, error in
                 if let error = error {
                     print("Error enabling background delivery for \(dataType): \(error.localizedDescription)")
                     return
-                } else {
-                    print("Background delivery enabled for \(dataType)")
                 }
             }
         }
         self.setUpObserverQueries(context: context)
+        print("Background Delivery Enabled")
     }
+
+    func disableBackgroundDelivery() {
+        let healthTypes: Set = [HKQuantityType(.stepCount), HKQuantityType(.activeEnergyBurned), HKQuantityType(.basalEnergyBurned)]
+        
+        for dataType in healthTypes {
+            healthStore.disableBackgroundDelivery(for: dataType) { success, error in
+                if let error = error {
+                    print("Error disabling background delivery for \(dataType): \(error.localizedDescription)")
+                    return
+                }
+            }
+        }
+        
+        if let stepQuery = stepQuery {
+            healthStore.stop(stepQuery)
+        }
+        if let activeEnergyQuery = activeEnergyQuery {
+            healthStore.stop(activeEnergyQuery)
+        }
+        if let restingEnergyQuery = restingEnergyQuery {
+            healthStore.stop(restingEnergyQuery)
+        }
+        
+        print("Background Delivery and Queries Disabled")
+    }
+
     func setUpObserverQueries(context: ModelContext) {
         let stepType = HKQuantityType(.stepCount)
         let activeEnergyType = HKQuantityType(.activeEnergyBurned)
         let restingEnergyType = HKQuantityType(.basalEnergyBurned)
         
-        let stepQuery = HKObserverQuery(sampleType: stepType, predicate: nil) { [weak self] query, completionHandler, error in
+        stepQuery = HKObserverQuery(sampleType: stepType, predicate: nil) { [weak self] query, completionHandler, error in
             self?.fetchAndSaveSteps(context: context)
             completionHandler()
         }
         
-        let energyQuery = HKObserverQuery(sampleType: activeEnergyType, predicate: nil) { [weak self] query, completionHandler, error in
+        activeEnergyQuery = HKObserverQuery(sampleType: activeEnergyType, predicate: nil) { [weak self] query, completionHandler, error in
             self?.fetchAndSaveActiveEnergy(context: context)
             completionHandler()
         }
-        let energyQuery2 = HKObserverQuery(sampleType: restingEnergyType, predicate: nil) { [weak self] query, completionHandler, error in
+        
+        restingEnergyQuery = HKObserverQuery(sampleType: restingEnergyType, predicate: nil) { [weak self] query, completionHandler, error in
             self?.fetchAndSaveRestingEnergy(context: context)
             completionHandler()
         }
-        healthStore.execute(stepQuery)
-        healthStore.execute(energyQuery)
-        healthStore.execute(energyQuery2)
+        
+        if let stepQuery = stepQuery {
+            healthStore.execute(stepQuery)
+        }
+        if let activeEnergyQuery = activeEnergyQuery {
+            healthStore.execute(activeEnergyQuery)
+        }
+        if let restingEnergyQuery = restingEnergyQuery {
+            healthStore.execute(restingEnergyQuery)
+        }
+        
+        print("Health Kit Queries Active")
     }
+
     private func getMostRecentHealthSteps(context: ModelContext) -> HealthSteps? {
         let fetchDescriptor = FetchDescriptor<HealthSteps>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         let healthSteps = try? context.fetch(fetchDescriptor)
@@ -159,12 +199,26 @@ class HealthManager {
                 if let exisitingSetData = existingHealthSteps.first(where: { $0.date == date }) {
                     if exisitingSetData.steps != steps {
                         exisitingSetData.steps = steps
+                        if exisitingSetData.date == .now.startOfDay && exisitingSetData.goal > 0 && exisitingSetData.steps >= exisitingSetData.goal && !exisitingSetData.goalMet {
+                            exisitingSetData.goalMet = true
+                            print("Goal Met")
+                            if NotificationManager.shared.notificationsAllowed {
+                                DispatchQueue.main.async {
+                                    NotificationManager.shared.scheduleNotification(title: "Villain Arc", body: "You met your step goal for today!", timeInterval: 1)
+                                }
+                            }
+                        }
                         DispatchQueue.main.async {
                             DataManager.shared.saveHealthSteps(healthSteps: exisitingSetData, context: context, update: true)
                         }
                     }
                 } else {
-                    let stepData = HealthSteps(id: UUID().uuidString, date: statistics.startDate, steps: steps)
+                    let stepData = HealthSteps(id: UUID().uuidString, date: date, steps: steps)
+                    if let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: date),
+                       let previousEntry = existingHealthSteps.first(where: { $0.date == previousDay }),
+                       previousEntry.goal > 0 {
+                        stepData.goal = previousEntry.goal
+                    }
                     DispatchQueue.main.async {
                         DataManager.shared.saveHealthSteps(healthSteps: stepData, context: context, update: false)
                     }
@@ -210,7 +264,7 @@ class HealthManager {
                         }
                     }
                 } else {
-                    let activeEnergyData = HealthEnergy(id: UUID().uuidString, date: statistics.startDate, restingEnergy: 0, activeEnergy: activeEnergy)
+                    let activeEnergyData = HealthEnergy(id: UUID().uuidString, date: date, restingEnergy: 0, activeEnergy: activeEnergy)
                     DispatchQueue.main.async {
                         DataManager.shared.saveHealthEnergy(energy: activeEnergyData, context: context, update: false)
                     }
@@ -256,7 +310,7 @@ class HealthManager {
                         }
                     }
                 } else {
-                    let restingEnergyData = HealthEnergy(id: UUID().uuidString, date: statistics.startDate, restingEnergy: restingEnergy, activeEnergy: 0)
+                    let restingEnergyData = HealthEnergy(id: UUID().uuidString, date: date, restingEnergy: restingEnergy, activeEnergy: 0)
                     DispatchQueue.main.async {
                         DataManager.shared.saveHealthEnergy(energy: restingEnergyData, context: context, update: false)
                     }

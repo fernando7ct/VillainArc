@@ -1,6 +1,5 @@
 import SwiftUI
 import Combine
-import UserNotifications
 
 class TimerDisplayViewModel: ObservableObject {
     
@@ -8,36 +7,24 @@ class TimerDisplayViewModel: ObservableObject {
     
     private var restTimerSubscription: AnyCancellable?
     
-    private var hasRequestedAuthorization = false
-    
     @MainActor func startRestTimer(minutes: Int, seconds: Int) {
         let totalSeconds = TimeInterval(minutes * 60 + seconds)
+        guard totalSeconds > 0 else { return }
         restEndDate = Date().addingTimeInterval(totalSeconds)
         
         updateRestTimeRemaining()
         
         restTimerSubscription?.cancel()
         
-        NotificationManager.shared.removeAllNotifications()
         restTimerSubscription = Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.updateRestTimeRemaining()
             }
         
-        if !hasRequestedAuthorization {
-            NotificationManager.shared.requestAuthorization()
-            hasRequestedAuthorization = true
-        }
-        
-        if totalSeconds > 10 {
-            NotificationManager.shared.scheduleNotification(
-                title: "Villain Arc",
-                body: "Rest Time is Up",
-                timeInterval: totalSeconds
-            )
-        } else {
-            print("Not scheduling notification: rest time \(totalSeconds) is less than 10 seconds")
+        if NotificationManager.shared.notificationsAllowed {
+            NotificationManager.shared.removeAllNotifications()
+            NotificationManager.shared.scheduleNotification(title: "Villain Arc", body: "Rest Time is Up", timeInterval: totalSeconds)
         }
     }
     func endActivity() {

@@ -3,6 +3,7 @@ import SwiftData
 import ActivityKit
 
 struct WorkoutView: View {
+    @AppStorage("healthAccess") var healthAccess = false
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @State private var exercises: [TempExercise] = []
@@ -270,10 +271,18 @@ struct WorkoutView: View {
                     let recentExercises = existingWorkout?.exercises.sorted(by: { $0.order < $1.order }).compactMap({ TempExercise(from: $0, latestSets: fetchLatestSets(for: $0.name) ?? []) })
                     self.exercises = recentExercises ?? []
                     doneFirst = true
+                    if healthAccess {
+                        HealthManager.shared.disableBackgroundDelivery()
+                    }
                 }
                 if !activityStarted && !isEditing {
                     WorkoutActivityManager.shared.startLiveActivity(with: exercises, title: title, startTime: startTime)
                     activityStarted.toggle()
+                }
+            }
+            .onDisappear {
+                if healthAccess {
+                    HealthManager.shared.enableBackgroundDelivery(context: context)
                 }
             }
         }

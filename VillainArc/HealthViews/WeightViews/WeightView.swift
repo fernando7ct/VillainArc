@@ -97,7 +97,7 @@ struct WeightView: View {
     
     var body: some View {
         ScrollView {
-            VStack {
+            VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
                     if !weightEntries.isEmpty {
                         if let today = weightEntries.first(where: { $0.date.isSameDayAs(.now) }) {
@@ -280,26 +280,25 @@ struct WeightView: View {
         .padding(.horizontal)
         .vSpacing(.top)
         .safeAreaInset(edge: .top) {
-            HStack {
+            HStack(spacing: 5) {
                 Text("Weight")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 Spacer()
                 NavigationLink(value: 0) {
                     Image(systemName: "clock.fill")
-                        .font(.title3)
+                        .font(.title2)
                         .fontWeight(.semibold)
-                        .padding(5)
+                        .padding(6)
                         .background(.ultraThinMaterial, in: .circle)
                 }
-                .padding(.trailing, 5)
                 Button {
                     addWeightSheetActive = true
                 } label: {
                     Image(systemName: "plus")
-                        .font(.title3)
+                        .font(.title2)
                         .fontWeight(.semibold)
-                        .padding(6)
+                        .padding(8)
                         .background(.ultraThinMaterial, in: .circle)
                 }
                 .sheet(isPresented: $addWeightSheetActive) {
