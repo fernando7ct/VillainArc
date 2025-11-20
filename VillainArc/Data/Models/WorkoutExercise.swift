@@ -14,7 +14,7 @@ class WorkoutExercise {
     var sets: [ExerciseSet] = []
     
     var displayMuscle: String {
-        musclesTargeted.filter({ $0.isMajor }).first?.rawValue ?? musclesTargeted.first!.rawValue
+        musclesTargeted.filter({ $0.isMajor }).first?.rawValue ?? ""
     }
     
     init(from exercise: Exercise, workout: Workout?) {

@@ -57,7 +57,6 @@ struct WorkoutView: View {
                 }
             }
             .animation(.bouncy, value: showExerciseListView)
-            .background(Color(uiColor: .quaternarySystemFill))
             .sheet(isPresented: $showAddExerciseSheet) {
                 AddExerciseView(workout: workout)
                     .navigationTransition(.zoom(sourceID: "AddExercise", in: animation))
@@ -136,7 +135,6 @@ struct WorkoutView: View {
             }
             Button("Save Workout", systemImage: "checkmark") {
                 workout.completed = true
-                try? context.save()
                 dismiss()
             }
             .tint(.green)
@@ -165,12 +163,8 @@ struct WorkoutView: View {
     }
     
     private func deleteWorkout() {
-        let workoutToDelete = workout
+        context.delete(workout)
         dismiss()
-        DispatchQueue.main.async {
-            context.delete(workoutToDelete)
-            try? context.save()
-        }
     }
 }
 

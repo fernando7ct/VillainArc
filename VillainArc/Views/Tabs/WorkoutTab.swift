@@ -10,6 +10,13 @@ struct WorkoutTab: View {
     @State private var workout: Workout?
     @Query private var exercises: [WorkoutExercise]
     
+    private func deleteWorkout(offsets: IndexSet) {
+        for index in offsets {
+            let workout = self.workouts[index]
+            context.delete(workout)
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             List {
@@ -17,6 +24,7 @@ struct WorkoutTab: View {
                     ForEach(workouts) { workout in
                         Text(workout.title)
                     }
+                    .onDelete(perform: deleteWorkout)
                 }
                 Section("Exercise") {
                     Text(exercises.count, format: .number)

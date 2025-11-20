@@ -93,7 +93,7 @@ extension WorkoutExercise {
 extension ExerciseSet {
     static func sampleSet1() -> [ExerciseSet] {
         [
-            ExerciseSet(type: .regular, weight: 135, reps: 10),
+            ExerciseSet(type: .warmup, weight: 135, reps: 10),
             ExerciseSet(type: .regular, weight: 185, reps: 8),
             ExerciseSet(type: .regular, weight: 205, reps: 6)
         ]

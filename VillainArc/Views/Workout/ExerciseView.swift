@@ -5,6 +5,7 @@ struct ExerciseView: View {
     @Query private var exercises: [WorkoutExercise]
     @Environment(\.modelContext) private var context
     @Bindable var exercise: WorkoutExercise
+    @State private var isNotesExpanded = false
     
     init(exercise: WorkoutExercise) {
         self.exercise = exercise
@@ -29,16 +30,33 @@ struct ExerciseView: View {
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
-                HStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(exercise.name)
-                            .font(.title3)
-                            .bold()
-                        Text(exercise.displayMuscle)
-                            .foregroundStyle(.secondary)
-                            .fontWeight(.semibold)
+                VStack(spacing: 8) {
+                    HStack(alignment: .center) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(exercise.name)
+                                .font(.title3)
+                                .bold()
+                            Text(exercise.displayMuscle)
+                                .foregroundStyle(.secondary)
+                                .fontWeight(.semibold)
+                            Text("Rep Range: \(exercise.repRange.displayText)")
+                                .fontWeight(.semibold)
+                        }
+                        Spacer()
+                        Button("Notes", systemImage: isNotesExpanded ? "note.text" : "note.text.badge.plus") {
+                            withAnimation {
+                                isNotesExpanded.toggle()
+                            }
+                        }
+                        .labelStyle(.iconOnly)
+                        .font(.title)
+                        .tint(.primary)
                     }
-                    Spacer()
+
+                    if isNotesExpanded {
+                        TextField("Notes", text: $exercise.notes, axis: .vertical)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
                 }
                 .padding()
                 .glassEffect(.regular, in: .rect(cornerRadius: 16))
