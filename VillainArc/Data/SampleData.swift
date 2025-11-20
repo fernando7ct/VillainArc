@@ -8,7 +8,7 @@ extension Workout {
             Calendar.current.date(byAdding: .minute, value: minutes, to: now) ?? now
         }
         
-        let chest = Workout(title: "Chest Day", notes: "Testing sample", completed: false, endTime: end(after: 60))
+        let chest = Workout(title: "Chest Day", notes: "Testing sample", completed: true, endTime: end(after: 60))
         chest.exercises = WorkoutExercise.chestDay(for: chest)
         
         let back = Workout(title: "Back Day", notes: "Testing sample", completed: true, endTime: end(after: 65))

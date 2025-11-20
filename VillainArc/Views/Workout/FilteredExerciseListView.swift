@@ -59,27 +59,7 @@ struct FilteredExerciseListView: View {
         }
         .animation(.bouncy, value: exercises)
         .animation(.bouncy, value: selectedExercises)
-//        List {
-//            ForEach(exercises) { exercise in
-//                Button {
-//                    if selectedExercises.contains(exercise) {
-//                        selectedExercises.removeAll(where: { $0.id == exercise.id })
-//                    } else {
-//                        selectedExercises.append(exercise)
-//                    }
-//                } label: {
-//                    VStack(alignment: .leading, spacing: 0) {
-//                        Text(exercise.name)
-//                            .font(.headline)
-//                        Text(exercise.musclesTargeted.filter({ $0.isMajor }).map({ $0.rawValue }), format: .list(type: .and))
-//                            .font(.subheadline)
-//                            .foregroundStyle(.secondary)
-//                    }
-//                }
-//                .tint(.primary)
-//                .listRowBackground(selectedExercises.contains(exercise) ? Color.blue.opacity(0.3) : nil)
-//            }
-//        }
+        .scrollDismissesKeyboard(.immediately)
     }
 }
 

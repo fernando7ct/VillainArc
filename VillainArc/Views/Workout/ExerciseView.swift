@@ -1,7 +1,30 @@
 import SwiftUI
+import SwiftData
 
 struct ExerciseView: View {
+    @Query private var exercises: [WorkoutExercise]
+    @Environment(\.modelContext) private var context
     @Bindable var exercise: WorkoutExercise
+    
+    init(exercise: WorkoutExercise) {
+        self.exercise = exercise
+        
+        let name = exercise.name
+        let predicate = #Predicate<WorkoutExercise> { exercise in
+            exercise.name == name && exercise.workout?.completed == true
+        }
+        _exercises = Query(filter: predicate, sort: \.date, order: .reverse)
+    }
+    
+    private var previousSets: [ExerciseSet] {
+        exercises.first?.sets ?? []
+    }
+    
+    private func previousSetDisplay(for index: Int) -> String {
+        guard index < previousSets.count else { return "-" }
+        let set = previousSets[index]
+        return "\(set.reps)x\(Int(set.weight))"
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -58,7 +81,7 @@ struct ExerciseView: View {
                                 TextField("Weight", value: $exercise.sets[index].weight, format: .number)
                                     .keyboardType(.decimalPad)
                                     .frame(width: geometry.size.width / 5)
-                                Text("12x150")
+                                Text(previousSetDisplay(for: index))
                                     .lineLimit(1)
                                 
                                 if exercise.sets[index].complete {
@@ -96,11 +119,7 @@ struct ExerciseView: View {
                 }
                 
                 Button {
-                    if let previous = exercise.sets.last {
-                        exercise.sets.append(ExerciseSet(weight: previous.weight, reps: previous.reps))
-                    } else {
-                        exercise.sets.append(ExerciseSet())
-                    }
+                    addSet()
                 } label: {
                     Label("Add Set", systemImage: "plus")
                         .font(.title3)
@@ -116,6 +135,15 @@ struct ExerciseView: View {
             .dynamicTypeSize(...DynamicTypeSize.xLarge)
             .animation(.bouncy, value: exercise.sets)
         }
+    }
+    
+    private func addSet() {
+        if let previous = exercise.sets.last {
+            exercise.sets.append(ExerciseSet(weight: previous.weight, reps: previous.reps))
+        } else {
+            exercise.sets.append(ExerciseSet())
+        }
+        try? context.save()
     }
 }
 

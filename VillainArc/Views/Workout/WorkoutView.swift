@@ -165,9 +165,12 @@ struct WorkoutView: View {
     }
     
     private func deleteWorkout() {
-        context.delete(workout)
-        try? context.save()
+        let workoutToDelete = workout
         dismiss()
+        DispatchQueue.main.async {
+            context.delete(workoutToDelete)
+            try? context.save()
+        }
     }
 }
 
