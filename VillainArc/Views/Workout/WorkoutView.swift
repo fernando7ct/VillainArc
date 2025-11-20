@@ -136,6 +136,7 @@ struct WorkoutView: View {
             }
             Button("Save Workout", systemImage: "checkmark") {
                 workout.completed = true
+                try? context.save()
                 dismiss()
             }
             .tint(.green)
@@ -165,6 +166,7 @@ struct WorkoutView: View {
     
     private func deleteWorkout() {
         context.delete(workout)
+        try? context.save()
         dismiss()
     }
 }

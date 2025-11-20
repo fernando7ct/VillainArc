@@ -96,12 +96,10 @@ struct ExerciseView: View {
                 }
                 
                 Button {
-                    withAnimation(.bouncy) {
-                        if let previous = exercise.sets.last {
-                            exercise.sets.append(ExerciseSet(weight: previous.weight, reps: previous.reps, exercise: exercise))
-                        } else {
-                            exercise.sets.append(ExerciseSet(exercise: exercise))
-                        }
+                    if let previous = exercise.sets.last {
+                        exercise.sets.append(ExerciseSet(weight: previous.weight, reps: previous.reps))
+                    } else {
+                        exercise.sets.append(ExerciseSet())
                     }
                 } label: {
                     Label("Add Set", systemImage: "plus")
@@ -116,6 +114,7 @@ struct ExerciseView: View {
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.immediately)
             .dynamicTypeSize(...DynamicTypeSize.xLarge)
+            .animation(.bouncy, value: exercise.sets)
         }
     }
 }

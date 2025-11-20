@@ -25,7 +25,7 @@ class DataContainer {
 
             if testingData {
                 loadSampleData()
-                syncExercises(testingData: true)
+                syncExercises()
             } else {
                 seedExercisesIfNeeded()
             }
@@ -49,12 +49,12 @@ class DataContainer {
         print("Stored version: \(storedVersion)")
 
         if storedVersion != catalogVersion {
-            syncExercises(testingData: false)
+            syncExercises()
             UserDefaults.standard.set(catalogVersion, forKey: "exerciseCatalogVersion")
         }
     }
 
-    private func syncExercises(testingData: Bool = false) {
+    private func syncExercises() {
         
         for exerciseDetail in ExerciseDetails.allCases {
             let name = exerciseDetail.rawValue
