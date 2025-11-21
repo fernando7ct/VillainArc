@@ -3,12 +3,11 @@ import SwiftData
 
 @main
 struct VillainArcApp: App {
-    @State private var dataContainer = DataContainer()
+    let dataContainer = DataContainer()
     
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(dataContainer)
                 .modelContainer(dataContainer.modelContainer)
         }
     }

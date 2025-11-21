@@ -54,6 +54,7 @@ struct ExerciseView: View {
                             }
                             .font(.title3)
                             .fontWeight(.semibold)
+                            .animation(.bouncy, value: set.complete)
                         }
                     }
                     .listRowBackground(Color.clear)

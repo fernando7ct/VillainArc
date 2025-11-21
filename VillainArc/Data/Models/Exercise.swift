@@ -13,10 +13,8 @@ class Exercise {
         self.name = exerciseDetails.rawValue
         self.musclesTargeted = exerciseDetails.musclesTargeted
     }
-
-    init(name: String, musclesTargeted: [Muscle]) {
-        self.name = name
-        self.musclesTargeted = musclesTargeted
-        self.isCustom = true
+    
+    func updateLastUsed(to time: Date = .now) {
+        lastUsed = time
     }
 }

@@ -1,7 +1,6 @@
 import SwiftUI
 import SwiftData
 
-@Observable
 @MainActor
 class DataContainer {
     var modelContainer: ModelContainer
@@ -18,7 +17,7 @@ class DataContainer {
             Exercise.self,
         ])
 
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: testingData)
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: testingData, allowsSave: true)
 
         do {
             modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -77,6 +76,5 @@ extension View {
     func sampleDataConainer() -> some View {
         self
             .modelContainer(sampleContainer.modelContainer)
-            .environment(sampleContainer)
     }
 }

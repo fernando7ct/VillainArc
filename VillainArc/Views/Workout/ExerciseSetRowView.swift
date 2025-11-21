@@ -13,7 +13,7 @@ struct ExerciseSetRowView: View {
     var body: some View {
         Menu {
             Picker("", selection: $set.type) {
-                ForEach(ExerciseSetType.allCases) { type in
+                ForEach(ExerciseSetType.allCases, id: \.self) { type in
                     Text(type.rawValue)
                         .tag(type)
                 }
@@ -41,9 +41,7 @@ struct ExerciseSetRowView: View {
         
         if set.complete {
             Button {
-                withAnimation(.bouncy) {
-                    set.complete.toggle()
-                }
+                set.complete = false
             } label: {
                 Image(systemName: "checkmark")
                     .padding(2)
@@ -53,14 +51,11 @@ struct ExerciseSetRowView: View {
             .tint(.green)
         } else {
             Button {
-                withAnimation(.bouncy) {
-                    set.complete.toggle()
-                }
+                set.complete = true
             } label: {
                 Image(systemName: "checkmark")
                     .padding(2)
             }
-            .labelStyle(.iconOnly)
             .buttonBorderShape(.circle)
             .buttonStyle(.glass)
             .tint(.primary)

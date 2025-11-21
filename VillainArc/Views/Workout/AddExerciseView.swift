@@ -17,7 +17,7 @@ struct AddExerciseView: View {
             FilteredExerciseListView(selectedExercises: $selectedExercises, searchText: searchText, muscleFilters: selectedMuscles)
                 .navigationTitle("Exercises")
                 .navigationSubtitle(Text("\(selectedExercises.count) Selected"))
-                .navigationBarTitleDisplayMode(.large)
+                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
                         Button(role: .close) {
@@ -32,7 +32,6 @@ struct AddExerciseView: View {
                                 showCancelConfirmation = false
                             }
                             Button("Discard Selections", role: .destructive) {
-                                selectedExercises.removeAll()
                                 dismiss()
                             }
                         } message: {
@@ -41,11 +40,7 @@ struct AddExerciseView: View {
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(role: .confirm) {
-                            if selectedExercises.isEmpty {
-                                dismiss()
-                            } else {
-                                addSelectedExercises()
-                            }
+                            addSelectedExercises()
                         }
                     }
                     ToolbarItem(placement: .bottomBar) {
@@ -72,16 +67,16 @@ struct AddExerciseView: View {
     
     private func addSelectedExercises() {
         for exercise in selectedExercises {
-            workout.appendExercise(exercise)
-            exercise.lastUsed = .now
+            workout.addExercise(exercise)
+            exercise.updateLastUsed()
             try? context.save()
         }
         dismiss()
     }
 
     private func toggleMuscle(_ muscle: Muscle) {
-        if let index = selectedMuscles.firstIndex(of: muscle) {
-            selectedMuscles.remove(at: index)
+        if selectedMuscles.contains(muscle) {
+            selectedMuscles.removeAll(where: { $0 == muscle })
         } else {
             selectedMuscles.append(muscle)
         }

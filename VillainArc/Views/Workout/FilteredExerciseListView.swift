@@ -47,19 +47,20 @@ struct FilteredExerciseListView: View {
     
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 10) {
+            LazyVStack(spacing: 12) {
                 ForEach(filteredExercises) { exercise in
                     Group {
                         if selectedExercises.contains(exercise) {
                             Button {
-                                selectedExercises.removeAll(where: { $0.id == exercise.id })
+                                selectedExercises.removeAll { $0 == exercise }
                             } label: {
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(exercise.name)
                                         .font(.headline)
-                                    Text(exercise.musclesTargeted.filter({ $0.isMajor }).map({ $0.rawValue }), format: .list(type: .and))
+                                    Text(exercise.musclesTargeted.filter(\.isMajor).map({ $0.rawValue }), format: .list(type: .and))
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.leading)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(5)
@@ -73,9 +74,10 @@ struct FilteredExerciseListView: View {
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(exercise.name)
                                         .font(.headline)
-                                    Text(exercise.musclesTargeted.filter({ $0.isMajor }).map({ $0.rawValue }), format: .list(type: .and))
+                                    Text(exercise.musclesTargeted.filter(\.isMajor).map({ $0.rawValue }), format: .list(type: .and))
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.leading)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(5)
@@ -83,7 +85,6 @@ struct FilteredExerciseListView: View {
                             .buttonStyle(.glass)
                         }
                     }
-                    .tint(.primary)
                     .buttonBorderShape(.roundedRectangle)
                     .padding(.horizontal, 10)
                 }

@@ -8,7 +8,6 @@ struct WorkoutTab: View {
     
     @Query private var workouts: [Workout]
     @State private var workout: Workout?
-    @Query private var exercises: [WorkoutExercise]
     
     private func deleteWorkout(offsets: IndexSet) {
         for index in offsets {
@@ -25,9 +24,6 @@ struct WorkoutTab: View {
                         Text(workout.title)
                     }
                     .onDelete(perform: deleteWorkout)
-                }
-                Section("Exercise") {
-                    Text(exercises.count, format: .number)
                 }
             }
             .navigationTitle("Workout")

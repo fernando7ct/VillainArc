@@ -23,27 +23,6 @@ class WorkoutExercise {
         self.workout = workout
     }
     
-    init(from exercise: WorkoutExercise, workout: Workout?) {
-        name = exercise.name
-        notes = exercise.notes
-        repRange = exercise.repRange
-        musclesTargeted = exercise.musclesTargeted
-        self.workout = workout
-        for exerciseSet in exercise.sets {
-            sets.append(ExerciseSet(from: exerciseSet))
-        }
-    }
-    
-    // Testing
-    init(name: String, notes: String = "", repRange: RepRange = .notSet, musclesTargeted: [Muscle], workout: Workout?, sets: [ExerciseSet]) {
-        self.name = name
-        self.notes = notes
-        self.repRange = repRange
-        self.musclesTargeted = musclesTargeted
-        self.workout = workout
-        self.sets = sets
-    }
-    
     func addSet() {
         if let previous = sets.last {
             sets.append(ExerciseSet(weight: previous.weight, reps: previous.reps))
@@ -54,5 +33,15 @@ class WorkoutExercise {
     
     func removeSet(_ set: ExerciseSet) {
         sets.removeAll { $0 == set }
+    }
+    
+    // Testing
+    init(name: String, notes: String = "", repRange: RepRange = .notSet, musclesTargeted: [Muscle], workout: Workout?, sets: [ExerciseSet]) {
+        self.name = name
+        self.notes = notes
+        self.repRange = repRange
+        self.musclesTargeted = musclesTargeted
+        self.workout = workout
+        self.sets = sets
     }
 }

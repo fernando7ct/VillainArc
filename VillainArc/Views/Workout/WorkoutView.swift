@@ -4,22 +4,13 @@ import SwiftData
 struct WorkoutView: View {
     @Bindable var workout: Workout
     @State private var activeExercise: WorkoutExercise?
-    
     @State private var showCancelConfirmation = false
     @State private var showExerciseListView = false
     @State private var showAddExerciseSheet = false
     
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    
     @Namespace private var animation
-    
-    init(workout: Workout) {
-        self.workout = workout
-        if let first = workout.exercises.first {
-            _activeExercise = .init(initialValue: first)
-        }
-    }
     
     var body: some View {
         NavigationStack {
@@ -33,17 +24,12 @@ struct WorkoutView: View {
                 }
             }
             .navigationTitle(workout.title)
-            .toolbarTitleDisplayMode(.inline)
             .navigationSubtitle(Text(workout.startTime, style: .date))
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    if showExerciseListView {
-                        Button("Timer", systemImage: "timer") {
-                            
-                        }
-                    } else {
-                        Text(workout.startTime, style: .timer)
-                            .frame(width: 70)
+                    Button("Timer", systemImage: "timer") {
+                        
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -101,7 +87,6 @@ struct WorkoutView: View {
                         Text(exercise.name)
                             .font(.title3)
                             .bold()
-                        
                         Text(exercise.displayMuscle)
                             .foregroundStyle(.secondary)
                             .fontWeight(.semibold)
