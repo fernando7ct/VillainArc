@@ -171,11 +171,13 @@ struct WorkoutView: View {
     
     private func deleteExercise(offsets: IndexSet) {
         let exercisesToDelete = offsets.map { workout.exercises[$0] }
-        workout.exercises.remove(atOffsets: offsets)
-
+        
         for exercise in exercisesToDelete {
+            workout.removeExercise(exercise)
             context.delete(exercise)
         }
+        try? context.save()
+        
         if let active = activeExercise, exercisesToDelete.contains(active) {
             activeExercise = workout.exercises.first
         }

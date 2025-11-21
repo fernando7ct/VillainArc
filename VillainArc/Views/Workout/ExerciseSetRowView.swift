@@ -68,8 +68,9 @@ struct ExerciseSetRowView: View {
     }
     
     private func deleteSet() {
-        exercise.sets.removeAll { $0.id == set.id }
+        exercise.removeSet(set)
         context.delete(set)
+        try? context.save()
     }
 }
 

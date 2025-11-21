@@ -31,4 +31,13 @@ class Workout {
         self.completed = completed
         self.endTime = endTime
     }
+    
+    func appendExercise(_ exercise: Exercise) {
+        let workoutExercise = WorkoutExercise(from: exercise, workout: self)
+        exercises.append(workoutExercise)
+    }
+    
+    func removeExercise(_ exercise: WorkoutExercise) {
+        exercises.removeAll { $0 == exercise }
+    }
 }

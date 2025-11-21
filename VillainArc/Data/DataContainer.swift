@@ -22,7 +22,8 @@ class DataContainer {
 
         do {
             modelContainer = try ModelContainer(for: schema, configurations: [modelConfiguration])
-
+            modelContainer.mainContext.autosaveEnabled = true
+            
             if testingData {
                 loadSampleData()
                 syncExercises()

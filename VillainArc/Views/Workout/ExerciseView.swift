@@ -114,11 +114,7 @@ struct ExerciseView: View {
     }
     
     private func addSet() {
-        if let previous = exercise.sets.last {
-            exercise.sets.append(ExerciseSet(weight: previous.weight, reps: previous.reps))
-        } else {
-            exercise.sets.append(ExerciseSet())
-        }
+        exercise.addSet()
         try? context.save()
     }
 }

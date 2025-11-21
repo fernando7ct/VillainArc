@@ -72,7 +72,7 @@ struct AddExerciseView: View {
     
     private func addSelectedExercises() {
         for exercise in selectedExercises {
-            workout.exercises.append(WorkoutExercise(from: exercise, workout: workout))
+            workout.appendExercise(exercise)
             exercise.lastUsed = .now
             try? context.save()
         }

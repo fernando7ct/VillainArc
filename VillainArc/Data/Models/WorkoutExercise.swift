@@ -43,4 +43,16 @@ class WorkoutExercise {
         self.workout = workout
         self.sets = sets
     }
+    
+    func addSet() {
+        if let previous = sets.last {
+            sets.append(ExerciseSet(weight: previous.weight, reps: previous.reps))
+        } else {
+            sets.append(ExerciseSet())
+        }
+    }
+    
+    func removeSet(_ set: ExerciseSet) {
+        sets.removeAll { $0 == set }
+    }
 }
