@@ -56,7 +56,7 @@ struct WorkoutView: View {
                 }
                 .matchedTransitionSource(id: "AddExercise", in: animation)
             }
-            .animation(.bouncy, value: showExerciseListView)
+            .animation(.smooth, value: showExerciseListView)
             .sheet(isPresented: $showAddExerciseSheet) {
                 AddExerciseView(workout: workout)
                     .navigationTransition(.zoom(sourceID: "AddExercise", in: animation))
@@ -91,39 +91,39 @@ struct WorkoutView: View {
     }
     
     var exerciseListView: some View {
-        ScrollView {
+        List {
             ForEach(workout.exercises) { exercise in
                 Button {
                     activeExercise = exercise
                     showExerciseListView = false
                 } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(exercise.name)
-                                .font(.title3)
-                                .bold()
-                            
-                            Text(exercise.displayMuscle)
-                                .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(exercise.name)
+                            .font(.title3)
+                            .bold()
+                        
+                        Text(exercise.displayMuscle)
+                            .foregroundStyle(.secondary)
+                            .fontWeight(.semibold)
+                            .font(.headline)
+                        ForEach(exercise.sets) { set in
+                            Text("\(set.reps)x\(Int(set.weight)) lbs")
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
-                                .font(.headline)
-                            ForEach(exercise.sets) { set in
-                                Text("\(set.reps)x\(Int(set.weight)) lbs")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                            }
                         }
-                        Spacer()
                     }
                     .padding()
-                    .glassEffect(.regular, in: .rect(cornerRadius: 16))
-                    .padding(.horizontal)
-                    .padding(.bottom, 5)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .listRowBackground(Color.clear)
+                .buttonStyle(.glass)
+                .buttonBorderShape(.roundedRectangle)
+                .listRowSeparator(.hidden)
             }
+            .onDelete(perform: deleteExercise)
         }
-        .tint(.primary)
         .scrollIndicators(.hidden)
+        .listStyle(.plain)
     }
     
     var toolBarMenu: some View {
@@ -167,6 +167,18 @@ struct WorkoutView: View {
     private func deleteWorkout() {
         context.delete(workout)
         dismiss()
+    }
+    
+    private func deleteExercise(offsets: IndexSet) {
+        let exercisesToDelete = offsets.map { workout.exercises[$0] }
+        workout.exercises.remove(atOffsets: offsets)
+
+        for exercise in exercisesToDelete {
+            context.delete(exercise)
+        }
+        if let active = activeExercise, exercisesToDelete.contains(active) {
+            activeExercise = workout.exercises.first
+        }
     }
 }
 

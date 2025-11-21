@@ -22,6 +22,16 @@ struct FilteredExerciseListView: View {
         }
 
         return filtered.sorted { first, second in
+            let firstSelected = selectedExercises.contains(first)
+            let secondSelected = selectedExercises.contains(second)
+            if cleanText.isEmpty {
+                if firstSelected && !secondSelected {
+                    return true
+                } else if !firstSelected && secondSelected {
+                    return false
+                }
+            }
+            
             switch (first.lastUsed, second.lastUsed) {
             case (.some(let date1), .some(let date2)):
                 return date1 > date2

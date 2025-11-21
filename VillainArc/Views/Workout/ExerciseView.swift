@@ -29,41 +29,11 @@ struct ExerciseView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            ScrollView {
-                VStack(spacing: 8) {
-                    HStack(alignment: .center) {
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(exercise.name)
-                                .font(.title3)
-                                .bold()
-                            Text(exercise.displayMuscle)
-                                .foregroundStyle(.secondary)
-                                .fontWeight(.semibold)
-                            Text("Rep Range: \(exercise.repRange.displayText)")
-                                .fontWeight(.semibold)
-                        }
-                        Spacer()
-                        Button("Notes", systemImage: isNotesExpanded ? "note.text" : "note.text.badge.plus") {
-                            withAnimation {
-                                isNotesExpanded.toggle()
-                            }
-                        }
-                        .labelStyle(.iconOnly)
-                        .font(.title)
-                        .tint(.primary)
-                    }
-
-                    if isNotesExpanded {
-                        TextField("Notes", text: $exercise.notes, axis: .vertical)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
-                    }
-                }
-                .padding()
-                .glassEffect(.regular, in: .rect(cornerRadius: 16))
-                .padding(.horizontal)
+            List {
+                headerView
                 
                 if !exercise.sets.isEmpty {
-                    Grid(horizontalSpacing: 16, verticalSpacing: 10) {
+                    Grid(horizontalSpacing: 10, verticalSpacing: 10) {
                         GridRow {
                             Text("Set")
                             Text("Reps")
@@ -76,64 +46,17 @@ struct ExerciseView: View {
                         .font(.title3)
                         .bold()
                         
-                        ForEach(exercise.sets.indices, id: \.self) { index in
+                        ForEach(exercise.sets) { set in
                             GridRow {
-                                Menu {
-                                    Picker("", selection: $exercise.sets[index].type) {
-                                        ForEach(ExerciseSetType.allCases) { type in
-                                            Text(type.rawValue)
-                                                .tag(type)
-                                        }
-                                    }
-                                } label: {
-                                    let type = exercise.sets[index].type
-                                    Text(type == .regular ? String(index + 1) : type.shortLabel)
-                                        .foregroundStyle(type.tintColor)
-                                        .frame(width: 40, height: 40)
-                                        .glassEffect(.regular, in: .circle)
-                                }
-                                
-                                TextField("Reps", value: $exercise.sets[index].reps, format: .number)
-                                    .keyboardType(.numberPad)
-                                    .frame(width: geometry.size.width / 5)
-                                TextField("Weight", value: $exercise.sets[index].weight, format: .number)
-                                    .keyboardType(.decimalPad)
-                                    .frame(width: geometry.size.width / 5)
-                                Text(previousSetDisplay(for: index))
-                                    .lineLimit(1)
-                                
-                                if exercise.sets[index].complete {
-                                    Button {
-                                        withAnimation(.bouncy) {
-                                            exercise.sets[index].complete.toggle()
-                                        }
-                                    } label: {
-                                        Image(systemName: "checkmark")
-                                            .padding(2)
-                                    }
-                                    .buttonBorderShape(.circle)
-                                    .buttonStyle(.glassProminent)
-                                    .tint(.green)
-                                } else {
-                                    Button {
-                                        withAnimation(.bouncy) {
-                                            exercise.sets[index].complete.toggle()
-                                        }
-                                    } label: {
-                                        Image(systemName: "checkmark")
-                                            .padding(2)
-                                    }
-                                    .labelStyle(.iconOnly)
-                                    .buttonBorderShape(.circle)
-                                    .buttonStyle(.glass)
-                                    .tint(.primary)
+                                if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
+                                    ExerciseSetRowView(set: set, exercise: exercise, setNumber: index + 1, previousSetDisplay: previousSetDisplay(for: index), fieldWidth: geometry.size.width / 5)
                                 }
                             }
                             .font(.title3)
                             .fontWeight(.semibold)
                         }
                     }
-                    .padding(.vertical)
+                    .listRowBackground(Color.clear)
                 }
                 
                 Button {
@@ -143,16 +66,51 @@ struct ExerciseView: View {
                         .font(.title3)
                         .fontWeight(.semibold)
                         .padding(.vertical, 5)
+                        .foregroundStyle(.primary)
                 }
+                .listRowBackground(Color.clear)
                 .buttonStyle(.glassProminent)
                 .buttonSizing(.flexible)
-                .padding(.horizontal)
+                .listRowSeparator(.hidden)
             }
+            .listStyle(.plain)
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.immediately)
-            .dynamicTypeSize(...DynamicTypeSize.xLarge)
-            .animation(.bouncy, value: exercise.sets)
+            .dynamicTypeSize(...DynamicTypeSize.large)
         }
+    }
+    
+    var headerView: some View {
+        VStack(spacing: 8) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(exercise.name)
+                        .font(.title3)
+                        .bold()
+                    Text(exercise.displayMuscle)
+                        .foregroundStyle(.secondary)
+                        .fontWeight(.semibold)
+                    Text("Rep Range: \(exercise.repRange.displayText)")
+                        .fontWeight(.semibold)
+                }
+                Spacer()
+                Button("Notes", systemImage: isNotesExpanded ? "note.text" : "note.text.badge.plus") {
+                    isNotesExpanded.toggle()
+                }
+                .labelStyle(.iconOnly)
+                .font(.title)
+                .tint(.primary)
+            }
+            
+            if isNotesExpanded {
+                TextField("Notes", text: $exercise.notes, axis: .vertical)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding()
+        .listRowBackground(Color.clear)
+        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+        .listRowSeparator(.hidden)
     }
     
     private func addSet() {
