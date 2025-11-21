@@ -9,11 +9,12 @@ struct AddExerciseView: View {
     @Bindable var workout: Workout
     @State private var searchText = ""
     @State private var selectedExercises: [Exercise] = []
+    @State private var selectedMuscles: [Muscle] = Muscle.allMajor
     @State private var showCancelConfirmation = false
-    
+
     var body: some View {
         NavigationStack {
-            FilteredExerciseListView(exerciseName: searchText, selectedExercises: $selectedExercises)
+            FilteredExerciseListView(selectedExercises: $selectedExercises, searchText: searchText, muscleFilters: selectedMuscles)
                 .navigationTitle("Exercises")
                 .navigationSubtitle(Text("\(selectedExercises.count) Selected"))
                 .navigationBarTitleDisplayMode(.large)
@@ -47,6 +48,23 @@ struct AddExerciseView: View {
                             }
                         }
                     }
+                    ToolbarItem(placement: .bottomBar) {
+                        Menu("Muscle Groups", systemImage: "line.3.horizontal.decrease.circle") {
+                            Button("Select All") {
+                                selectedMuscles = Muscle.allMajor
+                            }
+                            Divider()
+                            ForEach(Muscle.allMajor, id: \.rawValue) { muscle in
+                                Toggle(muscle.rawValue, isOn: Binding(
+                                    get: { selectedMuscles.contains(muscle) },
+                                    set: { _ in toggleMuscle(muscle) }
+                                ))
+                            }
+                        }
+                        .labelStyle(.iconOnly)
+                    }
+                    ToolbarSpacer(.flexible, placement: .bottomBar)
+                    DefaultToolbarItem(kind: .search, placement: .bottomBar)
                 }
                 .searchable(text: $searchText)
         }
@@ -59,6 +77,14 @@ struct AddExerciseView: View {
             try? context.save()
         }
         dismiss()
+    }
+
+    private func toggleMuscle(_ muscle: Muscle) {
+        if let index = selectedMuscles.firstIndex(of: muscle) {
+            selectedMuscles.remove(at: index)
+        } else {
+            selectedMuscles.append(muscle)
+        }
     }
 }
 

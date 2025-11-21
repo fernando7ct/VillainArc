@@ -2,21 +2,30 @@ import SwiftUI
 import SwiftData
 
 struct FilteredExerciseListView: View {
-    @Query private var exercises: [Exercise]
+    @Query(sort: \Exercise.name) private var allExercises: [Exercise]
     @Binding var selectedExercises: [Exercise]
-    
-    init(exerciseName: String = "", selectedExercises: Binding<[Exercise]>) {
-        let predicate = #Predicate<Exercise> { exercise in
-            exerciseName.isEmpty || exercise.name.localizedStandardContains(exerciseName)
+
+    let searchText: String
+    let muscleFilters: [Muscle]
+
+    var filteredExercises: [Exercise] {
+        let cleanText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return allExercises.filter { exercise in
+            let matchesSearch = cleanText.isEmpty ||
+                               exercise.name.localizedStandardContains(cleanText) ||
+                               exercise.musclesTargeted.contains(where: { $0.rawValue.localizedStandardContains(cleanText) })
+
+            let matchesMuscleFilter = muscleFilters.isEmpty || exercise.musclesTargeted.contains(where: { muscleFilters.contains($0) })
+
+            return matchesSearch && matchesMuscleFilter
         }
-        _exercises = Query(filter: predicate, sort: \.name)
-        _selectedExercises = selectedExercises
     }
     
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 10) {
-                ForEach(exercises) { exercise in
+                ForEach(filteredExercises) { exercise in
                     Group {
                         if selectedExercises.contains(exercise) {
                             Button {
@@ -57,9 +66,14 @@ struct FilteredExerciseListView: View {
                 }
             }
         }
-        .animation(.bouncy, value: exercises)
+        .animation(.bouncy, value: filteredExercises.count)
         .animation(.bouncy, value: selectedExercises)
         .scrollDismissesKeyboard(.immediately)
+        .overlay {
+            if filteredExercises.isEmpty {
+                ContentUnavailableView.search(text: searchText)
+            }
+        }
     }
 }
 

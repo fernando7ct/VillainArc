@@ -43,8 +43,11 @@ struct WorkoutView: View {
                         }
                     } else {
                         Text(workout.startTime, style: .timer)
-                            .frame(width: 40)
+                            .frame(width: 70)
                     }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    toolBarMenu
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Add Exercise", systemImage: "plus") {
@@ -52,15 +55,14 @@ struct WorkoutView: View {
                     }
                 }
                 .matchedTransitionSource(id: "AddExercise", in: animation)
-                ToolbarItem(placement: .topBarTrailing) {
-                    toolBarMenu
-                }
             }
             .animation(.bouncy, value: showExerciseListView)
             .sheet(isPresented: $showAddExerciseSheet) {
                 AddExerciseView(workout: workout)
                     .navigationTransition(.zoom(sourceID: "AddExercise", in: animation))
                     .interactiveDismissDisabled()
+                    .presentationBackground(.background)
+                    .presentationCornerRadius(16)
             }
         }
     }

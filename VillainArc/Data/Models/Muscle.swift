@@ -1,6 +1,6 @@
 import Foundation
 
-enum Muscle: String, Codable {
+enum Muscle: String, Codable, CaseIterable {
     // Major Muscle
     case chest = "Chest"
     case back = "Back"
@@ -48,5 +48,9 @@ enum Muscle: String, Codable {
         case .adductors, .abductors, .upperChest, .lowerChest, .midChest, .lats, .lowerBack, .upperTraps, .lowerTraps, .midTraps, .rhomboids, .frontDelt, .sideDelt, .rearDelt, .rotatorCuff, .longHeadBiceps, .shortHeadBiceps, .brachialis, .longHeadTriceps, .lateralHeadTriceps, .medialHeadTriceps, .wrists, .upperAbs, .lowerAbs, .obliques:
             return false
         }
+    }
+    
+    static var allMajor: [Muscle] {
+        allCases.filter(\.isMajor)
     }
 }
