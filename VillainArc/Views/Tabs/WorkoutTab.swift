@@ -11,8 +11,9 @@ struct WorkoutTab: View {
     
     private func deleteWorkout(offsets: IndexSet) {
         for index in offsets {
-            let workout = self.workouts[index]
+            let workout = workouts[index]
             context.delete(workout)
+            saveContext(context: context)
         }
     }
     
@@ -48,6 +49,7 @@ struct WorkoutTab: View {
     private func startNewWorkout() {
         let newWorkout = Workout(title: "New Workout")
         context.insert(newWorkout)
+        saveContext(context: context)
         workout = newWorkout
     }
     

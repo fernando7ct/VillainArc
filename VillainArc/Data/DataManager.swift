@@ -23,5 +23,14 @@ import SwiftData
                 context.insert(Exercise(from: exerciseDetail))
             }
         }
+        saveContext(context: context)
+    }
+}
+
+@MainActor func saveContext(context: ModelContext) {
+    do {
+        try context.save()
+    } catch {
+        print("Failed to save context: \(error)")
     }
 }

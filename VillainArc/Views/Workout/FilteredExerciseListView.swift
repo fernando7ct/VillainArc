@@ -90,7 +90,7 @@ struct FilteredExerciseListView: View {
                 }
             }
         }
-        .animation(.bouncy, value: filteredExercises.count)
+        .animation(.linear, value: filteredExercises.count)
         .animation(.bouncy, value: selectedExercises)
         .scrollDismissesKeyboard(.immediately)
         .overlay {

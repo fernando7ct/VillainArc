@@ -47,7 +47,6 @@ struct WorkoutView: View {
                     .navigationTransition(.zoom(sourceID: "addExercise", in: animation))
                     .interactiveDismissDisabled()
                     .presentationBackground(.background)
-                    .presentationCornerRadius(16)
             }
         }
     }
@@ -126,6 +125,7 @@ struct WorkoutView: View {
             }
             Button("Save Workout", systemImage: "checkmark") {
                 workout.completed = true
+                saveContext(context: context)
                 dismiss()
             }
             .tint(.green)
@@ -155,6 +155,7 @@ struct WorkoutView: View {
     
     private func deleteWorkout() {
         context.delete(workout)
+        saveContext(context: context)
         dismiss()
     }
     
@@ -165,6 +166,7 @@ struct WorkoutView: View {
             workout.removeExercise(exercise)
             context.delete(exercise)
         }
+        saveContext(context: context)
         
         if let active = activeExercise, exercisesToDelete.contains(active) {
             activeExercise = workout.sortedExercises.first
@@ -173,6 +175,7 @@ struct WorkoutView: View {
     
     private func moveExercise(from source: IndexSet, to destination: Int) {
         workout.moveExercise(from: source, to: destination)
+        saveContext(context: context)
     }
 }
 

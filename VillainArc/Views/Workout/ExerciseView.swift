@@ -93,7 +93,9 @@ struct ExerciseView: View {
                 }
                 Spacer()
                 Button("Notes", systemImage: isNotesExpanded ? "note.text" : "note.text.badge.plus") {
-                    isNotesExpanded.toggle()
+                    withAnimation {
+                        isNotesExpanded.toggle()
+                    }
                 }
                 .labelStyle(.iconOnly)
                 .font(.title)
@@ -111,7 +113,7 @@ struct ExerciseView: View {
     
     private func addSet() {
         exercise.addSet()
-        try? context.save()
+        saveContext(context: context)
     }
 }
 

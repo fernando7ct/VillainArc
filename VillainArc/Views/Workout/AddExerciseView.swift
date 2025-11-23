@@ -69,6 +69,7 @@ struct AddExerciseView: View {
             workout.addExercise(exercise)
             exercise.updateLastUsed()
         }
+        saveContext(context: context)
         dismiss()
     }
 
