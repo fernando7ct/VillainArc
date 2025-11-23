@@ -1,9 +1,8 @@
-import Foundation
+import SwiftUI
 import SwiftData
 
 @Model
 class Workout {
-    var id: UUID = UUID()
     var title: String = ""
     var notes: String = ""
     var completed: Bool = false
@@ -11,6 +10,10 @@ class Workout {
     var endTime: Date? = nil
     @Relationship(deleteRule: .cascade, inverse: \WorkoutExercise.workout)
     var exercises: [WorkoutExercise] = []
+    
+    var sortedExercises: [WorkoutExercise] {
+        exercises.sorted { $0.index < $1.index }
+    }
     
     init(title: String = "New Workout") {
         self.title = title
@@ -23,6 +26,19 @@ class Workout {
     
     func removeExercise(_ exercise: WorkoutExercise) {
         exercises.removeAll { $0 == exercise }
+
+        for (index, workoutExercise) in sortedExercises.enumerated() {
+            workoutExercise.index = index
+        }
+    }
+    
+    func moveExercise(from source: IndexSet, to destination: Int) {
+        var sortedEx = sortedExercises
+        sortedEx.move(fromOffsets: source, toOffset: destination)
+        
+        for (index, workoutExercise) in sortedEx.enumerated() {
+            workoutExercise.index = index
+        }
     }
     
     // Testing

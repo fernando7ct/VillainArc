@@ -6,7 +6,6 @@ struct ExerciseSetRowView: View {
     @Bindable var exercise: WorkoutExercise
     @Environment(\.modelContext) private var context
     
-    let setNumber: Int
     let previousSetDisplay: String
     let fieldWidth: CGFloat
     
@@ -23,7 +22,7 @@ struct ExerciseSetRowView: View {
                 deleteSet()
             }
         } label: {
-            Text(set.type == .regular ? String(setNumber) : set.type.shortLabel)
+            Text(set.type == .regular ? String(set.index + 1) : set.type.shortLabel)
                 .foregroundStyle(set.type.tintColor)
                 .frame(width: 40, height: 40)
                 .glassEffect(.regular, in: .circle)
@@ -65,7 +64,6 @@ struct ExerciseSetRowView: View {
     private func deleteSet() {
         exercise.removeSet(set)
         context.delete(set)
-        try? context.save()
     }
 }
 

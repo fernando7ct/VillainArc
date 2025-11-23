@@ -7,7 +7,6 @@ enum Muscle: String, Codable, CaseIterable {
     case shoulders = "Shoulders"
     case biceps = "Biceps"
     case triceps = "Triceps"
-    case forearms = "Forearms"
     case abs = "Abs"
     case glutes = "Glutes"
     case quads = "Quads"
@@ -15,6 +14,7 @@ enum Muscle: String, Codable, CaseIterable {
     case calves = "Calves"
     
     // Minor Muscle
+    case forearms = "Forearms"
     case adductors = "Adductors"
     case abductors = "Abductors"
     case upperChest = "Upper Chest"
@@ -43,9 +43,9 @@ enum Muscle: String, Codable, CaseIterable {
     
     var isMajor: Bool {
         switch self {
-        case .chest, .back, .shoulders, .biceps, .triceps, .forearms, .abs, .glutes, .quads, .hamstrings, .calves:
+        case .chest, .back, .shoulders, .biceps, .triceps, .abs, .glutes, .quads, .hamstrings, .calves:
             return true
-        case .adductors, .abductors, .upperChest, .lowerChest, .midChest, .lats, .lowerBack, .upperTraps, .lowerTraps, .midTraps, .rhomboids, .frontDelt, .sideDelt, .rearDelt, .rotatorCuff, .longHeadBiceps, .shortHeadBiceps, .brachialis, .longHeadTriceps, .lateralHeadTriceps, .medialHeadTriceps, .wrists, .upperAbs, .lowerAbs, .obliques:
+        case .forearms, .adductors, .abductors, .upperChest, .lowerChest, .midChest, .lats, .lowerBack, .upperTraps, .lowerTraps, .midTraps, .rhomboids, .frontDelt, .sideDelt, .rearDelt, .rotatorCuff, .longHeadBiceps, .shortHeadBiceps, .brachialis, .longHeadTriceps, .lateralHeadTriceps, .medialHeadTriceps, .wrists, .upperAbs, .lowerAbs, .obliques:
             return false
         }
     }
