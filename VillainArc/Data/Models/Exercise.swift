@@ -3,7 +3,6 @@ import SwiftData
 
 @Model
 class Exercise {
-    var id: UUID = UUID()
     var name: String = ""
     var musclesTargeted: [Muscle] = []
     var isCustom: Bool = false

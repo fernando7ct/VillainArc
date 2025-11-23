@@ -28,11 +28,11 @@ struct AddExerciseView: View {
                             }
                         }
                         .confirmationDialog("Discard selected exercises?", isPresented: $showCancelConfirmation) {
-                            Button("Cancel") {
-                                showCancelConfirmation = false
-                            }
                             Button("Discard Selections", role: .destructive) {
                                 dismiss()
+                            }
+                            Button("Cancel") {
+                                showCancelConfirmation = false
                             }
                         } message: {
                             Text("If you leave now, the selected exercises will not be added to your workout.")
@@ -45,18 +45,17 @@ struct AddExerciseView: View {
                     }
                     ToolbarItem(placement: .bottomBar) {
                         Menu("Muscle Groups", systemImage: "line.3.horizontal.decrease.circle") {
+                            ForEach(Muscle.allMajor, id: \.rawValue) { muscle in
+                                Toggle(muscle.rawValue, isOn: Binding(get: { selectedMuscles.contains(muscle) }, set: { _ in toggleMuscle(muscle) }))
+                                .menuActionDismissBehavior(.disabled)
+                            }
+                            Divider()
                             Button("Select All") {
                                 selectedMuscles = Muscle.allMajor
                             }
-                            Divider()
-                            ForEach(Muscle.allMajor, id: \.rawValue) { muscle in
-                                Toggle(muscle.rawValue, isOn: Binding(
-                                    get: { selectedMuscles.contains(muscle) },
-                                    set: { _ in toggleMuscle(muscle) }
-                                ))
-                            }
                         }
                         .labelStyle(.iconOnly)
+                        .menuOrder(.fixed)
                     }
                     ToolbarSpacer(.flexible, placement: .bottomBar)
                     DefaultToolbarItem(kind: .search, placement: .bottomBar)
@@ -69,7 +68,6 @@ struct AddExerciseView: View {
         for exercise in selectedExercises {
             workout.addExercise(exercise)
             exercise.updateLastUsed()
-            try? context.save()
         }
         dismiss()
     }

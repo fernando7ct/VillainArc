@@ -33,13 +33,13 @@ struct WorkoutTab: View {
                     Button("Start Workout", systemImage: "plus") {
                         startNewWorkout()
                     }
+                    .matchedTransitionSource(id: "startWorkout", in: animation)
                 }
-                .matchedTransitionSource(id: "StartWorkout", in: animation)
             }
             .onAppear(perform: checkForUnfinishedWorkout)
             .fullScreenCover(item: $workout) {
                 WorkoutView(workout: $0)
-                    .navigationTransition(.zoom(sourceID: "StartWorkout", in: animation))
+                    .navigationTransition(.zoom(sourceID: "startWorkout", in: animation))
                     .interactiveDismissDisabled()
             }
         }

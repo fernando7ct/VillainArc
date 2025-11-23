@@ -18,7 +18,7 @@ struct ExerciseView: View {
     }
     
     private var previousSets: [ExerciseSet] {
-        exercises.first?.sets ?? []
+        exercises.first?.sortedSets ?? []
     }
     
     private func previousSetDisplay(for index: Int) -> String {
@@ -29,8 +29,9 @@ struct ExerciseView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            List {
+            ScrollView {
                 headerView
+                    .padding(.horizontal)
                 
                 if !exercise.sets.isEmpty {
                     Grid(horizontalSpacing: 10, verticalSpacing: 10) {
@@ -46,18 +47,16 @@ struct ExerciseView: View {
                         .font(.title3)
                         .bold()
                         
-                        ForEach(exercise.sets) { set in
+                        ForEach(exercise.sortedSets) { set in
                             GridRow {
-                                if let index = exercise.sets.firstIndex(where: { $0.id == set.id }) {
-                                    ExerciseSetRowView(set: set, exercise: exercise, setNumber: index + 1, previousSetDisplay: previousSetDisplay(for: index), fieldWidth: geometry.size.width / 5)
-                                }
+                                ExerciseSetRowView(set: set, exercise: exercise, previousSetDisplay: previousSetDisplay(for: set.index), fieldWidth: geometry.size.width / 5)
                             }
                             .font(.title3)
                             .fontWeight(.semibold)
                             .animation(.bouncy, value: set.complete)
                         }
                     }
-                    .listRowBackground(Color.clear)
+                    .padding(.vertical)
                 }
                 
                 Button {
@@ -69,12 +68,10 @@ struct ExerciseView: View {
                         .padding(.vertical, 5)
                         .foregroundStyle(.primary)
                 }
-                .listRowBackground(Color.clear)
                 .buttonStyle(.glassProminent)
                 .buttonSizing(.flexible)
-                .listRowSeparator(.hidden)
+                .padding(.horizontal)
             }
-            .listStyle(.plain)
             .scrollIndicators(.hidden)
             .scrollDismissesKeyboard(.immediately)
             .dynamicTypeSize(...DynamicTypeSize.large)
@@ -109,9 +106,7 @@ struct ExerciseView: View {
             }
         }
         .padding()
-        .listRowBackground(Color.clear)
         .glassEffect(.regular, in: .rect(cornerRadius: 16))
-        .listRowSeparator(.hidden)
     }
     
     private func addSet() {

@@ -32,20 +32,19 @@ struct WorkoutView: View {
                         
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
                     toolBarMenu
-                }
-                ToolbarItem(placement: .topBarTrailing) {
+                    
                     Button("Add Exercise", systemImage: "plus") {
                         showAddExerciseSheet = true
                     }
+                    .matchedTransitionSource(id: "addExercise", in: animation)
                 }
-                .matchedTransitionSource(id: "AddExercise", in: animation)
             }
             .animation(.smooth, value: showExerciseListView)
             .sheet(isPresented: $showAddExerciseSheet) {
                 AddExerciseView(workout: workout)
-                    .navigationTransition(.zoom(sourceID: "AddExercise", in: animation))
+                    .navigationTransition(.zoom(sourceID: "addExercise", in: animation))
                     .interactiveDismissDisabled()
                     .presentationBackground(.background)
                     .presentationCornerRadius(16)
@@ -57,7 +56,7 @@ struct WorkoutView: View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal) {
                 HStack(spacing: 0) {
-                    ForEach(workout.exercises) { exercise in
+                    ForEach(workout.sortedExercises) { exercise in
                         ExerciseView(exercise: exercise)
                             .containerRelativeFrame(.horizontal)
                             .id(exercise)
@@ -78,7 +77,7 @@ struct WorkoutView: View {
     
     var exerciseListView: some View {
         List {
-            ForEach(workout.exercises) { exercise in
+            ForEach(workout.sortedExercises) { exercise in
                 Button {
                     activeExercise = exercise
                     showExerciseListView = false
@@ -91,7 +90,7 @@ struct WorkoutView: View {
                             .foregroundStyle(.secondary)
                             .fontWeight(.semibold)
                             .font(.headline)
-                        ForEach(exercise.sets) { set in
+                        ForEach(exercise.sortedSets) { set in
                             Text("\(set.reps)x\(Int(set.weight)) lbs")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
@@ -106,17 +105,22 @@ struct WorkoutView: View {
                 .listRowSeparator(.hidden)
             }
             .onDelete(perform: deleteExercise)
+            .onMove(perform: moveExercise)
         }
         .scrollIndicators(.hidden)
         .listStyle(.plain)
     }
-    
+
     var toolBarMenu: some View {
         Menu("Workout Settings", systemImage: "ellipsis") {
             if !workout.exercises.isEmpty {
-                Button(showExerciseListView ? "Exercise View" : "List View",
-                       systemImage: showExerciseListView ? "list.clipboard" : "list.dash") {
-                    showExerciseListView.toggle()
+                ControlGroup {
+                    Toggle(isOn: Binding(get: { showExerciseListView }, set: { _ in showExerciseListView = true })) {
+                        Label("List View", systemImage: "list.dash")
+                    }
+                    Toggle(isOn: Binding(get: { !showExerciseListView }, set: { _ in showExerciseListView = false })) {
+                        Label("Exercise View", systemImage: "list.clipboard")
+                    }
                 }
                 Divider()
             }
@@ -146,7 +150,7 @@ struct WorkoutView: View {
     }
     
     var noExercisesView: some View {
-        ContentUnavailableView("No Exercises Added", systemImage: "dumbbell.fill", description: Text("Click the '\(Image(systemName: "plus"))' icon to add some exercises." ))
+        ContentUnavailableView("No Exercises Added", systemImage: "dumbbell.fill", description: Text("Click the '\(Image(systemName: "plus"))' icon to add some exercises."))
     }
     
     private func deleteWorkout() {
@@ -155,17 +159,20 @@ struct WorkoutView: View {
     }
     
     private func deleteExercise(offsets: IndexSet) {
-        let exercisesToDelete = offsets.map { workout.exercises[$0] }
+        let exercisesToDelete = offsets.map { workout.sortedExercises[$0] }
         
         for exercise in exercisesToDelete {
             workout.removeExercise(exercise)
             context.delete(exercise)
         }
-        try? context.save()
         
         if let active = activeExercise, exercisesToDelete.contains(active) {
-            activeExercise = workout.exercises.first
+            activeExercise = workout.sortedExercises.first
         }
+    }
+    
+    private func moveExercise(from source: IndexSet, to destination: Int) {
+        workout.moveExercise(from: source, to: destination)
     }
 }
 
