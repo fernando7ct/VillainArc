@@ -4,9 +4,9 @@ import SwiftData
 struct WorkoutView: View {
     @Bindable var workout: Workout
     @State private var activeExercise: WorkoutExercise?
-    @State private var showCancelConfirmation = false
-    @State private var showExerciseListView = false
-    @State private var showAddExerciseSheet = false
+    @State private var showCancelConfirmation: Bool = false
+    @State private var showExerciseListView: Bool = false
+    @State private var showAddExerciseSheet: Bool = false
     
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -15,9 +15,7 @@ struct WorkoutView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if workout.exercises.isEmpty {
-                    noExercisesView
-                } else if showExerciseListView {
+                if showExerciseListView {
                     exerciseListView
                 } else {
                     exerciseTabView
@@ -46,7 +44,7 @@ struct WorkoutView: View {
                 AddExerciseView(workout: workout)
                     .navigationTransition(.zoom(sourceID: "addExercise", in: animation))
                     .interactiveDismissDisabled()
-                    .presentationBackground(.background)
+                    .presentationBackground(Color(.systemBackground))
             }
         }
     }
@@ -55,10 +53,15 @@ struct WorkoutView: View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal) {
                 HStack(spacing: 0) {
-                    ForEach(workout.sortedExercises) { exercise in
-                        ExerciseView(exercise: exercise)
+                    if workout.exercises.isEmpty {
+                        ContentUnavailableView("No Exercises Added", systemImage: "dumbbell.fill", description: Text("Click the '\(Image(systemName: "plus"))' icon to add some exercises."))
                             .containerRelativeFrame(.horizontal)
-                            .id(exercise)
+                    } else {
+                        ForEach(workout.sortedExercises) { exercise in
+                            ExerciseView(exercise: exercise)
+                                .containerRelativeFrame(.horizontal)
+                                .id(exercise)
+                        }
                     }
                 }
                 .scrollTargetLayout()
@@ -149,10 +152,6 @@ struct WorkoutView: View {
         }
     }
     
-    var noExercisesView: some View {
-        ContentUnavailableView("No Exercises Added", systemImage: "dumbbell.fill", description: Text("Click the '\(Image(systemName: "plus"))' icon to add some exercises."))
-    }
-    
     private func deleteWorkout() {
         context.delete(workout)
         saveContext(context: context)
@@ -170,6 +169,10 @@ struct WorkoutView: View {
         
         if let active = activeExercise, exercisesToDelete.contains(active) {
             activeExercise = workout.sortedExercises.first
+        }
+        
+        if workout.exercises.isEmpty {
+            showExerciseListView = false
         }
     }
     

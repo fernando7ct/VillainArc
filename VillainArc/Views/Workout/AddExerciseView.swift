@@ -57,7 +57,7 @@ struct AddExerciseView: View {
                         .labelStyle(.iconOnly)
                         .menuOrder(.fixed)
                     }
-                    ToolbarSpacer(.flexible, placement: .bottomBar)
+                    ToolbarSpacer(.fixed, placement: .bottomBar)
                     DefaultToolbarItem(kind: .search, placement: .bottomBar)
                 }
                 .searchable(text: $searchText)
