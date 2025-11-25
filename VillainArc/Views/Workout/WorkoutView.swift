@@ -115,7 +115,11 @@ struct WorkoutView: View {
 
     var toolBarMenu: some View {
         Menu("Workout Settings", systemImage: "ellipsis") {
-            if !workout.exercises.isEmpty {
+            if workout.exercises.isEmpty {
+                Button("Cancel Workout", systemImage: "xmark") {
+                    deleteWorkout()
+                }
+            } else {
                 ControlGroup {
                     Toggle(isOn: Binding(get: { showExerciseListView }, set: { _ in showExerciseListView = true })) {
                         Label("List View", systemImage: "list.dash")
@@ -125,18 +129,18 @@ struct WorkoutView: View {
                     }
                 }
                 Divider()
-            }
-            Button("Save Workout", systemImage: "checkmark") {
-                workout.completed = true
-                saveContext(context: context)
-                dismiss()
-            }
-            .tint(.green)
-            Button("Delete Workout", systemImage: "trash", role: .destructive) {
-                if !workout.exercises.isEmpty {
-                    showCancelConfirmation = true
-                } else {
-                    deleteWorkout()
+                Button("Save Workout", systemImage: "checkmark") {
+                    workout.completed = true
+                    saveContext(context: context)
+                    dismiss()
+                }
+                .tint(.green)
+                Button("Delete Workout", systemImage: "trash", role: .destructive) {
+                    if !workout.exercises.isEmpty {
+                        showCancelConfirmation = true
+                    } else {
+                        deleteWorkout()
+                    }
                 }
             }
         }

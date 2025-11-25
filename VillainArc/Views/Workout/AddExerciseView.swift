@@ -61,6 +61,7 @@ struct AddExerciseView: View {
                     DefaultToolbarItem(kind: .search, placement: .bottomBar)
                 }
                 .searchable(text: $searchText)
+                .searchPresentationToolbarBehavior(.avoidHidingContent)
         }
     }
     
